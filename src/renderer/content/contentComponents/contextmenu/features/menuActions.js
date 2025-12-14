@@ -195,6 +195,14 @@ export const handleMenuItemClick = async (params) => {
                 handleSearchWithGoogle({ noteAPI });
                 break;
 
+            case 'showCommandPalette':
+                if (noteAPI && typeof noteAPI.showCommandPalette === 'function') {
+                    noteAPI.showCommandPalette();
+                } else {
+                    console.warn('[ContextMenu] noteAPI.showCommandPalette not available');
+                }
+                break;
+
             case 'selectAll':
                 document.execCommand('selectAll');
                 break;

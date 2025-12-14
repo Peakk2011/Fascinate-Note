@@ -125,6 +125,11 @@
       "label": "Select All",
       "command": "selectAll",
       "shortcut": "Ctrl + A"
+    },
+    {
+      "id": "context-command-palette",
+      "label": "Command Palette...",
+      "command": "showCommandPalette"
     }
   ]
 }

@@ -5,7 +5,7 @@ import { initZoomControls } from '../pageComponents/zoomControls.js';
 import { initExportMenu } from '../pageComponents/exportMenu.js';
 import { initSelectionMenu } from '../pageComponents/selectionMenu.js';
 
-export const initEditorPage = async (config, noteAPI, modelFind, contextMenu) => {
+export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, commandPalette) => {
     const editorElement = document.getElementById(config.textareaId);
     if (!editorElement) {
         throw new Error(`Editor element with ID "${config.textareaId}" not found.`);
@@ -75,7 +75,12 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu) =>
 
     // Initialize other components
     modelFind.init({ pageConfig: config, noteAPI });
+    const commandPaletteAPI = commandPalette.init({ noteAPI });
+    noteAPI.showCommandPalette = commandPaletteAPI.toggle;
     contextMenu.init({ pageConfig: config, noteAPI });
+
+    cleanupFunctions.push(commandPaletteAPI.destroy);
+
 
     // Return cleanup function
     return {

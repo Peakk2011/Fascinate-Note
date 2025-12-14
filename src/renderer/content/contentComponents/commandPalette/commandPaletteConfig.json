@@ -1,0 +1,8 @@
+{
+    "modalId": "command-palette-modal",
+    "contentClass": "command-palette-content",
+    "headerClass": "command-palette-header",
+    "inputClass": "command-palette-input",
+    "resultsClass": "command-palette-results",
+    "itemClass": "command-result-item"
+}

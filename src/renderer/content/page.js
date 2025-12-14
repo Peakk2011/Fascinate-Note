@@ -4,6 +4,7 @@ import { noteFeatures } from '../scripts/note.js';
 import { createModelFind } from './contentComponents/model/modelFind.js';
 import { createContextMenu } from './contentComponents/contextmenu/contextMenu.js';
 import { getConfig } from './pageServices/configService.js';
+import { createCommandPalette } from './contentComponents/commandPalette/commandPalette.js';
 import { createPageMarkup } from './pages/pageMarkup.js';
 import { createTitlebar } from './pageComponents/titlebar.js';
 import { initEditorPage } from './pages/editorPage.js';
@@ -14,6 +15,7 @@ export const Page = {
     _modelFindCache: null,
     _contextMenuCache: null,
     _titlebarCache: null,
+    _commandPaletteCache: null,
 
     async _getModelFind() {
         if (!this._modelFindCache) {
@@ -40,25 +42,34 @@ export const Page = {
         return null; // Return null if not in Electron
     },
 
+    async _getCommandPalette() {
+        if (!this._commandPaletteCache) {
+            this._commandPaletteCache = await createCommandPalette();
+        }
+        return this._commandPaletteCache;
+    },
+
     async markups() {
-        const [config, modelFind, contextMenu, titlebar] = await Promise.all([
+        const [config, modelFind, contextMenu, titlebar, commandPalette] = await Promise.all([
             getConfig(),
             this._getModelFind(),
             this._getContextMenu(),
-            this._getTitlebar()
+            this._getTitlebar(),
+            this._getCommandPalette()
         ]);
 
-        return createPageMarkup(config, modelFind, contextMenu, titlebar);
+        return createPageMarkup(config, modelFind, contextMenu, titlebar, commandPalette);
     },
 
     async init() {
         try {
             // Load in parallel (config already cached from markups())
-            const [config, noteAPI, modelFind, contextMenu] = await Promise.all([
+            const [config, noteAPI, modelFind, contextMenu, commandPalette] = await Promise.all([
                 getConfig(),
                 noteFeatures(),
                 this._getModelFind(),
-                this._getContextMenu()
+                this._getContextMenu(),
+                this._getCommandPalette()
             ]);
 
             if (!noteAPI) {
@@ -69,7 +80,8 @@ export const Page = {
                 config,
                 noteAPI,
                 modelFind,
-                contextMenu
+                contextMenu,
+                commandPalette
             );
 
             return result.noteAPI;

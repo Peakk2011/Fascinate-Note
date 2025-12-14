@@ -35,7 +35,7 @@ import { createTitlebarMarkup } from '../pageComponents/titlebar.js';
  * const pageHTML = createPageMarkup(config, modelFind, contextMenu, titlebar);
  * document.body.innerHTML = pageHTML;
  */
-export const createPageMarkup = (config, modelFind, contextMenu, titlebar) => {
+export const createPageMarkup = (config, modelFind, contextMenu, titlebar, commandPalette) => {
     return `
         ${titlebar ? titlebar.markups : ''}
         ${createStatusIndicatorMarkup(config)}
@@ -53,5 +53,6 @@ export const createPageMarkup = (config, modelFind, contextMenu, titlebar) => {
         
         ${modelFind.markups}
         ${contextMenu.markups}
+        ${commandPalette.markups}
     `;
 };
