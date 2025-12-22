@@ -36,8 +36,9 @@ export const handleMarkdown = (e, editor) => {
         }
     }
 
-    // Work when SPACE is pressed
-    if (e.key !== ' ') {
+    // Work when SPACE & Unicode whitespace is pressed
+    const keyIsSpace = (typeof e.key === 'string' && /\s/.test(e.key)) || e.code === 'Space' || e.key === 'Spacebar';
+    if (!keyIsSpace) {
         return;
     }
 
@@ -57,6 +58,9 @@ export const handleMarkdown = (e, editor) => {
                 beforeCursor = text;
             }
 
+            // Normalize Unicode spaces (NBSP, etc.) to regular space for matching
+            beforeCursor = beforeCursor.replace(/\u00A0/g, ' ');
+
             return processMarkdownInLine(
                 e,
                 beforeCursor,
@@ -71,11 +75,13 @@ export const handleMarkdown = (e, editor) => {
     const text = blockElement.textContent || '';
     const cursorPos = range.startOffset;
 
-    const beforeCursor = getTextBeforeCursor(
+    let beforeCursor = getTextBeforeCursor(
         node,
         cursorPos,
         blockElement
     );
+
+    beforeCursor = beforeCursor.replace(/\u00A0/g, ' ');
 
     return processMarkdownInLine(
         e,
