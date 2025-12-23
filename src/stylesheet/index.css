@@ -3,7 +3,7 @@
     Fascinate-Note
     This file part is from Fascinate-Note
 
-    Updated: 2025-28-11
+    Updated: 2025-23-12
     License: MIT
 */
 
@@ -22,6 +22,13 @@
     user-select: none;
     z-index: var(--titlebar-z-index);
     background-color: var(--theme-bg);
+    border-bottom: 1px solid transparent;
+    position: fixed;
+    transition: border-bottom 0.18s ease, box-shadow 0.18s ease;
+}
+
+.application-titlebar.scrolled {
+    border-bottom: 1px solid var(--theme-border);
 }
 
 body.win32 .application-titlebar {
@@ -59,9 +66,9 @@ body.win32 .application-titlebar {
 }
 
 body.win32 .status {
-    left: var(--status-right);
+    left: calc(var(--status-right) - 6px);
     right: 0;
-    top: calc(var(--status-top) - 6px);
+    top: calc(var(--status-top) - 14px);
 }
 
 /**
@@ -98,9 +105,12 @@ body.win32 .status {
  * @duration 1.5s
  */
 @keyframes pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         opacity: 1;
     }
+
     50% {
         opacity: 0.5;
     }
@@ -130,6 +140,55 @@ body.win32 .status {
     animation: caret-pulse 1.5s infinite alternate;
 }
 
+/*
+ * @selector body.win32 .textarea-container
+ * @description Windows-specific textarea container styling
+ */
+body.win32 .textarea-container {
+    padding-top: 2.5rem;
+    max-width: 550px;
+    margin: auto;
+    width: 100%;
+}
+
+/* Editor mask - subtle gradient placed behind the editor to darken background */
+.editor-mask {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(15, 15, 15, 0) 0%, rgba(15, 15, 15, 0.25) 40%, var(--theme-bg) 100%);
+    z-index: 2;
+    height: 100px;
+}
+
+/* Raise editor above the mask */
+.editable-div.with-mask {
+    position: relative;
+    z-index: 1;
+}
+
+.editor-placeholder {
+    position: absolute;
+    inset: 0;
+    color: var(--theme-fg);
+    opacity: 0.65;
+    pointer-events: none;
+    user-select: none;
+    padding: 1.6rem 1.4rem;
+    width: 100%;
+    z-index: 1;
+
+    font-family: var(--font-display);
+    font-weight: 430;
+    font-size: var(--editor-font-size, 14.5px);
+}
+
+body.win32 .editor-placeholder {
+    margin-top: 2.5rem;
+}
+
 /**
  * @selector .editable-div div
  * @description Standard div elements inside editor
@@ -153,6 +212,14 @@ body.win32 .status {
     font-weight: var(--editor-heading-weight);
     margin-bottom: var(--editor-heading-margin);
     width: var(--editor-heading-width);
+}
+
+/* 
+ * @selector .editable-div h1
+ * @description H1 specific override
+ */
+.editable-div h1 {
+    font-size: 26.5px;
 }
 
 /**
@@ -500,6 +567,7 @@ body.win32 .status {
     padding: var(--export-menu-padding);
     transition: var(--export-menu-transition);
     opacity: 0;
+    display: none;
 }
 
 .export-menu.show {
@@ -660,9 +728,11 @@ body.win32 .status {
     0% {
         caret-color: var(--theme-fg);
     }
+
     50% {
         caret-color: var(--theme-accent);
     }
+
     100% {
         caret-color: var(--theme-fg);
     }

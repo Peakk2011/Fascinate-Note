@@ -1,17 +1,28 @@
 /**
  * @typedef {object} ExportMenuConfig
- * @property {string} exportHtmlButtonId            - The ID for the main export button.
- * @property {string} exportHtmlButtonTitle         - The title attribute for the main export button.
- * @property {string} exportHtmlButtonText          - The text content for the main export button.
- * @property {string} exportMenuHtmlText            - The text content for the "Export HTML" option in the dropdown.
- * @property {string} exportMenuTxtText             - The text content for the "Export TXT" option in the dropdown.
+ * @property {string} exportHtmlButtonId                    - ID for the main export button.
+ * @property {string} exportHtmlButtonTitle                 - Title attribute for the main export button.
+ * @property {string} exportHtmlButtonText                  - Text content for the main export button.
+ * @property {string} exportMenuId                          - ID for the export menu dropdown container.
+ * @property {string} exportMenuHtmlText                    - Text for the "Export HTML" option.
+ * @property {string} exportMenuTxtText                     - Text for the "Export TXT" option.
+ */
+
+/**
+ * @typedef {object} RichEditorAPI
+ * @property {(filename: string) => void} downloadHTML      - Triggers download of editor content as HTML.
+ * @property {(filename: string) => void} downloadTXT       - Triggers download of editor content as plain text.
+ */
+
+/**
+ * @typedef {object} ExportMenuAPI
+ * @property {() => void} cleanup                           - Removes all event listeners to prevent memory leaks.
  */
 
 /**
  * Generates the HTML markup for the export menu component.
- *
- * @param {ExportMenuConfig} config                 - Configuration object containing IDs, titles, and text for the export buttons.
- * @returns {string}                                – The HTML string representing the export menu.
+ * @param {ExportMenuConfig} config - Configuration object for the export menu.
+ * @returns {string} The HTML string representing the export menu.
  */
 export const createExportMenuMarkup = (config) => {
     return `
@@ -19,7 +30,7 @@ export const createExportMenuMarkup = (config) => {
             <button id="${config.exportHtmlButtonId}" title="${config.exportHtmlButtonTitle}">
                 <span>${config.exportHtmlButtonText}</span>
             </button>
-            <div id="export-menu" class="export-menu">
+            <div id="${config.exportMenuId}" class="export-menu">
                 <button id="export-html">${config.exportMenuHtmlText}</button>
                 <button id="export-txt">${config.exportMenuTxtText}</button>
             </div>
@@ -28,85 +39,124 @@ export const createExportMenuMarkup = (config) => {
 }
 
 /**
- * @typedef {object} RichEditorAPI
- * @property {function(string): void} downloadHTML  - Function to trigger downloading the editor's content as an HTML file.
- * @property {function(string): void} downloadTXT   - Function to trigger downloading the editor's content as a plain text file.
- */
-
-/**
- * Initializes the functionality for the export menu, including toggling the menu and handling export actions.
- *
- * @param {ExportMenuConfig} config             - Configuration object containing IDs for the export buttons.
- * @param {RichEditorAPI} richEditor            - An object providing methods to interact with the rich text editor, specifically for downloading content.
- * @returns {{cleanup: Function}}                 An object containing a `cleanup` function to remove all event listeners.
- *                                                Returns a no-op cleanup function if required elements are not found.
+ * Initializes the functionality for the export menu.
+ * @param {ExportMenuConfig} config                         - Configuration object containing IDs for the elements.
+ * @param {RichEditorAPI} richEditor                        - API for interacting with the rich text editor.
+ * @returns {ExportMenuAPI} An object containing a `cleanup` function.
  */
 export const initExportMenu = (config, richEditor) => {
     const exportBtn = document.getElementById(config.exportHtmlButtonId);
-    const exportMenu = document.getElementById('export-menu');
+    const exportMenu = document.getElementById(config.exportMenuId);
     const exportHtmlBtn = document.getElementById('export-html');
     const exportTxtBtn = document.getElementById('export-txt');
 
     if (!exportBtn || !exportMenu || !richEditor) {
+        console.warn(
+            '[ExportMenu] Initialization failed: required elements or API not found.'
+        );
         return { cleanup: () => { } };
     }
 
-    /**
-     * Toggles the visibility of the export menu dropdown.
-     * @private
-     */
-    const handleToggle = () => {
-        exportMenu.classList.toggle('show');
-    };
+    let isMenuVisible = false;
+    let transitionFallbackTimer = null;
 
     /**
-     * Handles the click event for exporting content as an HTML file.
-     * Generates a filename and calls the rich editor's downloadHTML method.
-     * @private
+     * Generates a filename with the current date.
+     * @param {'html' | 'txt'} extension - The file extension.
+     * @returns {string} The generated filename.
      */
+    const generateFilename = (extension) => {
+        const date = new Date().toISOString().slice(0, 10);
+        return `note-${date}.${extension}`;
+    };
+
+    const showMenu = () => {
+        if (isMenuVisible) return;
+        isMenuVisible = true;
+
+        clearTimeout(transitionFallbackTimer);
+        exportMenu.style.display = 'block';
+        
+        requestAnimationFrame(() => {
+            exportMenu.classList.add('show');
+        });
+    };
+
+    const hideMenu = () => {
+        if (!isMenuVisible) return;
+        isMenuVisible = false;
+
+        exportMenu.classList.remove('show');
+
+        const onTransitionEnd = () => {
+            clearTimeout(transitionFallbackTimer);
+            exportMenu.style.display = 'none';
+        };
+
+        exportMenu.addEventListener(
+            'transitionend',
+            onTransitionEnd,
+            {
+                once: true
+            }
+        );
+
+        // Fallback in case transitionend event doesn't fire
+        transitionFallbackTimer = setTimeout(onTransitionEnd, 300);
+    };
+
+    /** @param {Event} event */
+    const handleToggle = (event) => {
+        event.stopPropagation();
+        isMenuVisible ? hideMenu() : showMenu();
+    };
+
     const handleExportHtml = () => {
-        const filename = `note-${new Date().toISOString().slice(0, 10)}.html`;
-        richEditor.downloadHTML(filename);
-        exportMenu.classList.remove('show');
+        richEditor.downloadHTML(generateFilename('html'));
+        hideMenu();
     };
 
-    /**
-     * Handles the click event for exporting content as a plain text file.
-     * Generates a filename and calls the rich editor's downloadTXT method.
-     * @private
-     */
     const handleExportTxt = () => {
-        const filename = `note-${new Date().toISOString().slice(0, 10)}.txt`;
-        richEditor.downloadTXT(filename);
-        exportMenu.classList.remove('show');
+        richEditor.downloadTXT(generateFilename('txt'));
+        hideMenu();
     };
 
-    /**
-     * Handles clicks outside the export button and menu to close the dropdown.
-     * @param {MouseEvent} event - The click event.
-     * @private
-     */
+    /** @param {MouseEvent} event */
     const handleClickOutside = (event) => {
-        if (!exportBtn.contains(event.target) && !exportMenu.contains(event.target)) {
-            exportMenu.classList.remove('show');
+        if (isMenuVisible &&
+            !exportBtn.contains(event.target) &&
+            !exportMenu.contains(event.target)) {
+            hideMenu();
         }
     };
 
-    exportBtn.addEventListener('click', handleToggle);
-    exportHtmlBtn.addEventListener('click', handleExportHtml);
-    exportTxtBtn.addEventListener('click', handleExportTxt);
-    document.addEventListener('click', handleClickOutside);
+    exportBtn.addEventListener(
+        'click',
+        handleToggle
+    );
+
+    exportHtmlBtn.addEventListener(
+        'click',
+        handleExportHtml
+    );
+    
+    exportTxtBtn.addEventListener(
+        'click',
+        handleExportTxt
+    );
+
+    document.addEventListener(
+        'click',
+        handleClickOutside
+    );
 
     return {
-        /**
-         * Removes all event listeners attached by this module to prevent memory leaks.
-         * @returns {void}
-         */
         cleanup() {
             exportBtn.removeEventListener('click', handleToggle);
             exportHtmlBtn.removeEventListener('click', handleExportHtml);
             exportTxtBtn.removeEventListener('click', handleExportTxt);
             document.removeEventListener('click', handleClickOutside);
+            clearTimeout(transitionFallbackTimer);
         }
     };
-}
+};

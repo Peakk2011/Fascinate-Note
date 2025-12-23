@@ -1,0 +1,149 @@
+{
+    "systemCommands": [
+        {
+            "id": "save",
+            "label": "Save Note",
+            "action": "saveData",
+            "description": "Save your current note"
+        },
+        {
+            "id": "load",
+            "label": "Load Note",
+            "action": "loadData",
+            "description": "Load a saved note"
+        },
+        {
+            "id": "zoomIn",
+            "label": "Zoom In",
+            "action": "zoomIn",
+            "description": "Increase editor zoom"
+        },
+        {
+            "id": "zoomOut",
+            "label": "Zoom Out",
+            "action": "zoomOut",
+            "description": "Decrease editor zoom"
+        },
+        {
+            "id": "resetZoom",
+            "label": "Reset Zoom",
+            "action": "resetZoom",
+            "description": "Reset zoom to 100%"
+        }
+    ],
+
+    "markdownCommands": [
+        {
+            "id": "h1",
+            "label": "/h1",
+            "syntax": "/h1",
+            "description": "Heading 1 (Largest)",
+            "example": "/h1 My Title"
+        },
+        {
+            "id": "h2",
+            "label": "/h2",
+            "syntax": "/h2",
+            "description": "Heading 2",
+            "example": "/h2 Section Title"
+        },
+        {
+            "id": "h3",
+            "label": "/h3",
+            "syntax": "/h3",
+            "description": "Heading 3",
+            "example": "/h3 Subsection"
+        },
+        {
+            "id": "h4",
+            "label": "/h4",
+            "syntax": "/h4",
+            "description": "Heading 4 (Smallest)",
+            "example": "/h4 Small Heading"
+        },
+        {
+            "id": "quote",
+            "label": "/quote",
+            "syntax": "/quote",
+            "description": "Blockquote",
+            "example": "/quote Important note"
+        },
+        {
+            "id": "code",
+            "label": "/code",
+            "syntax": "/code",
+            "description": "Code Block",
+            "example": "/code const x = 10;"
+        },
+        {
+            "id": "check",
+            "label": "/check",
+            "syntax": "/check",
+            "description": "Checklist / Task List",
+            "example": "/check Buy milk"
+        },
+        {
+            "id": "hr",
+            "label": "/hr",
+            "syntax": "/hr",
+            "description": "Horizontal Rule (Line)",
+            "example": "/hr"
+        },
+        {
+            "id": "line",
+            "label": "/line",
+            "syntax": "/line",
+            "description": "Horizontal Rule (Line)",
+            "example": "/line"
+        },
+        {
+            "id": "table",
+            "label": "/table",
+            "syntax": "/table",
+            "description": "Create 2x2 Table",
+            "example": "/table"
+        },
+        {
+            "id": "header1",
+            "label": "#",
+            "syntax": "#",
+            "description": "Heading 1",
+            "example": "# My Title"
+        },
+        {
+            "id": "header2",
+            "label": "##",
+            "syntax": "##",
+            "description": "Heading 2",
+            "example": "## Section"
+        },
+        {
+            "id": "header3",
+            "label": "###",
+            "syntax": "###",
+            "description": "Heading 3",
+            "example": "### Subsection"
+        },
+        {
+            "id": "header4",
+            "label": "####",
+            "syntax": "####",
+            "description": "Heading 4",
+            "example": "#### Small"
+        },
+        {
+            "id": "ul",
+            "label": "-",
+            "syntax": "-",
+            "description": "Unordered List (Bullet)",
+            "example": "- List item"
+        },
+        {
+            "id": "ol",
+            "label": "1.",
+            "syntax": "1.",
+            "description": "Ordered List (Numbered)",
+            "example": "1. First item"
+        }
+    ]
+}

@@ -4,6 +4,7 @@ import { initStatusIndicator } from '../pageComponents/statusIndicator.js';
 import { initZoomControls } from '../pageComponents/zoomControls.js';
 import { initExportMenu } from '../pageComponents/exportMenu.js';
 import { initSelectionMenu } from '../pageComponents/selectionMenu.js';
+import { initEditorMask } from '../pageComponents/editorMask.js';
 
 /**
  * @typedef {Object} EditorConfig
@@ -80,9 +81,9 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
     modelFind.init({ pageConfig: config, noteAPI });
     const commandPaletteAPI = commandPalette.init({ noteAPI });
     noteAPI.showCommandPalette = commandPaletteAPI.toggle;
-    contextMenu.init({ pageConfig: config, noteAPI });
+    const contextMenuAPI = contextMenu.init({ pageConfig: config, noteAPI });
 
-    cleanupFunctions.push(commandPaletteAPI.destroy);
+    cleanupFunctions.push(commandPaletteAPI.destroy, contextMenuAPI.destroy);
 
     // Setup event listeners
     requestAnimationFrame(() => {
@@ -92,11 +93,15 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
         const exportMenu = initExportMenu(config, rich);
         const selectionMenu = initSelectionMenu(editorElement);
 
+        // Add editor background mask (gradient behind the editor)
+        const editorMask = initEditorMask(editorElement);
+
         // Store cleanup functions
         cleanupFunctions.push(
             zoomControls.cleanup,
             exportMenu.cleanup,
-            selectionMenu.cleanup
+                selectionMenu.cleanup,
+                editorMask.destroy
         );
 
         // Initialize Keyboard Shortcuts with Command Palette support

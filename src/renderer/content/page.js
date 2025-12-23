@@ -6,7 +6,7 @@ import { createContextMenu } from './contentComponents/contextmenu/contextMenu.j
 import { getConfig } from './pageServices/configService.js';
 import { createCommandPalette } from './contentComponents/commandPalette/commandPalette.js';
 import { createPageMarkup } from './pages/pageMarkup.js';
-import { createTitlebar } from './pageComponents/titlebar.js';
+import { createTitlebar, initTitlebar } from './pageComponents/titlebar.js';
 import { initEditorPage } from './pages/editorPage.js';
 import '../../api/cursor-behavior.js';
 
@@ -83,6 +83,21 @@ export const Page = {
                 contextMenu,
                 commandPalette
             );
+
+            // Initialize titlebar behavior
+            try {
+                const tb = initTitlebar(60);
+                // ensure titlebar listener is cleaned when page cleanup runs
+                if (result && typeof result.cleanup === 'function') {
+                    const origCleanup = result.cleanup.bind(result);
+                    result.cleanup = () => {
+                        try { tb.destroy(); } catch (e) {}
+                        origCleanup();
+                    };
+                }
+            } catch (e) {
+                console.warn('initTitlebar failed', e);
+            }
 
             return result.noteAPI;
         } catch (error) {

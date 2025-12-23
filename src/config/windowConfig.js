@@ -3,6 +3,20 @@ import { nativeTheme } from 'electron';
 import { resolvePath } from '../utils/paths.js';
 
 /**
+ * @constant
+ * @type {{width: number, height: number, min: {width: number, height: number}}}
+ * @description Default window dimensions and minimum constraints.
+ */
+const windowSizeConfig = {
+    width: 460,
+    height: 660,
+    min: {
+        width: 400,
+        height: 400
+    }
+};
+
+/**
  * Generates the configuration object for the main BrowserWindow.
  * It combines a base configuration (like size and webPreferences) with
  * platform-specific settings (like title bar style and transparency)
@@ -12,15 +26,6 @@ import { resolvePath } from '../utils/paths.js';
  */
 export const getWindowConfig = () => {
     const config = osConfig[OS] || osConfig.linux;
-
-    const windowSizeConfig = {
-        width: 480,
-        height: 600,
-        min: {
-            width: 400,
-            height: 400
-        }
-    }
 
     return {
         width: windowSizeConfig.width,

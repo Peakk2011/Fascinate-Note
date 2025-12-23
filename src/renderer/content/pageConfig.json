@@ -14,6 +14,7 @@
     "exportHtmlButtonId": "export-html-btn",
     "exportHtmlButtonTitle": "Export as HTML",
     "exportHtmlButtonText": "Download This Note",
+    "exportMenuId": "export-menu",
     "exportMenuHtmlText": "Download as HTML",
     "exportMenuTxtText": "Download as plain text"
 }

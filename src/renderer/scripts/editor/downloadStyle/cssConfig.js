@@ -32,7 +32,7 @@ const theme = {
     },
     dark: {
         text: '#f4f4f4',
-        background: '#141414',
+        background: '#0f0f0f',
         muted: '#999',
         border: '#343434',
         codeBg: '#1f1f1f',
@@ -112,7 +112,8 @@ export const downloadMarkupsContent = {
         }
 
         body {
-            font-family: 'Inter Tight', 'Anuphan', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: "Inter Tight", "Leelawadee UI", system-ui, sans-serif;
+            letter-spacing: ${designConfig.letterSpacing};
             line-height: ${designConfig.lineHeight};
             -webkit-font-smoothing: ${designConfig.fontSmoothingWebkit};
             -moz-osx-font-smoothing: ${designConfig.fontSmoothingMoz};
@@ -131,25 +132,28 @@ export const downloadMarkupsContent = {
             }
         }
 
+        div,
+        p,
+        span {
+            font-family: "Inter Tight", "Leelawadee UI", system-ui, sans-serif;
+            letter-spacing: ${designConfig.letterSpacing};
+        }
+
         h1, h2, h3, h4, h5, h6 {
-            margin-top: ${spacing[6]};
+            font-family: 'Inter Tight', 'Anuphan', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin-top: ${spacing[4]};
             margin-bottom: ${spacing[4]};
             font-weight: 600;
             line-height: ${designConfig.headingLineHeight};
+            letter-spacing: ${designConfig.letterSpacing};
         }
 
-        h1 {
-            font-size: 2em;
-        }
-
-        h2 {
-            font-size: 1.5em;
-        }
-
-        h3 { font-size: 1.7em; }
-        h4 { font-size: 1.425em; }
-        h5 { font-size: 1.245em; }
-        h6 { font-size: 1em; }
+        h1 { font-size: 27.9px; }   
+        h2 { font-size: 21.75px; }  
+        h3 { font-size: 16.965px; } 
+        h4 { font-size: 14.5px; }   
+        h5 { font-size: 14.5px; }   
+        h6 { font-size: 14.5px; }   
 
         a {
             color: ${theme.light.links};

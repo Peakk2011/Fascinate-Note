@@ -2,7 +2,7 @@
     Made by Mint teams
     Fascinate-Note
 
-    Updated: 2025-16-11
+    Updated: 2025-23-12
     Fork from EssentialAPP
     License: MIT
 */
@@ -358,9 +358,9 @@
     /* Status Variables */
     --status-font-size: 14px;
     --status-gap: 6px;
-    --status-top: 14px;
-    --status-right: 16px;
-    --status-z-index: 2;
+    --status-top: 22px;
+    --status-right: 22px;
+    --status-z-index: 11;
 
     /* Dot Variables */
     --dot-size: 10px;
@@ -368,7 +368,7 @@
     --dot-saving-color: hsl(29, 44%, 56%);
 
     /* Editor Variables */
-    --editor-padding: 1.4rem 1.2rem;
+    --editor-padding: 1.6rem 1.4rem;
     --editor-font-size: 16px;
     --editor-line-height: 1.4;
     --editor-letter-spacing: 0.2px;

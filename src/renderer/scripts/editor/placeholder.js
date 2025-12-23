@@ -20,22 +20,8 @@ import { noteFeaturesConfig } from '../note/noteConfig.js';
 export const createPlaceholder = (editor, placeholderText) => {
     try {
         const placeholder = document.createElement('div');
+        placeholder.className = 'editor-placeholder';
         placeholder.textContent = placeholderText || '';
-        placeholder.style.cssText = `
-            position: absolute;
-            top: 0;
-            left: 0;
-            color: var(--theme-fg);
-            opacity: 65%;
-            pointer-events: none;
-            user-select: none;
-            padding: 1.4rem 1.2rem;
-            width: 100%;
-            z-index: 1;
-            font-family: var(--font-display);
-            font-weight: 430;
-            font-size: ${noteFeaturesConfig.defaultFontSize}px;
-        `;
 
         const parent = editor.parentElement;
         if (parent) {
