@@ -163,6 +163,12 @@ body.win32 .textarea-container {
     height: 100px;
 }
 
+@media (prefers-color-scheme: light) {
+    .editor-mask {
+        background: linear-gradient(to bottom, hsla(0, 0%, 98%, 0) 0%, hsla(0, 0%, 98%, 0.25) 40%, var(--theme-bg) 100%);
+    }
+}
+
 /* Raise editor above the mask */
 .editable-div.with-mask {
     position: relative;
@@ -228,6 +234,17 @@ body.win32 .editor-placeholder {
  */
 .editable-div h4 {
     letter-spacing: 0;
+}
+
+/*
+ * @selector .editable-div b
+ * @description Bold text styling within editor
+ */
+
+.editable-div b {
+    font-weight: var(--editor-bold-weight);
+    letter-spacing: var(--editor-bold-letter-spacing);
+    font-family: var(--font-text);
 }
 
 /**

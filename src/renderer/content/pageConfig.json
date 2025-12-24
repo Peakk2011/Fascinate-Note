@@ -16,5 +16,6 @@
     "exportHtmlButtonText": "Download This Note",
     "exportMenuId": "export-menu",
     "exportMenuHtmlText": "Download as HTML",
-    "exportMenuTxtText": "Download as plain text"
+    "exportMenuTxtText": "Download as plain text",
+    "exportMenuImageText": "Download as image"
 }

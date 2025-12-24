@@ -1,7 +1,7 @@
 import { createPlaceholder } from '../scripts/editor/placeholder.js';
 import { handleMarkdown } from '../scripts/editor/markdown.js';
 import { handlePaste } from '../scripts/editor/handlePaste.js';
-import { exportHTML, downloadHTML, downloadTXT } from '../scripts/editor/download.js';
+import { exportHTML, downloadHTML, downloadTXT, downloadImage } from '../scripts/editor/download.js';
 
 /**
  * Component to manage rich editor with Markdown support and HTML export
@@ -9,7 +9,7 @@ import { exportHTML, downloadHTML, downloadTXT } from '../scripts/editor/downloa
  * @param {string} options.editorId - ID of contentEditable element
  * @param {string} [options.placeholderText] - Placeholder text when empty
  * @param {Object} [options.formatButtons] - Format button IDs: {bold, italic}
- * @returns {{cleanup: Function, updatePlaceholder: Function, editor: HTMLElement, placeholder: HTMLElement, exportHTML: Function, downloadHTML: Function, downloadTXT: Function}|null}
+ * @returns {{cleanup: Function, updatePlaceholder: Function, editor: HTMLElement, placeholder: HTMLElement, exportHTML: Function, downloadHTML: Function, downloadTXT: Function, downloadImage: Function}|null}
  */
 export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} } = {}) => {
     const editor = document.getElementById(editorId);
@@ -206,6 +206,10 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
 
         downloadTXT: (filename = 'document.txt') => {
             downloadTXT(editor, filename);
+        },
+
+        downloadImage: (filename = 'document.png') => {
+            downloadImage(editor, filename);
         },
 
         editor,

@@ -6,12 +6,14 @@
  * @property {string} exportMenuId                          - ID for the export menu dropdown container.
  * @property {string} exportMenuHtmlText                    - Text for the "Export HTML" option.
  * @property {string} exportMenuTxtText                     - Text for the "Export TXT" option.
+ * @property {string} exportMenuImageText                   - Text for the "Export Image" option.
  */
 
 /**
  * @typedef {object} RichEditorAPI
  * @property {(filename: string) => void} downloadHTML      - Triggers download of editor content as HTML.
  * @property {(filename: string) => void} downloadTXT       - Triggers download of editor content as plain text.
+ * @property {(filename: string) => void} downloadImage     - Triggers download of editor content as an image.
  */
 
 /**
@@ -33,6 +35,7 @@ export const createExportMenuMarkup = (config) => {
             <div id="${config.exportMenuId}" class="export-menu">
                 <button id="export-html">${config.exportMenuHtmlText}</button>
                 <button id="export-txt">${config.exportMenuTxtText}</button>
+                <button id="export-image">${config.exportMenuImageText}</button>
             </div>
         </div>
     `;
@@ -49,6 +52,7 @@ export const initExportMenu = (config, richEditor) => {
     const exportMenu = document.getElementById(config.exportMenuId);
     const exportHtmlBtn = document.getElementById('export-html');
     const exportTxtBtn = document.getElementById('export-txt');
+    const exportImageBtn = document.getElementById('export-image');
 
     if (!exportBtn || !exportMenu || !richEditor) {
         console.warn(
@@ -62,7 +66,7 @@ export const initExportMenu = (config, richEditor) => {
 
     /**
      * Generates a filename with the current date.
-     * @param {'html' | 'txt'} extension - The file extension.
+     * @param {'html' | 'txt' | 'png'} extension - The file extension.
      * @returns {string} The generated filename.
      */
     const generateFilename = (extension) => {
@@ -120,6 +124,11 @@ export const initExportMenu = (config, richEditor) => {
         richEditor.downloadTXT(generateFilename('txt'));
         hideMenu();
     };
+    
+    const handleExportImage = () => {
+        richEditor.downloadImage(generateFilename('png'));
+        hideMenu();
+    };
 
     /** @param {MouseEvent} event */
     const handleClickOutside = (event) => {
@@ -145,6 +154,11 @@ export const initExportMenu = (config, richEditor) => {
         handleExportTxt
     );
 
+    exportImageBtn.addEventListener(
+        'click',
+        handleExportImage
+    );
+
     document.addEventListener(
         'click',
         handleClickOutside
@@ -155,6 +169,7 @@ export const initExportMenu = (config, richEditor) => {
             exportBtn.removeEventListener('click', handleToggle);
             exportHtmlBtn.removeEventListener('click', handleExportHtml);
             exportTxtBtn.removeEventListener('click', handleExportTxt);
+            exportImageBtn.removeEventListener('click', handleExportImage);
             document.removeEventListener('click', handleClickOutside);
             clearTimeout(transitionFallbackTimer);
         }

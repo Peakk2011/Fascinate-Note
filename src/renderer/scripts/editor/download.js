@@ -109,3 +109,55 @@ export const downloadTXT = (editor, filename = 'document.txt') => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 };
+
+/**
+ * Download as Image file
+ * @param {HTMLElement} editor - Editor element
+ * @param {string} filename - Output filename
+ */
+export const downloadImage = (editor, filename = 'document.png') => {
+    const rect = editor.getBoundingClientRect();
+    const styles = getEditorStyles(editor);
+
+    const data = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}">
+            <foreignObject width="100%" height="100%">
+                <div xmlns="http://www.w3.org/1999/xhtml">
+                    <style>
+                        ${downloadMarkupsContent.styles}
+                        body {
+                            color: ${styles.color};
+                            background-color: ${styles.backgroundColor};
+                        }
+                    </style>
+                    ${editor.innerHTML}
+                </div>
+            </foreignObject>
+        </svg>`;
+
+    const img = new Image();
+    const svg = new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svg);
+
+    img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = styles.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        URL.revokeObjectURL(url);
+    };
+
+    img.src = url;
+};
