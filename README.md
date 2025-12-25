@@ -13,7 +13,7 @@
     </a>
 </div>
 <br>
-Feel the idea before you write it.
+A personal full-screen thinking space that can become collaborative without losing intimacy
 
 ## Quick Install
 ```bash
