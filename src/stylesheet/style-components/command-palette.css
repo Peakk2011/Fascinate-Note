@@ -67,8 +67,8 @@
 }
 
 .command-palette-header {
-    padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--theme-border);
+    padding: 0.3rem 1rem;
+    /* border-bottom: 1px solid var(--theme-border); */
     background: transparent;
     display: flex;
     gap: 0.75rem;
@@ -77,15 +77,16 @@
 
 .command-palette-mode {
     display: none;
-    padding: 0.5rem 0.5rem;
-    font-size: 0.8rem;
+    padding: 0.4rem 0.7rem;
+    font-size: 12px;
     color: var(--theme-fg);
     border-radius: 100vmax;
-    width: 205px;
+    width: max-content;
+    min-width: max-content;
     text-align: center;
 
     font-family: var(--font-display);
-    font-weight: 450;
+    font-weight: 500;
     letter-spacing: 0.2px;
 
     background-color: var(--PrimaryButtonsColors);
@@ -100,7 +101,7 @@
     background-color: transparent;
     color: var(--theme-fg);
     font-family: var(--font-display);
-    padding-bottom: 0.55rem;
+    margin-top: 0.3rem;
 
     font-weight: 450;
     outline: none;
@@ -126,12 +127,15 @@
     padding: 1.25rem 0.75rem;
     text-align: center;
     color: var(--ctx-menu-text);
+    font-family: var(--font-display);
     opacity: 0.8;
-    font-size: 0.92rem;
+    font-size: 13.5px;
+    font-weight: 450;
+    letter-spacing: 0.2px;
 }
 
 .command-result-item {
-    padding: 0.6rem 0.85rem;
+    padding: 0.55rem 0.8rem;
     cursor: pointer;
     border-radius: calc(var(--ctx-sub-menu-radius) + 2px);
     transition: 300ms cubic-bezier(0.19, 1, 0.22, 1);
@@ -167,22 +171,32 @@
 }
 
 .command-label {
+    font-family: var(--font-text);
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 13.5px;
 }
 
 .command-syntax {
+    opacity: 70%;
+    font-size: 12.5px;
+    font-weight: 500;
     font-family: var(--code-font-family);
-    font-size: var(--code-font-size);
-    font-weight: 600;
-    text-align: left;
 }
 
 .command-description {
-    opacity: 70%;
-    font-size: 0.9rem;
+    font-family: var(--font-text);
     font-weight: 600;
-    /* flex: 1; */
+    font-size: 13.5px;
+    line-height: 1;
+    letter-spacing: 0.2px;
+    text-align: left;
+}
+
+#command-description-un-headingable {
+    opacity: 70%;
+    font-weight: 500;
+    font-size: 12.5px;
+    letter-spacing: 0.25px;
 }
 
 .command-result-item:hover .command-label,

@@ -37,28 +37,28 @@
             "id": "h1",
             "label": "/h1",
             "syntax": "/h1",
-            "description": "Heading 1 (Largest)",
+            "description": "Title",
             "example": "/h1 My Title"
         },
         {
             "id": "h2",
             "label": "/h2",
             "syntax": "/h2",
-            "description": "Heading 2",
+            "description": "Section",
             "example": "/h2 Section Title"
         },
         {
             "id": "h3",
             "label": "/h3",
             "syntax": "/h3",
-            "description": "Heading 3",
+            "description": "Subsection",
             "example": "/h3 Subsection"
         },
         {
             "id": "h4",
             "label": "/h4",
             "syntax": "/h4",
-            "description": "Heading 4 (Smallest)",
+            "description": "Sub-subsection",
             "example": "/h4 Small Heading"
         },
         {
@@ -79,15 +79,8 @@
             "id": "check",
             "label": "/check",
             "syntax": "/check",
-            "description": "Checklist / Task List",
+            "description": "Checklist",
             "example": "/check Buy milk"
-        },
-        {
-            "id": "hr",
-            "label": "/hr",
-            "syntax": "/hr",
-            "description": "Horizontal Rule (Line)",
-            "example": "/hr"
         },
         {
             "id": "line",

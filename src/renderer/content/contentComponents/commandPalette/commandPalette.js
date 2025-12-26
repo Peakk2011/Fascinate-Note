@@ -103,10 +103,17 @@ export const createCommandPalette = async () => {
                 </div>
             </div>
         `,
+
         /**
          * Initialize the command palette DOM and wire up behavior.
          * @param {{noteAPI: NoteAPI}} opts
-         * @returns {{show: function(string=):void, hide: function():void, toggle: function(string=):void, showMarkdownCommands:function():void, destroy:function():void}}
+         * @returns {{
+         *      show: function(string=):void,
+         *      hide: function():void,
+         *      toggle: function(string=):void,
+         *      showMarkdownCommands:function():void,
+         *      destroy:function():void
+         * }}
          */
         init({ noteAPI }) {
             const modal = document.getElementById(config.modalId);
@@ -133,14 +140,21 @@ export const createCommandPalette = async () => {
             const setActive = (index) => {
                 const items = getItems();
                 if (!items.length) return;
+                
                 // wrap
                 if (index < 0) index = items.length - 1;
                 if (index >= items.length) index = 0;
+                
                 clearActive();
+                
                 const el = items[index];
                 if (el) {
                     el.classList.add('active');
-                    try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+                    
+                    try {
+                        el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                    } catch (e) {}
+                    
                     activeIndex = index;
                 }
             };
@@ -157,7 +171,9 @@ export const createCommandPalette = async () => {
                 try {
                     const sel = window.getSelection();
                     if (!sel || !sel.rangeCount) return null;
+                    
                     const range = sel.getRangeAt(0).cloneRange();
+                    
                     return {
                         startContainer: range.startContainer,
                         startOffset: range.startOffset,
@@ -184,11 +200,26 @@ export const createCommandPalette = async () => {
                     const { startContainer, startOffset } = saved;
                     let node = startContainer;
 
-                    if (!node || (node.nodeType && node.nodeType === Node.ELEMENT_NODE && !node.isConnected) || (node.nodeType === Node.TEXT_NODE && !node.parentNode)) {
+                    // Check if node is detached
+                    const isDetached = 
+                        !node || 
+                        (node.nodeType && node.nodeType === Node.ELEMENT_NODE && !node.isConnected) || 
+                        (node.nodeType === Node.TEXT_NODE && !node.parentNode);
+
+                    if (isDetached) {
                         // fallback: place caret at end of editor
-                        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+                        const walker = document.createTreeWalker(
+                            editor,
+                            NodeFilter.SHOW_TEXT,
+                            null,
+                            false
+                        );
+                        
                         let lastText = null;
-                        while (walker.nextNode()) lastText = walker.currentNode;
+                        while (walker.nextNode()) {
+                            lastText = walker.currentNode;
+                        }
+                        
                         const range = document.createRange();
                         if (lastText) {
                             range.setStart(lastText, lastText.textContent.length);
@@ -196,6 +227,7 @@ export const createCommandPalette = async () => {
                             range.selectNodeContents(editor);
                             range.collapse(false);
                         }
+                        
                         const sel = window.getSelection();
                         sel.removeAllRanges();
                         sel.addRange(range);
@@ -212,7 +244,9 @@ export const createCommandPalette = async () => {
                         const childIndex = Math.min(startOffset, node.childNodes.length);
                         range.setStart(node.childNodes[childIndex] || node, 0);
                     }
+                    
                     range.collapse(true);
+                    
                     const sel = window.getSelection();
                     sel.removeAllRanges();
                     sel.addRange(range);
@@ -236,6 +270,7 @@ export const createCommandPalette = async () => {
 
                 // build fragment
                 const frag = document.createDocumentFragment();
+
                 if (!filteredCommands || filteredCommands.length === 0) {
                     const emptyDiv = document.createElement('div');
                     emptyDiv.className = 'command-empty';
@@ -250,22 +285,34 @@ export const createCommandPalette = async () => {
                         if (isMarkdownMode) {
                             div.innerHTML = `
                                 <div class="command-item-main">
-                                    <span class="command-syntax">${command.syntax}</span>
                                     <span class="command-description">${command.description}</span>
+                                    <span class="command-syntax">${command.syntax}</span>
                                 </div>
                             `;
+                            
                             div.addEventListener('click', () => {
                                 try {
                                     restoreCursorPosition();
+                                    
                                     const selection = window.getSelection();
-                                    if (!selection || !selection.rangeCount) { hide(); return; }
+                                    if (!selection || !selection.rangeCount) {
+                                        hide();
+                                        return;
+                                    }
+                                    
                                     const range = selection.getRangeAt(0);
                                     const nodeStart = range.startContainer;
                                     const editor = window.rich?.editor || document.querySelector('[contenteditable]');
                                     const blockElement = getBlockElement(nodeStart, editor);
-                                    if (!blockElement) { hide(); return; }
+                                    
+                                    if (!blockElement) {
+                                        hide();
+                                        return;
+                                    }
+                                    
                                     const originalText = blockElement.textContent || '';
                                     blockElement.textContent = `${command.syntax}${originalText ? ' ' + originalText : ''}`;
+                                    
                                     const textNode = blockElement.firstChild;
                                     if (textNode && textNode.nodeType === Node.TEXT_NODE) {
                                         const cursorPos = (command.syntax || '').length;
@@ -274,20 +321,38 @@ export const createCommandPalette = async () => {
                                         newRange.collapse(true);
                                         selection.removeAllRanges();
                                         selection.addRange(newRange);
-                                        processMarkdownInLine({ preventDefault: () => {} }, command.syntax, blockElement, selection, blockElement === editor);
+                                        
+                                        processMarkdownInLine(
+                                            { preventDefault: () => {} },
+                                            command.syntax,
+                                            blockElement,
+                                            selection,
+                                            blockElement === editor
+                                        );
                                     }
-                                } catch (err) { console.error('[CommandPalette] apply markdown', err); }
-                                finally { hide(); }
+                                } catch (err) {
+                                    console.error('[CommandPalette] apply markdown', err);
+                                } finally {
+                                    hide();
+                                }
                             });
+                            
                             div.addEventListener('mouseover', () => setActive(idx));
                         } else {
                             div.innerHTML = `
                                 <div class="command-item-main">
                                     <span class="command-label">${command.label}</span>
-                                    ${command.description ? `<span class="command-description">${command.description}</span>` : ''}
+                                    ${command.description ? `<span class="command-description" id='command-description-un-headingable'>${command.description}</span>` : ''}
                                 </div>
                             `;
-                            div.addEventListener('click', () => { if (noteAPI && typeof noteAPI[command.action] === 'function') noteAPI[command.action](); hide(); });
+                            
+                            div.addEventListener('click', () => {
+                                if (noteAPI && typeof noteAPI[command.action] === 'function') {
+                                    noteAPI[command.action]();
+                                }
+                                hide();
+                            });
+                            
                             div.addEventListener('mouseover', () => setActive(idx));
                         }
 

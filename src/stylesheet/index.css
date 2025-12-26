@@ -345,13 +345,20 @@ body.win32 .editor-placeholder {
  * @typography Monospace font with custom background
  */
 .editable-div pre {
-    background-color: var(--theme-accent-blockquote);
-    border: 1px solid var(--theme-accent);
+    background-color: var(--PrimaryButtonsColors);
+    box-shadow: var(--ctx-menu-shadow);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
     border-radius: 6px;
     padding: 16px;
     margin: 16px 0;
     overflow-x: auto;
-    font-family: 'Courier New', Consolas, monospace;
+    font-family: var(--code-font-family);
+    font-weight: 400;
+}
+
+.editable-div pre span {
+    font-family: var(--code-font-family);
+    font-weight: 400;
 }
 
 /**
@@ -359,11 +366,12 @@ body.win32 .editor-placeholder {
  * @description Code element styling
  */
 .editable-div code {
-    font-family: 'Courier New', Consolas, monospace;
+    font-family: var(--code-font-family);
     font-size: 0.9em;
-    color: var(--theme-text-accent);
+    color: var(--theme-fg);
     line-height: 1.6;
     letter-spacing: 0;
+    font-weight: 400;
 }
 
 /**
