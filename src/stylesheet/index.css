@@ -19,6 +19,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    -webkit-user-select: none;
     user-select: none;
     z-index: var(--titlebar-z-index);
     background-color: var(--theme-bg);
@@ -69,6 +70,11 @@ body.win32 .status {
     left: calc(var(--status-right) - 6px);
     right: 0;
     top: calc(var(--status-top) - 14px);
+}
+
+body.darwin .status {
+    top: calc(var(--status-top) - 12px);
+    right: calc(var(--status-right) - 6px);
 }
 
 /**
@@ -142,9 +148,11 @@ body.win32 .status {
 
 /*
  * @selector body.win32 .textarea-container
- * @description Windows-specific textarea container styling
+ * @selector body.darwin .textarea-container
+ * @description Platform-specific textarea container styling
  */
-body.win32 .textarea-container {
+body.win32 .textarea-container,
+body.darwin .textarea-container {
     padding-top: 2.5rem;
     max-width: 550px;
     margin: auto;
@@ -181,6 +189,7 @@ body.win32 .textarea-container {
     color: var(--theme-fg);
     opacity: 0.65;
     pointer-events: none;
+    -webkit-user-select: none;
     user-select: none;
     padding: 1.6rem 1.4rem;
     width: 100%;
@@ -191,7 +200,8 @@ body.win32 .textarea-container {
     font-size: var(--editor-font-size, 14.5px);
 }
 
-body.win32 .editor-placeholder {
+body.win32 .editor-placeholder,
+body.darwin .editor-placeholder {
     margin-top: 2.5rem;
 }
 
