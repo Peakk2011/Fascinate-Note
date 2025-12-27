@@ -1,6 +1,7 @@
 import { getBlockElement, getTextBeforeCursor } from './nodeElement.js';
 import { handleEnterInBlockquote } from './markdown/handleEnterInBlockquote.js';
 import { handleEnterInHeading } from './markdown/handleEnterInHeading.js';
+import { handleEnterInCodeBlock } from './markdown/handleEnterInCodeBlock.js';
 import { processMarkdownInLine } from './markdown/commands.js';
 
 /**
@@ -10,40 +11,51 @@ import { processMarkdownInLine } from './markdown/commands.js';
  */
 export const handleMarkdown = (e, editor) => {
     const selection = window.getSelection();
-    if (!selection.rangeCount) {
-        return;
-    }
+    if (!selection.rangeCount) return;
 
     const range = selection.getRangeAt(0);
     let node = range.startContainer;
 
-    // Handle Enter key in blockquote
+    // Handle Enter key first
     if (e.key === 'Enter') {
-        // Handle Enter in an empty heading to convert it to a paragraph
+        // Handle Enter in an empty heading
+        
         if (handleEnterInHeading(e, editor)) {
             return;
         }
 
-        const handled = handleEnterInBlockquote(
+        // Handle Enter in blockquote
+        const handledBlockquote = handleEnterInBlockquote(
             e,
             editor,
             node,
             selection
         );
+        if (handledBlockquote !== undefined) return handledBlockquote;
 
-        if (handled !== undefined) {
-            return handled;
-        }
+        // Handle Enter in code block
+        const handledCodeBlock = handleEnterInCodeBlock(
+            e,
+            editor,
+            node,
+            selection
+        );
+        if (handledCodeBlock !== undefined) return handledCodeBlock;
+
+        // fallback: default Enter
+        return;
     }
 
-    // Work when SPACE & Unicode whitespace is pressed
-    const keyIsSpace = (typeof e.key === 'string' && /\s/.test(e.key)) || e.code === 'Space' || e.key === 'Spacebar';
-    if (!keyIsSpace) {
+    // Handle Space / Unicode whitespace
+    const keyIsSpace = (typeof e.key === 'string' && /\s/.test(e.key)) ||
+        e.code === 'Space' ||
+        e.key === 'Spacebar';
+
+        if (!keyIsSpace) {
         return;
     }
 
     const blockElement = getBlockElement(node, editor);
-
     if (!blockElement || blockElement === editor) {
         if (editor.children.length === 0 ||
             (editor.children.length === 1 && editor.firstElementChild?.tagName === 'BR')) {
@@ -58,7 +70,7 @@ export const handleMarkdown = (e, editor) => {
                 beforeCursor = text;
             }
 
-            // Normalize Unicode spaces (NBSP, etc.) to regular space for matching
+            // Normalize Unicode spaces
             beforeCursor = beforeCursor.replace(/\u00A0/g, ' ');
 
             return processMarkdownInLine(

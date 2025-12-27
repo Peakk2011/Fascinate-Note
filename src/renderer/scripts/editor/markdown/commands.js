@@ -111,18 +111,13 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
     }
 
     // /code - Code Block
-    if (beforeCursor.match(/^\/code\s*$/)) {
+    if (beforeCursor.match(/^\/code(?:\s+(.*))?$/)) {
         e.preventDefault();
+        const contentAfter = RegExp.$1 || '';
+
         const pre = document.createElement('pre');
         const code = document.createElement('code');
-        const contentAfter = blockElement.textContent.replace(/^\/code\s*/, '').trim();
-
-        if (contentAfter) {
-            code.textContent = contentAfter;
-        } else {
-            code.innerHTML = '<br>';
-        }
-
+        code.textContent = contentAfter || '\n';
         pre.appendChild(code);
 
         if (isFirstLine) {
@@ -132,7 +127,13 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
             blockElement.replaceWith(pre);
         }
 
-        setCursorAtEnd(code, selection);
+        const range = document.createRange();
+        const sel = window.getSelection();
+        range.selectNodeContents(code);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
         return true;
     }
 
@@ -195,7 +196,7 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
 
         // Create table structure
         const table = document.createElement('table');
-        table.className = 'fascinate-notes-table'; 
+        table.className = 'fascinate-notes-table';
         const thead = document.createElement('thead');
         const tbody = document.createElement('tbody');
         const trHead = document.createElement('tr');

@@ -12,7 +12,8 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\"",
-    "dist": "electron-builder --win"
+    "dist": "electron-builder --win",
+    "dist-mac": "electron-builder --mac"
   },
   "keywords": [],
   "author": {
