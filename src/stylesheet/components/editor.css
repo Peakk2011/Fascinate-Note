@@ -1,0 +1,208 @@
+/**
+ * @component EditableDiv
+ * @description Main text editor component
+ * @features Content editable, auto-save, scrollable
+ * @animations caret-pulse for cursor
+ */
+.editable-div {
+    width: 100%;
+    min-height: 100vh;
+    padding: var(--editor-padding);
+    font-size: var(--editor-font-size);
+    line-height: var(--editor-line-height);
+    resize: none;
+    outline: none;
+    border: none;
+    background-color: transparent;
+    font-family: var(--font-text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    overflow-y: scroll;
+    letter-spacing: var(--editor-letter-spacing);
+    caret-color: var(--theme-fg);
+    animation: caret-pulse 1.5s infinite alternate;
+}
+
+/*
+ * @selector body.win32 .textarea-container
+ * @selector body.darwin .textarea-container
+ * @description Platform-specific textarea container styling
+ */
+body.win32 .textarea-container,
+body.darwin .textarea-container {
+    padding-top: 2.5rem;
+    max-width: 550px;
+    margin: auto;
+    width: 100%;
+}
+
+/* Raise editor above the mask */
+.editable-div.with-mask {
+    position: relative;
+    z-index: 1;
+}
+
+.editor-placeholder {
+    position: absolute;
+    inset: 0;
+    color: var(--theme-fg);
+    opacity: 0.65;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
+    padding: 1.6rem 1.4rem;
+    width: 100%;
+    z-index: 1;
+
+    font-family: var(--font-display);
+    font-weight: 430;
+    font-size: var(--editor-font-size, 14.5px);
+}
+
+body.win32 .editor-placeholder,
+body.darwin .editor-placeholder {
+    margin-top: 2.5rem;
+}
+
+/**
+ * @selector .editable-div div
+ * @description Standard div elements inside editor
+ */
+.editable-div div {
+    font-family: var(--font-text);
+    letter-spacing: var(--editor-letter-spacing);
+}
+
+/**
+ * @selector .editable-div h1, h2, h3, h4
+ * @description Heading styles within editor
+ * @typography Display font with custom spacing and weight
+ */
+.editable-div h1,
+.editable-div h2,
+.editable-div h3,
+.editable-div h4 {
+    font-family: var(--font-display);
+    letter-spacing: var(--editor-heading-letter-spacing);
+    font-weight: var(--editor-heading-weight);
+    margin-bottom: var(--editor-heading-margin);
+    width: var(--editor-heading-width);
+}
+
+/* 
+ * @selector .editable-div h1
+ * @description H1 specific override
+ */
+.editable-div h1 {
+    font-size: 26.5px;
+}
+
+/**
+ * @selector .editable-div h4
+ * @description H4 specific override - no letter spacing
+ */
+.editable-div h4 {
+    letter-spacing: 0;
+}
+
+/*
+ * @selector .editable-div b
+ * @description Bold text styling within editor
+ */
+
+.editable-div b {
+    font-weight: var(--editor-bold-weight);
+    letter-spacing: var(--editor-bold-letter-spacing);
+    font-family: var(--font-text);
+}
+
+/**
+ * @selector .editable-div blockquote
+ * @description Quote block with left border accent
+ * @styling Inline-block with accent border and background
+ */
+.editable-div blockquote {
+    font-family: var(--font-text);
+    font-weight: var(--editor-blockquote-weight);
+    line-height: var(--editor-blockquote-line-height);
+    padding-left: var(--editor-blockquote-padding);
+    padding-right: var(--editor-blockquote-padding);
+    border-left: solid var(--editor-blockquote-border) var(--theme-accent);
+    color: var(--theme-text-accent);
+    background-color: var(--theme-accent-blockquote);
+    display: inline-block;
+}
+
+/**
+ * @selector .editable-div ul li
+ * @description Unordered list items with custom bullet
+ * @uses ::before pseudo-element for bullet point
+ */
+.editable-div ul li {
+    position: relative;
+    padding-left: var(--editor-list-padding);
+    list-style: none;
+    background-color: var(--theme-bg);
+}
+
+.editable-div ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(var(--editor-bullet-offset-x), var(--editor-bullet-offset-y));
+    font-size: var(--editor-bullet-size);
+}
+
+/**
+ * @selector .editable-div ol
+ * @description Ordered list with custom counter
+ * @counter item
+ */
+.editable-div ol {
+    counter-reset: item;
+    padding-left: 0;
+}
+
+/**
+ * @selector .editable-div ol li
+ * @description Ordered list items with numbered markers
+ * @uses ::before pseudo-element for numbers
+ */
+.editable-div ol li {
+    position: relative;
+    padding-left: var(--editor-list-padding);
+    list-style: none;
+    counter-increment: item;
+    background-color: var(--theme-bg);
+}
+
+.editable-div ol li::marker {
+    content: ' ';
+}
+
+.editable-div ol li::before {
+    content: counter(item) ".";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: var(--editor-heading-weight);
+}
+
+/**
+ * @selector .editable-div hr
+ * @description Horizontal rule divider
+ */
+.editable-div hr {
+    border: solid 1px currentColor;
+    opacity: var(--editor-hr-opacity);
+}
+
+/**
+ * @selector #autoSaveTextarea::placeholder, .placeholder
+ * @description Placeholder text styling
+ */
+#autoSaveTextarea::placeholder,
+.placeholder {
+    color: var(--theme-fg);
+    opacity: var(--editor-placeholder-opacity);
+}

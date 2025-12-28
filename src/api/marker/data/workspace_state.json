@@ -1,0 +1,22 @@
+{
+  "canvas": null,
+  "ctx": null,
+  "canvasContainer": null,
+
+  "svg": null,
+  "svgGroup": null,
+
+  "panX": 0,
+  "panY": 0,
+  "scale": 1,
+
+  "isInitialized": false,
+
+  "canvasWidth": 0,
+  "canvasHeight": 0,
+
+  "lastMouseX": 0,
+  "lastMouseY": 0,
+
+  "devicePixelRatio": 1
+}

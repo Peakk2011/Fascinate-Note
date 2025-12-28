@@ -1,0 +1,43 @@
+/**
+ * @component TaskList
+ * @description Checkbox-based task list items
+ * @interactive Clickable checkboxes with strikethrough on completion
+ */
+.editable-div ul[style*="list-style-type: none"] {
+    padding-left: 0;
+}
+
+.editable-div ul[style*="list-style-type: none"] li {
+    display: flex;
+    align-items: flex-start;
+    padding-left: 0;
+    margin-bottom: 8px;
+}
+
+.editable-div ul[style*="list-style-type: none"] li::before {
+    content: none;
+}
+
+/**
+ * @selector .editable-div input[type="checkbox"]
+ * @description Task list checkbox styling
+ * @interactive Cursor pointer with accent color
+ */
+.editable-div input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+    margin-top: 4px;
+    cursor: pointer;
+    accent-color: var(--theme-accent);
+    flex-shrink: 0;
+}
+
+/**
+ * @selector .editable-div input[type="checkbox"]:checked + span
+ * @description Completed task styling
+ * @effect Strikethrough with reduced opacity
+ */
+.editable-div input[type="checkbox"]:checked+span {
+    text-decoration: line-through;
+    opacity: 0.6;
+}

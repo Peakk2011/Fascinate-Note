@@ -1,0 +1,45 @@
+/**
+ * @component CodeBlock
+ * @description Syntax-highlighted code blocks
+ * @typography Monospace font with custom background
+ */
+.editable-div pre {
+    background-color: var(--PrimaryButtonsColors);
+    box-shadow: var(--ctx-menu-shadow);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    overflow-x: auto;
+    font-family: var(--code-font-family);
+    font-weight: 400;
+}
+
+.editable-div pre span {
+    font-family: var(--code-font-family);
+    font-weight: 400;
+}
+
+/**
+ * @selector .editable-div code
+ * @description Code element styling
+ */
+.editable-div code {
+    font-family: var(--code-font-family);
+    font-size: 0.9em;
+    color: var(--theme-fg);
+    line-height: 1.6;
+    letter-spacing: 0;
+    font-weight: 400;
+}
+
+/**
+ * @selector .editable-div :not(pre) > code
+ * @description Inline code styling (not in pre blocks)
+ */
+.editable-div :not(pre)>code {
+    background-color: var(--theme-accent-blockquote);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}

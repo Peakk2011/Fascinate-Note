@@ -1,0 +1,115 @@
+/**
+ * @component ApplicationTitlebar
+ * @description Electron titlebar with drag support
+ * @uses CSS custom properties for theming
+ */
+.application-titlebar {
+    -webkit-app-region: drag;
+    height: var(--titlebar-height);
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-user-select: none;
+    user-select: none;
+    z-index: var(--titlebar-z-index);
+    background-color: var(--theme-bg);
+    border-bottom: 1px solid transparent;
+    position: fixed;
+    transition: border-bottom 0.18s ease, box-shadow 0.18s ease;
+}
+
+.application-titlebar.scrolled {
+    border-bottom: 1px solid var(--theme-border);
+}
+
+body.win32 .application-titlebar {
+    height: calc(var(--titlebar-height) - 2px);
+}
+
+/**
+ * @selector .application-titlebar span
+ * @description Titlebar text element
+ * @note Currently hidden with display: none
+ */
+.application-titlebar span {
+    font-family: var(--font-display);
+    font-size: var(--titlebar-font-size);
+    font-weight: var(--titlebar-font-weight);
+    color: var(--theme-fg);
+    display: none;
+}
+
+/**
+ * @component Status
+ * @description Status indicator with save state dot
+ * @position Fixed top-right corner
+ */
+.status {
+    font-size: var(--status-font-size);
+    display: flex;
+    align-items: center;
+    gap: var(--status-gap);
+    position: fixed;
+    top: var(--status-top);
+    right: var(--status-right);
+    z-index: var(--status-z-index);
+    background-color: var(--theme-bg);
+}
+
+body.win32 .status {
+    left: calc(var(--status-right) - 6px);
+    right: 0;
+    top: calc(var(--status-top) - 14px);
+}
+
+body.darwin .status {
+    top: calc(var(--status-top) - 12px);
+    right: calc(var(--status-right) - 6px);
+}
+
+/**
+ * @selector #statusText
+ * @description Text label for status indicator
+ */
+#statusText {
+    font-family: var(--font-display);
+    font-weight: var(--zoom-btn-weight);
+}
+
+/**
+ * @component Dot
+ * @description Save state indicator dot
+ * @state default - Saved state (green)
+ * @state .saving - Saving state with pulse animation
+ */
+.dot {
+    width: var(--dot-size);
+    height: var(--dot-size);
+    border-radius: 50%;
+    background: var(--dot-saved-color);
+    transition: background 0.2s;
+}
+
+.dot.saving {
+    background: var(--dot-saving-color);
+    animation: pulse 1.5s infinite;
+}
+
+/* Editor mask - subtle gradient placed behind the editor to darken background */
+.editor-mask {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(15, 15, 15, 0) 0%, rgba(15, 15, 15, 0.25) 40%, var(--theme-bg) 100%);
+    z-index: 2;
+    height: 100px;
+}
+
+@media (prefers-color-scheme: light) {
+    .editor-mask {
+        background: linear-gradient(to bottom, hsla(0, 0%, 98%, 0) 0%, hsla(0, 0%, 98%, 0.25) 40%, var(--theme-bg) 100%);
+    }
+}

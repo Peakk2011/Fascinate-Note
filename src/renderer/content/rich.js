@@ -1,6 +1,7 @@
 import { createPlaceholder } from '../scripts/editor/placeholder.js';
 import { handleMarkdown } from '../scripts/editor/markdown.js';
 import { handlePaste } from '../scripts/editor/handlePaste.js';
+import { initRendering } from '../scripts/editor/rendering.js';
 import { exportHTML, downloadHTML, downloadTXT, downloadImage } from '../scripts/editor/download.js';
 
 /**
@@ -69,6 +70,8 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
         pasteHandler
     );
 
+    const rendering = initRendering(editor);
+    
     editor.addEventListener(
         'input',
         updateVisibility
@@ -164,6 +167,10 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
                 pasteHandler
             );
 
+            if (rendering && typeof rendering.destroy === 'function') {
+                rendering.destroy();
+            }
+            
             editor.removeEventListener(
                 'input',
                 updateVisibility

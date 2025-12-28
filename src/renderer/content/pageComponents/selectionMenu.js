@@ -14,66 +14,145 @@ const getViewportPadding = () => {
 }
 
 /**
- * Calculates the optimal position for the selection menu relative to the selection.
- * @param {DOMRect} selectionRect                   - Bounding rectangle of the selected text.
- * @param {HTMLElement} selectionMenu               - The menu element to position.
- * @returns {{left: number, top: number}}           - Coordinates for the menu in pixels.
+ * Calculates the optimal position for the selection menu
+ * relative to the current text selection.
+ *
+ * @param {DOMRect} selectionRect
+ *        Bounding rectangle of the selected text.
+ *
+ * @param {HTMLElement} selectionMenu
+ *        The floating selection menu element.
+ *
+ * @returns {{ left: number, top: number }}
+ *          Pixel coordinates for menu placement.
  */
 const calculateMenuPosition = (selectionRect, selectionMenu) => {
+    // Menu dimensions
     const menuWidth = selectionMenu.offsetWidth;
     const menuHeight = selectionMenu.offsetHeight;
+
+    // Scroll offsets
     const scrollX = window.scrollX || window.pageXOffset;
     const scrollY = window.scrollY || window.pageYOffset;
+
+    // Viewport metrics
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
+    const visualViewport = window.visualViewport || {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        offsetTop: 0,
+    };
+
+    const viewportHeight = visualViewport.height;
+    const viewportOffsetTop = visualViewport.offsetTop || 0;
+
     const VIEWPORT_PADDING = getViewportPadding();
 
-    let left = selectionRect.left + scrollX + (
-        selectionRect.width - menuWidth
-    ) / 2;
+    /**
+     * Horizontal positioning
+     * Center menu relative to selection
+     */
+    let left =
+        selectionRect.left +
+        scrollX +
+        (selectionRect.width - menuWidth) / 2;
 
-    let top = selectionRect.bottom + scrollY + MENU_OFFSET;
+    /**
+     * Vertical positioning
+     * Default: place menu below selection
+     */
+    let top =
+        selectionRect.bottom +
+        scrollY +
+        MENU_OFFSET;
 
+    /**
+     * Clamp horizontal position within viewport bounds
+     */
     if (left < scrollX + VIEWPORT_PADDING) {
         left = scrollX + VIEWPORT_PADDING;
-    } else if (left + menuWidth > viewportWidth + scrollX - VIEWPORT_PADDING) {
-        left = viewportWidth + scrollX - menuWidth - VIEWPORT_PADDING;
+    } else if (
+        left + menuWidth >
+        viewportWidth + scrollX - VIEWPORT_PADDING
+    ) {
+        left =
+            viewportWidth +
+            scrollX -
+            menuWidth -
+            VIEWPORT_PADDING;
     }
 
-    if (top + menuHeight > viewportHeight + scrollY - VIEWPORT_PADDING) {
-        top = viewportHeight + scrollY - menuHeight - VIEWPORT_PADDING;
+    /**
+     * Handle vertical overflow (e.g. mobile keyboard)
+     * Try placing the menu above the selection if needed
+     */
+    if (
+        top + menuHeight >
+        viewportOffsetTop + viewportHeight - VIEWPORT_PADDING
+    ) {
+        const alternativeTop =
+            selectionRect.top +
+            scrollY -
+            menuHeight -
+            MENU_OFFSET;
+
+        if (alternativeTop > scrollY + VIEWPORT_PADDING) {
+            top = alternativeTop;
+        } else {
+            top =
+                viewportOffsetTop +
+                viewportHeight +
+                scrollY -
+                menuHeight -
+                VIEWPORT_PADDING;
+        }
     }
 
     return { left, top };
-}
+};
+
 
 /**
- * Updates the active state of all buttons in the selection menu based on current selection.
- * @param {HTMLElement} selectionMenu - The menu element containing formatting buttons.
+ * Updates active states of formatting buttons
+ * based on the current document selection.
+ *
+ * @param {HTMLElement} selectionMenu
+ *        Menu element containing command buttons.
  */
 const updateButtonStates = (selectionMenu) => {
-    const buttons = selectionMenu.querySelectorAll('button[data-command]');
-    buttons.forEach(button => {
-        const command = button.dataset.command;
-        const value = button.dataset.value;
+    const buttons =
+        selectionMenu.querySelectorAll('button[data-command]');
 
+    buttons.forEach((button) => {
+        const { command, value } = button.dataset;
+
+        /**
+         * Special handling for block-level formatting
+         */
         if (command === 'formatBlock') {
-            const blockValue = document.queryCommandValue(
-                'formatBlock'
-            ).toUpperCase();
+            const currentBlock =
+                document
+                    .queryCommandValue('formatBlock')
+                    .toUpperCase();
 
-            if (blockValue === value) {
-                button.classList.add('active');
-            } else {
-                button.classList.remove('active');
-            }
-        } else if (document.queryCommandState(command)) {
-            button.classList.add('active');
-        } else {
-            button.classList.remove('active');
+            button.classList.toggle(
+                'active',
+                currentBlock === value
+            );
+
+            return;
         }
+
+        /**
+         * Inline formatting commands
+         */
+        button.classList.toggle(
+            'active',
+            document.queryCommandState(command)
+        );
     });
-}
+};
+
 
 /**
  * Returns HTML markup string for the selection menu with formatting buttons.
@@ -169,7 +248,7 @@ export const initSelectionMenu = (editor) => {
             try {
                 const currentValue = document.queryCommandValue('formatBlock').toUpperCase();
                 const newValue = (currentValue === value) ? 'P' : value;
-                
+
                 document.execCommand(
                     command,
                     false,
@@ -229,7 +308,7 @@ export const initSelectionMenu = (editor) => {
                 'selectionchange',
                 showSelectionMenu
             );
-            
+
             editor.removeEventListener(
                 'blur',
                 handleEditorBlur

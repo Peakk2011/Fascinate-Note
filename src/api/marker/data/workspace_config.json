@@ -1,0 +1,18 @@
+{
+  "name": "Workspace Configuration",
+  "version": "1.0.0",
+  "constants": {
+    "GRID_SIZE": 50,
+    "MIN_SCALE": 0.1,
+    "MAX_SCALE": 16,
+    "ZOOM_SENSITIVITY": 0.005,
+    "PAN_SENSITIVITY": 0.5,
+    "ZOOM_STEP": 1.1
+  },
+  "canvas": {
+    "DEFAULT_WIDTH": 7680,
+    "DEFAULT_HEIGHT": 4320,
+    "BACKGROUND_COLOR_LIGHT": "#f0f0f0",
+    "BACKGROUND_COLOR_DARK": "#2a2a2a"
+  }
+}

@@ -4,18 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="../assets/icons/icon.ico">
+    <link rel="icon" href="../assets/icons/icon.png" type="image/png">
     <meta http-equiv="Content-Security-Policy" 
         content="default-src 'self';
-                img-src 'self' blob:;
-                script-src 'self' 'unsafe-inline'; 
+                img-src 'self' blob: https: data:;
+                script-src 'self' 'unsafe-inline' 'unsafe-eval';
                 style-src 'self' 'unsafe-inline'; 
                 connect-src 'self' 
                             https://www.google.com 
                             https://translate.googleapis.com
                             https://api.mymemory.translated.net
                             https://lingva.ml 
-                            https://libretranslate.de;">
+                            https://libretranslate.de
+                            https://noembed.com;">
     <title>Fascinate Note</title>
     <link rel="stylesheet" href="./stylesheet/reset.css">
     <link rel="stylesheet" href="./stylesheet/index.css">

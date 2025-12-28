@@ -3,107 +3,21 @@
     Fascinate-Note
     This file part is from Fascinate-Note
 
-    Updated: 2025-23-12
+    Updated: 2025-28-12
     License: MIT
 */
 
-/**
- * @component ApplicationTitlebar
- * @description Electron titlebar with drag support
- * @uses CSS custom properties for theming
- */
-.application-titlebar {
-    -webkit-app-region: drag;
-    height: var(--titlebar-height);
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    -webkit-user-select: none;
-    user-select: none;
-    z-index: var(--titlebar-z-index);
-    background-color: var(--theme-bg);
-    border-bottom: 1px solid transparent;
-    position: fixed;
-    transition: border-bottom 0.18s ease, box-shadow 0.18s ease;
-}
+/* Import all component styles */
+@import url("./components/app-shell.css");
+@import url("./components/editor.css");
+@import url("./components/code.css");
+@import url("./components/task-list.css");
+@import url("./components/table.css");
+@import url("./components/ui-controls.css");
+@import url("./components/link-card.css");
 
-.application-titlebar.scrolled {
-    border-bottom: 1px solid var(--theme-border);
-}
 
-body.win32 .application-titlebar {
-    height: calc(var(--titlebar-height) - 2px);
-}
-
-/**
- * @selector .application-titlebar span
- * @description Titlebar text element
- * @note Currently hidden with display: none
- */
-.application-titlebar span {
-    font-family: var(--font-display);
-    font-size: var(--titlebar-font-size);
-    font-weight: var(--titlebar-font-weight);
-    color: var(--theme-fg);
-    display: none;
-}
-
-/**
- * @component Status
- * @description Status indicator with save state dot
- * @position Fixed top-right corner
- */
-.status {
-    font-size: var(--status-font-size);
-    display: flex;
-    align-items: center;
-    gap: var(--status-gap);
-    position: fixed;
-    top: var(--status-top);
-    right: var(--status-right);
-    z-index: var(--status-z-index);
-    background-color: var(--theme-bg);
-}
-
-body.win32 .status {
-    left: calc(var(--status-right) - 6px);
-    right: 0;
-    top: calc(var(--status-top) - 14px);
-}
-
-body.darwin .status {
-    top: calc(var(--status-top) - 12px);
-    right: calc(var(--status-right) - 6px);
-}
-
-/**
- * @selector #statusText
- * @description Text label for status indicator
- */
-#statusText {
-    font-family: var(--font-display);
-    font-weight: var(--zoom-btn-weight);
-}
-
-/**
- * @component Dot
- * @description Save state indicator dot
- * @state default - Saved state (green)
- * @state .saving - Saving state with pulse animation
- */
-.dot {
-    width: var(--dot-size);
-    height: var(--dot-size);
-    border-radius: 50%;
-    background: var(--dot-saved-color);
-    transition: background 0.2s;
-}
-
-.dot.saving {
-    background: var(--dot-saving-color);
-    animation: pulse 1.5s infinite;
-}
+/* --- Global Animations --- */
 
 /**
  * @keyframes pulse
@@ -122,605 +36,55 @@ body.darwin .status {
     }
 }
 
-/**
- * @component EditableDiv
- * @description Main text editor component
- * @features Content editable, auto-save, scrollable
- * @animations caret-pulse for cursor
- */
-.editable-div {
-    width: 100%;
-    min-height: 100vh;
-    padding: var(--editor-padding);
-    font-size: var(--editor-font-size);
-    line-height: var(--editor-line-height);
-    resize: none;
-    outline: none;
-    border: none;
-    background-color: transparent;
-    font-family: var(--font-text);
-    transition: border-color 0.2s, box-shadow 0.2s;
-    overflow-y: scroll;
-    letter-spacing: var(--editor-letter-spacing);
-    caret-color: var(--theme-fg);
-    animation: caret-pulse 1.5s infinite alternate;
+.animate-appear {
+    opacity: 0;
+    transform: translateY(6px);
+    animation: appear 220ms cubic-bezier(.2, .8, .2, 1) forwards
 }
 
-/*
- * @selector body.win32 .textarea-container
- * @selector body.darwin .textarea-container
- * @description Platform-specific textarea container styling
- */
-body.win32 .textarea-container,
-body.darwin .textarea-container {
-    padding-top: 2.5rem;
-    max-width: 550px;
-    margin: auto;
-    width: 100%;
-}
-
-/* Editor mask - subtle gradient placed behind the editor to darken background */
-.editor-mask {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    pointer-events: none;
-    background: linear-gradient(to bottom, rgba(15, 15, 15, 0) 0%, rgba(15, 15, 15, 0.25) 40%, var(--theme-bg) 100%);
-    z-index: 2;
-    height: 100px;
-}
-
-@media (prefers-color-scheme: light) {
-    .editor-mask {
-        background: linear-gradient(to bottom, hsla(0, 0%, 98%, 0) 0%, hsla(0, 0%, 98%, 0.25) 40%, var(--theme-bg) 100%);
+@keyframes appear {
+    to {
+        opacity: 1;
+        transform: none
     }
 }
 
-/* Raise editor above the mask */
-.editable-div.with-mask {
-    position: relative;
-    z-index: 1;
-}
-
-.editor-placeholder {
-    position: absolute;
-    inset: 0;
-    color: var(--theme-fg);
-    opacity: 0.65;
-    pointer-events: none;
-    -webkit-user-select: none;
-    user-select: none;
-    padding: 1.6rem 1.4rem;
-    width: 100%;
-    z-index: 1;
-
-    font-family: var(--font-display);
-    font-weight: 430;
-    font-size: var(--editor-font-size, 14.5px);
-}
-
-body.win32 .editor-placeholder,
-body.darwin .editor-placeholder {
-    margin-top: 2.5rem;
-}
-
-/**
- * @selector .editable-div div
- * @description Standard div elements inside editor
- */
-.editable-div div {
-    font-family: var(--font-text);
-    letter-spacing: var(--editor-letter-spacing);
-}
-
-/**
- * @selector .editable-div h1, h2, h3, h4
- * @description Heading styles within editor
- * @typography Display font with custom spacing and weight
- */
-.editable-div h1,
-.editable-div h2,
-.editable-div h3,
-.editable-div h4 {
-    font-family: var(--font-display);
-    letter-spacing: var(--editor-heading-letter-spacing);
-    font-weight: var(--editor-heading-weight);
-    margin-bottom: var(--editor-heading-margin);
-    width: var(--editor-heading-width);
-}
-
-/* 
- * @selector .editable-div h1
- * @description H1 specific override
- */
-.editable-div h1 {
-    font-size: 26.5px;
-}
-
-/**
- * @selector .editable-div h4
- * @description H4 specific override - no letter spacing
- */
-.editable-div h4 {
-    letter-spacing: 0;
-}
-
-/*
- * @selector .editable-div b
- * @description Bold text styling within editor
- */
-
-.editable-div b {
-    font-weight: var(--editor-bold-weight);
-    letter-spacing: var(--editor-bold-letter-spacing);
-    font-family: var(--font-text);
-}
-
-/**
- * @selector .editable-div blockquote
- * @description Quote block with left border accent
- * @styling Inline-block with accent border and background
- */
-.editable-div blockquote {
-    font-family: var(--font-text);
-    font-weight: var(--editor-blockquote-weight);
-    line-height: var(--editor-blockquote-line-height);
-    padding-left: var(--editor-blockquote-padding);
-    padding-right: var(--editor-blockquote-padding);
-    border-left: solid var(--editor-blockquote-border) var(--theme-accent);
-    color: var(--theme-text-accent);
-    background-color: var(--theme-accent-blockquote);
+.typing-char {
     display: inline-block;
-}
-
-/**
- * @selector .editable-div ul li
- * @description Unordered list items with custom bullet
- * @uses ::before pseudo-element for bullet point
- */
-.editable-div ul li {
-    position: relative;
-    padding-left: var(--editor-list-padding);
-    list-style: none;
-    background-color: var(--theme-bg);
-}
-
-.editable-div ul li::before {
-    content: "•";
-    position: absolute;
-    left: 0;
-    top: 0;
-    transform: translate(var(--editor-bullet-offset-x), var(--editor-bullet-offset-y));
-    font-size: var(--editor-bullet-size);
-}
-
-/**
- * @selector .editable-div ol
- * @description Ordered list with custom counter
- * @counter item
- */
-.editable-div ol {
-    counter-reset: item;
-    padding-left: 0;
-}
-
-/**
- * @selector .editable-div ol li
- * @description Ordered list items with numbered markers
- * @uses ::before pseudo-element for numbers
- */
-.editable-div ol li {
-    position: relative;
-    padding-left: var(--editor-list-padding);
-    list-style: none;
-    counter-increment: item;
-    background-color: var(--theme-bg);
-}
-
-.editable-div ol li::marker {
-    content: ' ';
-}
-
-.editable-div ol li::before {
-    content: counter(item) ".";
-    position: absolute;
-    left: 0;
-    top: 0;
-    font-weight: var(--editor-heading-weight);
-}
-
-/**
- * @selector .editable-div hr
- * @description Horizontal rule divider
- */
-.editable-div hr {
-    border: solid 1px currentColor;
-    opacity: var(--editor-hr-opacity);
-}
-
-/**
- * @selector #autoSaveTextarea::placeholder, .placeholder
- * @description Placeholder text styling
- */
-#autoSaveTextarea::placeholder,
-.placeholder {
-    color: var(--theme-fg);
-    opacity: var(--editor-placeholder-opacity);
-}
-
-/**
- * @component CodeBlock
- * @description Syntax-highlighted code blocks
- * @typography Monospace font with custom background
- */
-.editable-div pre {
-    background-color: var(--PrimaryButtonsColors);
-    box-shadow: var(--ctx-menu-shadow);
-    outline: solid var(--zoom-btn-border-width) var(--theme-border);
-    border-radius: 6px;
-    padding: 16px;
-    margin: 16px 0;
-    overflow-x: auto;
-    font-family: var(--code-font-family);
-    font-weight: 400;
-}
-
-.editable-div pre span {
-    font-family: var(--code-font-family);
-    font-weight: 400;
-}
-
-/**
- * @selector .editable-div code
- * @description Code element styling
- */
-.editable-div code {
-    font-family: var(--code-font-family);
-    font-size: 0.9em;
-    color: var(--theme-fg);
-    line-height: 1.6;
-    letter-spacing: 0;
-    font-weight: 400;
-}
-
-/**
- * @selector .editable-div :not(pre) > code
- * @description Inline code styling (not in pre blocks)
- */
-.editable-div :not(pre)>code {
-    background-color: var(--theme-accent-blockquote);
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-size: 0.9em;
-}
-
-/**
- * @component TaskList
- * @description Checkbox-based task list items
- * @interactive Clickable checkboxes with strikethrough on completion
- */
-.editable-div ul[style*="list-style-type: none"] {
-    padding-left: 0;
-}
-
-.editable-div ul[style*="list-style-type: none"] li {
-    display: flex;
-    align-items: flex-start;
-    padding-left: 0;
-    margin-bottom: 8px;
-}
-
-.editable-div ul[style*="list-style-type: none"] li::before {
-    content: none;
-}
-
-/**
- * @selector .editable-div input[type="checkbox"]
- * @description Task list checkbox styling
- * @interactive Cursor pointer with accent color
- */
-.editable-div input[type="checkbox"] {
-    width: 12px;
-    height: 12px;
-    margin-top: 4px;
-    cursor: pointer;
-    accent-color: var(--theme-accent);
-    flex-shrink: 0;
-}
-
-/**
- * @selector .editable-div input[type="checkbox"]:checked + span
- * @description Completed task styling
- * @effect Strikethrough with reduced opacity
- */
-.editable-div input[type="checkbox"]:checked+span {
-    text-decoration: line-through;
-    opacity: 0.6;
-}
-
-/**
- * @component FascinateNotesTable
- * @description Styled table component
- * @features Striped rows, hover effects, rounded corners
- */
-.fascinate-notes-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    font-size: 1em;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-/**
- * @selector .fascinate-notes-table thead tr
- * @description Table header row styling
- */
-.fascinate-notes-table thead tr {
-    background-color: #f8f9fa;
-    color: #212529;
-    text-align: left;
-    font-weight: bold;
-}
-
-/**
- * @selector .fascinate-notes-table th, td
- * @description Table cell styling
- */
-.fascinate-notes-table th,
-.fascinate-notes-table td {
-    padding: 12px 15px;
-    border: 1px solid #dee2e6;
-}
-
-.fascinate-notes-table tbody tr {
-    border-bottom: 1px solid #dddddd;
-}
-
-/**
- * @selector .fascinate-notes-table tbody tr:nth-of-type(even)
- * @description Zebra striping for table rows
- */
-.fascinate-notes-table tbody tr:nth-of-type(even) {
-    background-color: #f3f3f3;
-}
-
-.fascinate-notes-table tbody tr:last-of-type {
-    border-bottom: 2px solid #009879;
-}
-
-.fascinate-notes-table th,
-.fascinate-notes-table td {
-    outline: none;
-}
-
-/**
- * @component ZoomControls
- * @description Floating toolbar for zoom and formatting controls
- * @position Fixed bottom center
- * @behavior Shows on hover of textarea container
- */
-.zoom-controls {
-    position: fixed;
-    bottom: var(--zoom-bottom);
-    left: 50%;
-    transform: translateX(-50%);
-    min-width: max-content;
-    display: flex;
-    gap: var(--zoom-gap);
     opacity: 0;
-    transition: opacity 0.2s;
-    z-index: var(--zoom-z-index);
+    animation: fadeInLetter 160ms forwards
 }
+
+@keyframes fadeInLetter {
+    to {
+        opacity: 1
+    }
+}
+
 
 /**
- * @selector .textarea-container:hover .zoom-controls
- * @description Show controls on container hover
+ * @keyframes caret-pulse
+ * @description Animated cursor color pulsing
+ * @duration 1.5s
+ * @iteration infinite alternate
+ * @colors Alternates between theme-fg and theme-accent
  */
-.textarea-container:hover .zoom-controls {
-    opacity: 1;
+@keyframes caret-pulse {
+    0% {
+        caret-color: var(--theme-fg);
+    }
+
+    50% {
+        caret-color: var(--theme-accent);
+    }
+
+    100% {
+        caret-color: var(--theme-fg);
+    }
 }
 
-/**
- * @selector #reset-zoom, #export-html-btn, #format-bold, #format-italic
- * @description Control button styling
- * @interactive Hover effects with accent color transition
- */
-#reset-zoom,
-#export-html-btn,
-#format-bold,
-#format-italic {
-    padding: var(--zoom-btn-padding);
-    line-height: 0;
-    font-size: var(--zoom-btn-font-size);
-    font-weight: var(--zoom-btn-weight);
-    border-radius: var(--zoom-btn-border-radius);
-    background-color: var(--PrimaryButtonsColors);
-    box-shadow: var(--ctx-menu-shadow);
-    outline: solid var(--zoom-btn-border-width) var(--theme-border);
-    width: fit-content;
-    display: inline-block;
-    text-align: center;
-    border: none;
-    transition: var(--zoom-btn-transition);
-}
 
-#format-bold,
-#format-italic {
-    width: var(--zoom-btn-width);
-}
-
-/**
- * @state hover
- * @description Button hover state with accent color
- */
-#reset-zoom:hover,
-#export-html-btn:hover,
-#format-bold:hover,
-#format-italic:hover {
-    background-color: var(--theme-accent);
-    cursor: pointer;
-    color: var(--zoom-btn-hover-color);
-    fill: var(--zoom-btn-hover-color);
-    font-weight: var(--zoom-btn-hover-weight);
-}
-
-#reset-zoom:hover span {
-    color: var(--theme-accent);
-    filter: brightness(20%);
-}
-
-/**
- * @component ExportContainer
- * @description Export menu dropdown container
- * @position Relative positioning for absolute menu
- */
-.export-container {
-    position: relative;
-    display: inline-block;
-}
-
-/**
- * @component ExportMenu
- * @description Dropdown menu for export options
- * @state .show - Visible state with opacity transition
- */
-.export-menu {
-    position: absolute;
-    bottom: calc(100% + var(--export-menu-offset));
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: var(--export-menu-bg);
-    border: 1px solid var(--theme-border);
-    box-shadow: var(--ctx-menu-shadow);
-    min-width: var(--export-menu-min-width);
-    border-radius: var(--export-menu-border-radius);
-    z-index: var(--export-menu-z-index);
-    overflow: hidden;
-    padding: var(--export-menu-padding);
-    transition: var(--export-menu-transition);
-    opacity: 0;
-    display: none;
-}
-
-.export-menu.show {
-    opacity: 1;
-}
-
-/**
- * @selector .export-menu button
- * @description Export option buttons
- * @interactive Hover effect with accent background
- */
-.export-menu button {
-    display: block;
-    width: 100%;
-    padding: var(--export-btn-padding);
-    text-align: left;
-    background-color: transparent;
-    border: none;
-    color: var(--theme-fg);
-    transition: var(--export-btn-transition);
-    cursor: pointer;
-    font-size: var(--export-btn-font-size);
-    border-radius: var(--export-btn-border-radius);
-    font-family: var(--font-display);
-    font-weight: var(--export-btn-weight);
-    letter-spacing: var(--export-btn-letter-spacing);
-}
-
-.export-menu button:hover {
-    background-color: var(--theme-accent);
-    color: var(--theme-accent-text);
-}
-
-/**
- * @component SelectionMenu
- * @description Floating context menu for text selection
- * @position Fixed positioning near selection
- * @features Backdrop blur, smooth transitions
- * @state .show - Visible state with transform animation
- */
-.selection-menu {
-    position: fixed;
-    background-color: var(--ctx-menu-bg);
-    box-shadow: var(--ctx-menu-shadow);
-    outline: solid 1.5px var(--theme-border);
-    border-radius: var(--selection-menu-border-radius);
-    padding: var(--selection-menu-padding);
-    z-index: var(--selection-menu-z-index);
-    display: flex;
-    opacity: 0;
-    transform: translateY(var(--selection-menu-offset-y));
-    -webkit-backdrop-filter: blur(var(--ctx-menu-blur));
-    backdrop-filter: blur(var(--ctx-menu-blur));
-    pointer-events: none;
-    transition: opacity var(--selection-menu-transition), transform var(--selection-menu-transition);
-}
-
-.selection-menu.show {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-}
-
-/**
- * @selector .separator
- * @description Visual separator between menu items
- */
-.separator {
-    width: 1px;
-    position: relative;
-    margin: 0.35rem 0.25rem;
-    background-color: var(--theme-border);
-}
-
-/**
- * @selector .selection-menu button.active
- * @description Active button state (when format is applied)
- */
-.selection-menu button.active {
-    background-color: var(--theme-accent);
-    color: var(--theme-accent-text);
-}
-
-.selection-menu button.active:hover {
-    background-color: var(--theme-accent);
-    color: var(--theme-accent-text);
-}
-
-/**
- * @selector .selection-menu button
- * @description Selection menu button styling
- * @interactive Hover effect with background color change
- */
-.selection-menu button {
-    background-color: transparent;
-    color: var(--theme-fg);
-    border: none;
-    border-radius: var(--zoom-btn-border-radius);
-    padding: var(--selection-btn-padding);
-    cursor: pointer;
-    font-family: var(--font-text);
-    letter-spacing: 0.3px;
-    font-size: var(--selection-btn-font-size);
-    transition: background-color var(--selection-btn-transition);
-}
-
-.selection-menu button:hover {
-    background-color: var(--hover-color);
-}
-
-/**
- * @selector .selection-menu button b, i
- * @description Icon sizing within buttons
- */
-.selection-menu button b,
-.selection-menu button i {
-    font-size: var(--selection-btn-icon-size);
-}
+/* --- Responsive Design --- */
 
 /**
  * @media screen and (max-width: 720px)
@@ -749,26 +113,5 @@ body.darwin .editor-placeholder {
 
     .zoom-btn {
         display: none;
-    }
-}
-
-/**
- * @keyframes caret-pulse
- * @description Animated cursor color pulsing
- * @duration 1.5s
- * @iteration infinite alternate
- * @colors Alternates between theme-fg and theme-accent
- */
-@keyframes caret-pulse {
-    0% {
-        caret-color: var(--theme-fg);
-    }
-
-    50% {
-        caret-color: var(--theme-accent);
-    }
-
-    100% {
-        caret-color: var(--theme-fg);
     }
 }

@@ -1,0 +1,235 @@
+/**
+ * @component ZoomControls
+ * @description Floating toolbar for zoom and formatting controls
+ * @position Fixed bottom center
+ * @behavior Shows on hover of textarea container
+ */
+.zoom-controls {
+    position: fixed;
+    bottom: var(--zoom-bottom);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: max-content;
+    display: flex;
+    gap: var(--zoom-gap);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: var(--zoom-z-index);
+}
+
+/**
+ * @selector .textarea-container:hover .zoom-controls
+ * @description Show controls on container hover
+ */
+.textarea-container:hover .zoom-controls {
+    opacity: 1;
+}
+
+/**
+ * @selector #reset-zoom, #export-html-btn, #format-bold, #format-italic
+ * @description Control button styling
+ * @interactive Hover effects with accent color transition
+ */
+#reset-zoom,
+#export-html-btn,
+#format-bold,
+#format-italic {
+    padding: var(--zoom-btn-padding);
+    line-height: 0;
+    font-size: var(--zoom-btn-font-size);
+    font-weight: var(--zoom-btn-weight);
+    border-radius: var(--zoom-btn-border-radius);
+    background-color: var(--PrimaryButtonsColors);
+    box-shadow: var(--ctx-menu-shadow);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+    width: fit-content;
+    display: inline-block;
+    text-align: center;
+    border: none;
+    transition: var(--zoom-btn-transition);
+}
+
+#format-bold,
+#format-italic {
+    width: var(--zoom-btn-width);
+}
+
+/**
+ * @state hover
+ * @description Button hover state with accent color
+ */
+#reset-zoom:hover,
+#export-html-btn:hover,
+#format-bold:hover,
+#format-italic:hover {
+    background-color: var(--theme-accent);
+    cursor: pointer;
+    color: var(--zoom-btn-hover-color);
+    fill: var(--zoom-btn-hover-color);
+    font-weight: var(--zoom-btn-hover-weight);
+}
+
+#reset-zoom:hover span {
+    color: var(--theme-accent);
+    filter: brightness(20%);
+}
+
+/**
+ * @component ExportContainer
+ * @description Export menu dropdown container
+ * @position Relative positioning for absolute menu
+ */
+.export-container {
+    position: relative;
+    display: inline-block;
+}
+
+/**
+ * @component ExportMenu
+ * @description Dropdown menu for export options
+ * @state .show - Visible state with opacity transition
+ */
+.export-menu {
+    position: absolute;
+    bottom: calc(100% + var(--export-menu-offset));
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--export-menu-bg);
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--ctx-menu-shadow);
+    min-width: var(--export-menu-min-width);
+    border-radius: var(--export-menu-border-radius);
+    z-index: var(--export-menu-z-index);
+    overflow: hidden;
+    padding: var(--export-menu-padding);
+    transition: var(--export-menu-transition);
+    opacity: 0;
+    display: none;
+}
+
+.export-menu.show {
+    opacity: 1;
+}
+
+/**
+ * @selector .export-menu button
+ * @description Export option buttons
+ * @interactive Hover effect with accent background
+ */
+.export-menu button {
+    display: block;
+    width: 100%;
+    padding: var(--export-btn-padding);
+    text-align: left;
+    background-color: transparent;
+    border: none;
+    color: var(--theme-fg);
+    transition: var(--export-btn-transition);
+    cursor: pointer;
+    font-size: var(--export-btn-font-size);
+    border-radius: var(--export-btn-border-radius);
+    font-family: var(--font-display);
+    font-weight: var(--export-btn-weight);
+    letter-spacing: var(--export-btn-letter-spacing);
+}
+
+.export-menu button:hover {
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+}
+
+/**
+ * @component SelectionMenu
+ * @description Floating context menu for text selection
+ * @position Fixed positioning near selection
+ * @features Backdrop blur, smooth transitions
+ * @state .show - Visible state with transform animation
+ */
+.selection-menu {
+    position: fixed;
+    background-color: var(--ctx-menu-bg);
+    box-shadow: var(--ctx-menu-shadow);
+    outline: solid 1.5px var(--theme-border);
+    border-radius: var(--selection-menu-border-radius);
+    padding: var(--selection-menu-padding);
+    z-index: var(--selection-menu-z-index);
+    display: flex;
+    opacity: 0;
+    transform: translateY(var(--selection-menu-offset-y));
+    -webkit-backdrop-filter: blur(var(--ctx-menu-blur));
+    backdrop-filter: blur(var(--ctx-menu-blur));
+    pointer-events: none;
+    transition: opacity var(--selection-menu-transition), transform var(--selection-menu-transition);
+}
+
+.selection-menu.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/**
+ * @selector .separator
+ * @description Visual separator between menu items
+ */
+.separator {
+    width: 1px;
+    position: relative;
+    margin: 0.35rem 0.25rem;
+    background-color: var(--theme-border);
+}
+
+/**
+ * @selector .selection-menu button.active
+ * @description Active button state (when format is applied)
+ */
+.selection-menu button.active {
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+}
+
+.selection-menu button.active:hover {
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+}
+
+/**
+ * @selector .selection-menu button
+ * @description Selection menu button styling
+ * @interactive Hover effect with background color change
+ */
+.selection-menu button {
+    background-color: transparent;
+    color: var(--theme-fg);
+    border: none;
+    border-radius: var(--zoom-btn-border-radius);
+    padding: var(--selection-btn-padding);
+    cursor: pointer;
+    font-family: var(--font-text);
+    letter-spacing: 0.3px;
+    font-size: var(--selection-btn-font-size);
+    transition: background-color var(--selection-btn-transition);
+}
+
+.selection-menu button:hover {
+    background-color: var(--hover-color);
+}
+
+/**
+ * @selector .selection-menu button b, i
+ * @description Icon sizing within buttons
+ */
+.selection-menu button b,
+.selection-menu button i {
+    font-size: var(--selection-btn-icon-size);
+}
+
+.math-suggestion-tooltip {
+    background: var(--tooltip-bg, #111);
+    color: #fff;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    pointer-events: none
+}
