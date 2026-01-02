@@ -89,10 +89,6 @@ body.darwin .context-menu {
     align-items: center;
 }
 
-.context-menu-item span {
-    font-family: var(--font-display);
-}
-
 .context-menu-item:hover {
     background-color: var(--theme-accent);
     color: var(--theme-accent-text);
