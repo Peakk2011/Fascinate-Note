@@ -14,10 +14,10 @@
     outline: none;
     border: none;
     background-color: transparent;
-    font-family: var(--font-text);
+    font-family: var(--font-editor);
     transition: border-color 0.2s, box-shadow 0.2s;
     overflow-y: scroll;
-    letter-spacing: var(--editor-letter-spacing);
+    /* letter-spacing: var(--editor-letter-spacing); */
     caret-color: var(--theme-fg);
     animation: caret-pulse 1.5s infinite alternate;
 }
@@ -30,7 +30,7 @@
 body.win32 .textarea-container,
 body.darwin .textarea-container {
     padding-top: 2.5rem;
-    max-width: 550px;
+    max-width: 600px;
     margin: auto;
     width: 100%;
 }
@@ -49,11 +49,11 @@ body.darwin .textarea-container {
     pointer-events: none;
     -webkit-user-select: none;
     user-select: none;
-    padding: 1.6rem 1.4rem;
+    padding: var(--editor-padding);
     width: 100%;
     z-index: 1;
 
-    font-family: var(--font-display);
+    font-family: var(--font-editor);
     font-weight: 430;
     font-size: var(--editor-font-size, 14.5px);
 }
@@ -68,8 +68,15 @@ body.darwin .editor-placeholder {
  * @description Standard div elements inside editor
  */
 .editable-div div {
-    font-family: var(--font-text);
-    letter-spacing: var(--editor-letter-spacing);
+    font-family: var(--font-editor);
+    /* letter-spacing: var(--editor-letter-spacing); */
+}
+
+/** @selector .editable-div p
+ * @description Paragraph styling within editor
+ */
+.editable-div p {
+    font-family: var(--font-editor);
 }
 
 /**
@@ -93,14 +100,15 @@ body.darwin .editor-placeholder {
  * @description H1 specific override
  */
 .editable-div h1 {
-    font-size: 26.5px;
+    font-size: 1.656em;
 }
 
 /**
  * @selector .editable-div h4
  * @description H4 specific override - no letter spacing
  */
-.editable-div h4 {
+.editable-div h3 {
+    font-size: 1.125em; /* Roughly 18px based on 16px root */
     letter-spacing: 0;
 }
 
@@ -112,7 +120,7 @@ body.darwin .editor-placeholder {
 .editable-div b {
     font-weight: var(--editor-bold-weight);
     letter-spacing: var(--editor-bold-letter-spacing);
-    font-family: var(--font-text);
+    font-family: var(--font-editor);
 }
 
 /**
@@ -121,7 +129,7 @@ body.darwin .editor-placeholder {
  * @styling Inline-block with accent border and background
  */
 .editable-div blockquote {
-    font-family: var(--font-text);
+    font-family: var(--font-editor);
     font-weight: var(--editor-blockquote-weight);
     line-height: var(--editor-blockquote-line-height);
     padding-left: var(--editor-blockquote-padding);

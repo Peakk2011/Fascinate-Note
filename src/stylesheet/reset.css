@@ -104,9 +104,9 @@
      * @var --theme-bg
      * @type {color}
      * @description Primary background color
-     * @default hsl(0, 0%, 6%) - Dark gray
+     * @default hsl(0, 0%, 7%) - Dark gray
      */
-    --theme-bg: hsl(0, 0%, 6%);
+    --theme-bg: hsl(0, 0%, 7%);
     
     /**
      * @var --theme-fg
@@ -184,9 +184,9 @@
      * @var --theme-model
      * @type {color}
      * @description Modal background color
-     * @default hsl(0, 0%, 7.5%) - Very dark gray
+     * @default hsl(0deg 0% 7.5% / 95%) - Very dark gray
      */
-    --theme-model: hsl(0, 0%, 7.5%);
+    --theme-model: hsl(0deg 0% 7.5% / 95%);
     
     /**
      * @var --theme-model-border
@@ -220,6 +220,15 @@
      * @fallback Anuphan, system-ui, sans-serif
      */
     --font-display: 'General Sans', 'Anuphan', 'system-ui', sans-serif;
+
+    /**
+     * @var --font-monospace
+     * @type {font-family}
+     * @description Monospace font stack for code but I want to use consolas as primary when open only in Windows/MacOS
+     * @fallback Consolas, JetBrains Mono, SYSTEM
+     * @usage --font-editor: 'Consolas', 'JETBRAINSMONO', 'Leelawadee UI', 'Sans-serif';
+     */
+    --font-editor: var(--font-text);
     
     /**
      * @var --font-size-base
@@ -245,6 +254,7 @@
      * @duration 300ms
      */
     --transition: cubic-bezier(0.2, 0, 0, 1) 300ms;
+
 
     /* Legacy Variables */
     /**
@@ -438,6 +448,13 @@
     --titlebar-font-weight: 400;
 }
 
+/* Platform-specific styles variables */
+body.win32,
+body.darwin {
+    --editor-padding: 1.2rem 1.2rem;
+    --font-editor: 'Consolas', 'JETBRAINSMONO', 'Leelawadee UI', 'Sans-serif';
+}
+
 /**
  * @selector ::selection
  * @description Custom text selection colors
@@ -456,7 +473,7 @@
  */
 @media (prefers-color-scheme: dark) {
     :root {
-        --theme-bg: hsl(0, 0%, 6%);
+        --theme-bg: hsl(0, 0%, 7%);
         --theme-fg: #ffffff;
         --theme-accent: hsl(120, 7%, 85%);
         --hover-color: #2a2a2a;
@@ -519,6 +536,8 @@
     -webkit-user-select: none;
     user-select: none;
     transition: 0s;
+
+    font-weight: 400;
 }
 
 /**

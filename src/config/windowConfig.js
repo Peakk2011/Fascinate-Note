@@ -44,6 +44,8 @@ export const getWindowConfig = () => {
         ...(OS === 'win32' && {
             backgroundMaterial: 'mica',
             titleBarStyle: 'hidden',
+            // transparent: true,
+            frame: false,
             titleBarOverlay: {
                 color: '#00000000',
                 symbolColor: nativeTheme.shouldUseDarkColors ? '#ffffff' : '#000000',
