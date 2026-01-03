@@ -3,6 +3,8 @@ import { safeLog } from '../../utils/safeLogger.js';
 import { app } from 'electron';
 
 const isDev = !app.isPackaged;
+const VITE_DEV_SERVER_URL = "http://localhost:5173";
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /**
  * Loads the main interface HTML into the window
@@ -14,8 +16,14 @@ export const loadInterface = async (mainWindow) => {
     const startTime = Date.now()
 
     if (isDev) {
-        // Vite dev server
-        await mainWindow.loadURL('http://localhost:5173')
+        while (true) {
+            try {
+                await mainWindow.loadURL(VITE_DEV_SERVER_URL);
+                break;
+            } catch {
+                await sleep(300);
+            }
+        }
     } else {
         // Vite build output
         const indexPath = path.join(
@@ -23,10 +31,18 @@ export const loadInterface = async (mainWindow) => {
             'dist',
             'renderer',
             'index.html'
-        )
+        );
 
-        await mainWindow.loadFile(indexPath)
+        await mainWindow.loadFile(indexPath);
     }
 
-    safeLog(`loadInterface(): ${Date.now() - startTime}ms`)
+    safeLog(`loadInterface(): ${Date.now() - startTime}ms`);
 }
+
+/*
+Electron start
+ ├─ loadInterface()
+ │   └─ retry loadURL when Vite was ready
+ └─ did-finish-load
+     └─ Close/Stop
+*/

@@ -6,17 +6,13 @@
   "main": "src/main.js",
   "type": "module",
   "scripts": {
-    "start": "concurrently \"npm run dev:renderer\" \"npm run dev:electron\"",
-
+    "start": "node dev.js",
     "dev:renderer": "vite",
-    "dev:electron": "wait-on http://localhost:5173 && electron-forge start",
-
+    "dev:electron": "electron-forge start",
     "build:renderer": "vite build",
-
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-
     "lint": "echo \"No linting configured\""
   },
   "keywords": [],
@@ -65,11 +61,9 @@
     "@electron-forge/plugin-auto-unpack-natives": "^7.8.3",
     "@electron-forge/plugin-fuses": "^7.8.3",
     "@electron/fuses": "^1.8.0",
-    "concurrently": "^9.2.1",
     "cross-env": "^10.1.0",
     "electron": "38.4.0",
     "electron-builder": "^26.0.12",
-    "vite": "^7.3.0",
-    "wait-on": "^9.0.3"
+    "vite": "^7.3.0"
   }
 }
