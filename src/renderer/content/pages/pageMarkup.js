@@ -38,6 +38,7 @@ import { createTitlebarMarkup } from '../pageComponents/titlebar.js';
 export const createPageMarkup = (config, modelFind, contextMenu, titlebar, commandPalette) => {
     return `
         ${titlebar ? titlebar.markups : ''}
+        <div id="workspace-container" style="display: none;"></div>
         ${createStatusIndicatorMarkup(config)}
         
         <div class="${config.textareaContainerClass}">

@@ -4,40 +4,122 @@ import { translate } from '../../../../../api/translate/translator.js';
  * Handle paste command
  * @param {Object} params - Action parameters
  */
-const handlePaste = async ({ textarea, recordState }) => {
+const handlePaste = async ({ textarea }) => {
     try {
-        const text = await navigator.clipboard.readText();
-        const selection = window.getSelection();
-        if (!selection.rangeCount) return;
+        const clipboardItems = await navigator.clipboard.read();
+        if (!clipboardItems) {
+            console.warn('[ContextMenu] Clipboard is empty or access denied.');
+            return;
+        }
 
-        const range = selection.getRangeAt(0);
-        range.deleteContents();
+        // Search for plain text first (because it preserves whitespace best).
+        let plainText = '';
+        let htmlContent = '';
 
-        const pasteSpan = document.createElement('span');
-        pasteSpan.classList.add('fade-in-paste');
-        pasteSpan.textContent = text;
+        for (const item of clipboardItems) {
+            for (const type of item.types) {
+                if (type === 'text/plain') {
+                    const blob = await item.getType(type);
+                    plainText = await blob.text();
+                } else if (type === 'text/html') {
+                    const blob = await item.getType(type);
+                    htmlContent = await blob.text();
+                }
+            }
+        }
 
-        range.insertNode(pasteSpan);
+        // Use plain text if available (because it preserves whitespace).
+        const textToPaste = plainText || htmlContent;
 
-        // Move cursor to the end of the pasted text
-        range.setStartAfter(pasteSpan);
-        range.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(range);
+        if (!textToPaste) {
+            console.warn('[ContextMenu] No text content found on clipboard.');
+            return;
+        }
+
+        // For contentEditable or rich text
+        if (document.queryCommandSupported('insertText')) {
+            textarea.focus();
+            document.execCommand('insertText', false, textToPaste);
+        }
+        // For textarea/input elements
+        else if (textarea.nodeName === 'TEXTAREA' || textarea.nodeName === 'INPUT') {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+
+            textarea.setRangeText(
+                textToPaste,
+                start,
+                end,
+                'end' // selectMode
+            );
+
+            // Trigger events
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            textarea.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        // For contentEditable div
+        else if (textarea.isContentEditable || textarea.contentEditable === 'true') {
+            // Insert HTML that keep whitespace
+            const htmlWithWhitespace = preserveWhitespaceForContentEditable(textToPaste);
+
+            // Use Selection API
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                range.deleteContents();
+
+                // Create element that keep whitespace
+                const tempDiv = document.createElement('div');
+                tempDiv.style.whiteSpace = 'pre-wrap';
+                tempDiv.style.fontFamily = 'inherit';
+                tempDiv.textContent = textToPaste;
+
+                const fragment = document.createDocumentFragment();
+                fragment.appendChild(tempDiv);
+
+                range.insertNode(fragment);
+                range.collapse(false); // Move cursor to end
+
+                // Trigger input event
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        }
 
     } catch (error) {
-        console.warn(
-            '[ContextMenu] clipboard.readText failed, falling back to execCommand paste',
-            error
-        );
+        console.warn('[ContextMenu] Clipboard API paste failed. Error:', error);
+
         try {
+            textarea.focus();
             document.execCommand('paste');
-        } catch (error) {
-            console.warn('[ContextMenu] execCommand paste failed', error);
+        } catch (execError) {
+            console.warn('[ContextMenu] execCommand fallback failed', execError);
+
+            // legacy clipboard API
+            try {
+                const text = await navigator.clipboard.readText();
+                if (text) {
+                    textarea.focus();
+                    document.execCommand('insertText', false, text);
+                }
+            } catch (e) {
+                console.warn('[ContextMenu] All paste methods failed', e);
+            }
         }
     }
-    recordState(textarea.innerHTML);
 };
+
+/**
+ * Convert text to HTML that preserves whitespace for contentEditable.
+ */
+const preserveWhitespaceForContentEditable = (text) => {
+    return `<span style="white-space: pre-wrap; font-family: inherit;">${escapeHTML(text)}</span>`;
+}
+
+const escapeHTML = (text) => {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 /**
  * Handle copy or cut command

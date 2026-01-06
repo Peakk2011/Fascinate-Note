@@ -1,3 +1,5 @@
+import { createWorkspace } from '../../../api/marker/workspace.js';
+
 /**
  * Creates the HTML markup for a custom application title bar.
  * Intended for Electron renderer process usage.
@@ -7,11 +9,12 @@
 export const createTitlebarMarkup = () => {
     /** @type {string} */
     const markup = `
+        <button id="workspace-toggle-btn" class="application-workspace-toggle-button" title="Click here to toggle the marker">☰</button>
         <div id="title-bar" class="application-titlebar">
             <span>Fascinate Notes</span>
         </div>
     `;
-    
+
     return markup;
 };
 
@@ -22,26 +25,24 @@ export const createTitlebarMarkup = () => {
  */
 
 /**
- * Initializes scroll-based behavior for the title bar.
+ * Initializes scroll-based behavior for the title bar and workspace toggle functionality.
  * Toggles the `scrolled` class when window scroll exceeds the threshold.
  *
  * @param {number} [threshold=60] Scroll distance in pixels before activating state.
  * @returns {TitlebarHandle}
  */
 export const initTitlebar = (threshold = 60) => {
-    /** @type {HTMLElement | null} */
-    const el =
-        document.getElementById('title-bar') ||
-        document.querySelector('.application-titlebar');
+    const el = document.getElementById('title-bar') || document.querySelector('.application-titlebar');
+    const workspaceToggleBtn = document.getElementById('workspace-toggle-btn');
+    const workspaceContainer = document.getElementById('workspace-container');
 
     if (!el) {
         return { destroy: () => { } };
     }
 
-    /**
-     * Scroll event handler.
-     * @returns {void}
-     */
+    let workspaceApi = null;
+    let isWorkspaceInitialized = false;
+
     const onScroll = () => {
         /** @type {number} */
         const scrollY = window.scrollY;
@@ -53,22 +54,42 @@ export const initTitlebar = (threshold = 60) => {
         }
     };
 
-    /** @type {AddEventListenerOptions} */
+    const toggleWorkspace = async () => {
+        const editorContainer = document.querySelector('.textarea-container');
+        if (!workspaceContainer || !editorContainer) return;
+
+        const isWorkspaceVisible = workspaceContainer.style.display === 'block';
+        workspaceContainer.style.display = isWorkspaceVisible ? 'none' : 'block';
+        editorContainer.style.display = isWorkspaceVisible ? 'block' : 'none';
+
+        if (!isWorkspaceVisible && !isWorkspaceInitialized) {
+            try {
+                workspaceApi = await createWorkspace(workspaceContainer);
+                isWorkspaceInitialized = true;
+                console.log('Workspace initialized.');
+            } catch (error) {
+                console.error('Failed to initialize workspace:', error);
+                // Revert UI changes on failure
+                workspaceContainer.style.display = 'none';
+                editorContainer.style.display = 'block';
+            }
+        }
+    };
+
     const listenerOptions = { passive: true };
-
     window.addEventListener('scroll', onScroll, listenerOptions);
+    workspaceToggleBtn?.addEventListener('click', toggleWorkspace);
 
-    // Initialize state immediately
     onScroll();
 
     return {
-        /**
-         * Removes listeners and resets state.
-         * @returns {void}
-         */
         destroy() {
             window.removeEventListener('scroll', onScroll);
+            workspaceToggleBtn?.removeEventListener('click', toggleWorkspace);
             el.classList.remove('scrolled');
+            if (workspaceApi) {
+                workspaceApi.destroy();
+            }
         }
     };
 };

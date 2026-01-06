@@ -68,6 +68,35 @@ body.darwin .status {
     right: calc(var(--status-right) - 6px);
 }
 
+/* 
+ * @selector .application-workspace-toggle-button
+ * @description Menu that toggle workspace
+*/
+
+.application-workspace-toggle-button {
+    -webkit-app-region: no-drag;
+    position: fixed;
+    z-index: calc(var(--titlebar-z-index) + 1);
+    bottom: var(--status-top);
+    right: var(--status-right);
+
+    background-color: transparent;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    font-size: 1.45rem;
+    cursor: pointer;
+    color: var(--theme-fg);
+
+    transition: opacity 0.2s;
+    opacity: 0;
+}
+
+#app:hover .application-workspace-toggle-button {
+    opacity: 1;
+}
+
 /**
  * @selector #statusText
  * @description Text label for status indicator

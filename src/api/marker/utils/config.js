@@ -65,12 +65,12 @@ export const loadConfiguration = async () => {
     loadingPromise = (async () => {
         try {
             const results = await Promise.all([
-                fetchJSON('data/workspace_config.json', {
+                fetchJSON('api/marker/data/workspace_config.json', {
                     cache: true,
                     cacheTTL: 600000,
                     retry: 2
                 }),
-                fetchJSON('data/workspace_state.json', {
+                fetchJSON('api/marker/data/workspace_state.json', {
                     cache: true,
                     cacheTTL: 600000,
                     retry: 2

@@ -112,21 +112,76 @@ export const downloadTXT = (editor, filename = 'document.txt') => {
 };
 
 /**
- * Download as Image file
- * @param {HTMLElement} editor - Editor element
- * @param {string} filename - Output filename
+ * Get effective background color of an element
+ * @param {HTMLElement} element - The starting element
+ * @returns {string} The effective background color in CSS format
  */
-export const downloadImage = (editor, filename = 'document.png') => {
-    domtoimage.toPng(editor)
-        .then(function (dataUrl) {
-            const a = document.createElement('a');
-            a.href = dataUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        })
-        .catch(function (error) {
-            console.error('oops, something went wrong!', error);
+const getBackgroundColor = (element) => {
+    let el = element;
+
+    while (el && el !== document.documentElement) {
+        const bgColor = window.getComputedStyle(el).backgroundColor;
+
+        if (bgColor && bgColor !== 'rgba(0, 0, 0, 0)' && bgColor !== 'transparent') {
+            return bgColor;
+        }
+
+        el = el.parentElement;
+    }
+
+    const rootBgColor = window.getComputedStyle(document.documentElement).backgroundColor;
+    if (rootBgColor && rootBgColor !== 'rgba(0, 0, 0, 0)' && rootBgColor !== 'transparent') {
+        return rootBgColor;
+    }
+
+    return '#FFFFFF';
+};
+
+/**
+ * Download element as PNG image
+ * @param {HTMLElement} editor - The element to capture
+ * @param {string} filename - Output filename (default: 'document.png')
+ * @returns {Promise<void>}
+ */
+export const downloadImage = async (editor, filename = 'document.png') => {
+    if (!editor) {
+        throw new Error('Editor element is required');
+    }
+
+    const backgroundColor = getBackgroundColor(editor);
+    const dpr = window.devicePixelRatio || 1;
+    const scale = dpr * 2;
+
+    const width = editor.offsetWidth;
+    const height = editor.offsetHeight;
+
+    const originalOverflow = editor.style.overflow;
+    editor.style.overflow = 'hidden';
+
+    try {
+        const dataUrl = await domtoimage.toPng(editor, {
+            bgcolor: backgroundColor,
+            width: width * scale,
+            height: height * scale,
+            style: {
+                transform: `scale(${scale})`,
+                transformOrigin: 'top left',
+                width: `${width}px`,
+                height: `${height}px`,
+            },
         });
+
+        const a = document.createElement('a');
+        a.href = dataUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+    } catch (error) {
+        console.error('Failed to generate image:', error);
+        throw error; // Re-throw เพื่อให้ caller จัดการต่อได้
+    } finally {
+        editor.style.overflow = originalOverflow;
+    }
 };

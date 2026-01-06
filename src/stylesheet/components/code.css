@@ -15,7 +15,8 @@
     font-weight: 400;
 }
 
-.editable-div pre span {
+.editable-div pre span,
+.editable-div pre span div {
     font-family: var(--code-font-family);
     font-weight: 400;
 }

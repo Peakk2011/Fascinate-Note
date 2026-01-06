@@ -31,68 +31,32 @@ export const handleEnterInCodeBlock = (e, editor, node, selection) => {
     const pos = range.startOffset;
     const text = codeNode.textContent;
 
-    // Determine which line the cursor is on
-    const lines = text.split('\n');
-    let charCount = 0;
-    let currentLineIndex = 0;
+    // Get text before cursor to determine current line's indentation
+    const textBeforeCursor = text.slice(0, pos);
+    const linesBeforeCursor = textBeforeCursor.split('\n');
+    const currentLineContent = linesBeforeCursor[linesBeforeCursor.length - 1];
+    const indentMatch = currentLineContent.match(/^\s*/);
+    const indent = indentMatch ? indentMatch[0] : '';
+    
+    // Insert a new line with the same indentation
+    const before = text.slice(0, pos);
+    const after = text.slice(pos);
 
-    for (let i = 0; i < lines.length; i++) {
-        if (pos <= charCount + lines[i].length) {
-            currentLineIndex = i;
-            break;
-        }
-        charCount += lines[i].length + 1; // +1 for the newline character
-    }
+    codeNode.textContent = before + '\n' + indent + after;
 
-    const currentLine = lines[currentLineIndex];
+    // Set the new cursor position
+    const newPos = pos + 1 + indent.length;
+    const newRange = document.createRange();
 
-    // If the current line is empty or just whitespace, we should exit the code block
-    if (currentLine !== undefined && currentLine.trim() === '') {
-        // Remove the current empty line
-        lines.splice(currentLineIndex, 1);
-        const newText = lines.join('\n');
-
-        const pre = codeNode.parentElement;
-        const newP = document.createElement('p');
-        newP.innerHTML = '<br>';
-
-        // If removing the line makes the block empty, replace the block.
-        // Otherwise, update the block and add the paragraph after it.
-        if (newText.trim() === '') {
-            pre.replaceWith(newP);
-        } else {
-            codeNode.textContent = newText;
-            pre.after(newP);
-        }
-
-        // Move the cursor to the new paragraph
-        const newRange = document.createRange();
-        newRange.setStart(newP, 0);
-        newRange.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(newRange);
-
-    } else {
-        // If the line has content, insert a new line with the same indentation
-
-        const indentMatch = currentLine.match(/^\s*/);
-        const indent = indentMatch ? indentMatch[0] : '';
-
-        const before = text.slice(0, pos);
-        const after = text.slice(pos);
-
-        codeNode.textContent = before + '\n' + indent + after;
-
-        // Set the new cursor position
-        const newPos = pos + 1 + indent.length;
-        const newRange = document.createRange();
-
-        // The text node might not exist if the block was empty, but setting textContent creates it.
-        newRange.setStart(codeNode.firstChild || codeNode, newPos);
-        newRange.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(newRange);
-    }
+    // The text node might not exist if the block was empty, but setting textContent creates it.
+    // Ensure the new position is not out of bounds.
+    const textNode = codeNode.firstChild || codeNode;
+    const newOffset = Math.min(newPos, textNode.textContent.length);
+    
+    newRange.setStart(textNode, newOffset);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
 
     return true; // We've handled the event
 };

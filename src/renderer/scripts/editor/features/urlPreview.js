@@ -18,6 +18,12 @@ const SCAN_DELAY_MUTATION = 50;
  * @returns {Promise<{title: string, image: string|null}>} Preview data
  */
 const resolvePreview = async (url) => {
+    try {
+        new URL(url);
+    } catch {
+        throw new Error('Invalid URL format');
+    }
+    
     const encoded = encodeURIComponent(url);
 
     try {
@@ -34,12 +40,8 @@ const resolvePreview = async (url) => {
     } catch (e) {
         console.warn(`Preview service failed for ${url}:`, e);
         // Fallback to hostname
-        try {
-            const u = new URL(url);
-            return { title: u.hostname, image: null };
-        } catch {
-            return { title: url, image: null };
-        }
+        const u = new URL(url);
+        return { title: u.hostname, image: null };
     }
 };
 
@@ -155,7 +157,22 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
     let scanTimer = null;
 
     // Mutation Observer
-    const mutationObserver = new MutationObserver(() => {
+    const mutationObserver = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+                for (const removedNode of mutation.removedNodes) {
+                    if (removedNode.nodeType === Node.ELEMENT_NODE && removedNode.matches?.('.link-url-text')) {
+                        const cardData = urlCardMap.get(removedNode);
+                        if (cardData) {
+                            cardData.wrapper.remove();
+                            urlCardMap.delete(removedNode);
+                            const url = cardData.wrapper.querySelector('.link-card-url-source')?.textContent;
+                            if(url) processedUrls.delete(url);
+                        }
+                    }
+                }
+            }
+        }
         scheduleScan(SCAN_DELAY_MUTATION);
     });
 
@@ -274,17 +291,19 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
         });
 
         // Fetch preview data
-        fetchUrlPreview(url, title, thumb);
+        fetchUrlPreview(url, urlSpan, wrapper, title, thumb);
         return wrapper;
     };
 
     /**
      * Fetches and displays URL preview metadata
      * @param {string} url - URL to fetch
+     * @param {HTMLElement} urlSpan - The span element for the URL.
+     * @param {HTMLElement} wrapper - The card's wrapper element.
      * @param {HTMLElement} titleElement - Title element to update
      * @param {HTMLElement} thumbElement - Thumbnail element to update
      */
-    const fetchUrlPreview = async (url, titleElement, thumbElement) => {
+    const fetchUrlPreview = async (url, urlSpan, wrapper, titleElement, thumbElement) => {
         try {
             const preview = await resolvePreview(url);
 
@@ -298,9 +317,15 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
                 thumbElement.innerHTML = '<div class="thumb-placeholder"></div>';
             }
         } catch (error) {
-            console.warn(`Failed to fetch preview for ${url}:`, error);
-            titleElement.textContent = url;
-            thumbElement.innerHTML = '<div class="thumb-placeholder"></div>';
+            console.warn(`Failed to process preview for ${url}:`, error);
+            // On failure, remove the card and revert the span to a simple text node
+            if (wrapper.parentNode) {
+                const textNode = document.createTextNode(urlSpan.textContent);
+                urlSpan.parentNode.replaceChild(textNode, urlSpan);
+                wrapper.remove();
+                urlCardMap.delete(urlSpan);
+                processedUrls.delete(url);
+            }
         }
     };
 
@@ -331,7 +356,7 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
             openLink.href = newUrl;
         }
 
-        await fetchUrlPreview(newUrl, cardData.title, cardData.thumb);
+        await fetchUrlPreview(newUrl, urlSpan, cardData.wrapper, cardData.title, cardData.thumb);
     };
 
     /**

@@ -1,3 +1,5 @@
+import { handleSpaceInBlockquote } from './markdown/handleEnterInBlockquote.js';
+
 /**
  * Handles keyboard shortcuts for the editor.
  * @param {KeyboardEvent} e                         - The keyboard event.
@@ -27,15 +29,44 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
     try {
         // Tab / Shift+Tab for indentation
         if (e.key === 'Tab') {
-            e.preventDefault();
-
             const selection = window.getSelection();
 
-            // Validate selection exists
             if (!selection || !selection.rangeCount) {
                 console.warn('[Keymap] No valid selection for indentation');
                 return;
             }
+
+            const range = selection.getRangeAt(0);
+            let parentElement = range.startContainer.nodeType === Node.TEXT_NODE
+                ? range.startContainer.parentNode
+                : range.startContainer;
+
+            let blockquote = null;
+            let currentNode = parentElement;
+            while (currentNode && currentNode !== editor) {
+                if (currentNode.tagName === 'BLOCKQUOTE') {
+                    blockquote = currentNode;
+                    break;
+                }
+                currentNode = currentNode.parentNode;
+            }
+
+            if (blockquote && !e.shiftKey) {
+                e.preventDefault();
+                const newDiv = document.createElement('div');
+                newDiv.innerHTML = '<br>';
+                blockquote.parentNode.insertBefore(newDiv, blockquote.nextSibling);
+                range.setStart(newDiv, 0);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+                if (blockquote.textContent.trim() === '') {
+                    blockquote.remove();
+                }
+                return;
+            }
+
+            e.preventDefault();
 
             try {
                 if (e.shiftKey) {
@@ -46,7 +77,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                     }
                 } else {
                     // Insert 4 spaces for tab
-                    const range = selection.getRangeAt(0);
+                    // const range = selection.getRangeAt(0);
 
                     // Use non-breaking spaces for better consistency
                     const indent = document.createTextNode('\u00A0\u00A0\u00A0\u00A0');
@@ -80,6 +111,9 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             }
             return;
         }
+
+        // Handle space in blockquote
+        if (e.key === ' ') { if (handleSpaceInBlockquote(e, editor)) return; }
 
         if (isModKey) {
             // 2. Clipboard operations

@@ -77,10 +77,8 @@
 
 .command-palette-mode {
     display: none;
-    padding: 0.4rem 0.7rem;
     font-size: 12px;
     color: var(--theme-fg);
-    border-radius: 100vmax;
     width: max-content;
     min-width: max-content;
     text-align: center;
@@ -88,9 +86,6 @@
     font-family: var(--font-display);
     font-weight: 500;
     letter-spacing: 0.2px;
-
-    background-color: var(--PrimaryButtonsColors);
-    outline: solid 1px var(--theme-border);
 }
 
 #command-palette-input {
@@ -174,6 +169,7 @@
     font-family: var(--font-text);
     font-weight: 600;
     font-size: 13.5px;
+    letter-spacing: -0.25px;
 }
 
 .command-syntax {
@@ -188,7 +184,7 @@
     font-weight: 600;
     font-size: 13.5px;
     line-height: 1;
-    letter-spacing: 0.2px;
+    letter-spacing: -0.25px;
     text-align: left;
 }
 
@@ -196,7 +192,7 @@
     opacity: 70%;
     font-weight: 500;
     font-size: 12.5px;
-    letter-spacing: 0.25px;
+    letter-spacing: -0.25px;
 }
 
 .command-result-item:hover .command-label,

@@ -17,7 +17,7 @@
     font-family: var(--font-editor);
     transition: border-color 0.2s, box-shadow 0.2s;
     overflow-y: scroll;
-    /* letter-spacing: var(--editor-letter-spacing); */
+    letter-spacing: var(--editor-letter-spacing);
     caret-color: var(--theme-fg);
     animation: caret-pulse 1.5s infinite alternate;
 }
@@ -30,7 +30,7 @@
 body.win32 .textarea-container,
 body.darwin .textarea-container {
     padding-top: 2.5rem;
-    max-width: 600px;
+    max-width: 900px;
     margin: auto;
     width: 100%;
 }
@@ -54,6 +54,7 @@ body.darwin .textarea-container {
     z-index: 1;
 
     font-family: var(--font-editor);
+    letter-spacing: var(--editor-letter-spacing);
     font-weight: 430;
     font-size: var(--editor-font-size, 14.5px);
 }
@@ -69,7 +70,7 @@ body.darwin .editor-placeholder {
  */
 .editable-div div {
     font-family: var(--font-editor);
-    /* letter-spacing: var(--editor-letter-spacing); */
+    letter-spacing: var(--editor-letter-spacing);
 }
 
 /** @selector .editable-div p
@@ -104,12 +105,29 @@ body.darwin .editor-placeholder {
 }
 
 /**
+ * @selector .editable-div h2
+ * @description H2 specific override
+ */
+.editable-div h2 {
+    font-size: 1.4em;
+}
+
+/**
+ * @selector .editable-div h3
+ * @description H3 specific override - no letter spacing
+ */
+.editable-div h3 {
+    font-size: 1.183em;
+    /* letter-spacing: 0; */
+}
+
+/**
  * @selector .editable-div h4
  * @description H4 specific override - no letter spacing
  */
-.editable-div h3 {
-    font-size: 1.125em; /* Roughly 18px based on 16px root */
-    letter-spacing: 0;
+.editable-div h4 {
+    font-size: 1em;
+    letter-spacing: -0.2px;
 }
 
 /*
@@ -130,6 +148,7 @@ body.darwin .editor-placeholder {
  */
 .editable-div blockquote {
     font-family: var(--font-editor);
+    letter-spacing: var(--editor-letter-spacing);
     font-weight: var(--editor-blockquote-weight);
     line-height: var(--editor-blockquote-line-height);
     padding-left: var(--editor-blockquote-padding);

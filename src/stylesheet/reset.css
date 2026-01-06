@@ -56,14 +56,14 @@
 }
 
 /**
- * @font-face Inter Tight
+ * @font-face Inter
  * @description Variable font with weight range 100-900
  * @format TrueType with variations support
  * @weight 100-900
  */
 @font-face {
-    font-family: 'Inter Tight';
-    src: url('../../assets/typefaces/InterTight-VariableFont_wght.ttf') format('truetype-variations');
+    font-family: 'Inter';
+    src: url('../../assets/typefaces/Inter-VariableFont_opsz,wght.ttf') format('truetype-variations');
     font-weight: 100 900;
     font-style: normal;
     font-display: swap;
@@ -93,6 +93,121 @@
     src: url('../../assets/typefaces/JETBRAINSMONO-MEDIUM.ttf');
 }
 
+/* Sarabun Font Family - TrueType (.ttf) */
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-ThinItalic.ttf') format('truetype');
+    font-weight: 100;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-ExtraLightItalic.ttf') format('truetype');
+    font-weight: 200;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-LightItalic.ttf') format('truetype');
+    font-weight: 300;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-MediumItalic.ttf') format('truetype');
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-SemiBoldItalic.ttf') format('truetype');
+    font-weight: 600;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Sarabun';
+    src: url('../../assets/typefaces/sarabun/Sarabun-ExtraBoldItalic.ttf') format('truetype');
+    font-weight: 800;
+    font-style: italic;
+}
+
+
 /**
  * @root CSS Custom Properties
  * @description Global design tokens and theme variables
@@ -107,7 +222,7 @@
      * @default hsl(0, 0%, 7%) - Dark gray
      */
     --theme-bg: hsl(0, 0%, 7%);
-    
+
     /**
      * @var --theme-fg
      * @type {color}
@@ -115,7 +230,7 @@
      * @default #ffffff - White
      */
     --theme-fg: #ffffff;
-    
+
     /**
      * @var --theme-accent
      * @type {color}
@@ -123,7 +238,7 @@
      * @default hsl(120, 7%, 85%) - Light gray-green
      */
     --theme-accent: hsl(120, 7%, 85%);
-    
+
     /**
      * @var --theme-accent-text
      * @type {color}
@@ -139,7 +254,7 @@
      * @default hsl(120, 2.5%, 20%) - Dark gray
      */
     --theme-accent-selection: hsl(120, 2.5%, 20%);
-    
+
     /**
      * @var --theme-accent-selection-texts
      * @type {color}
@@ -155,7 +270,7 @@
      * @default hsl(0, 20%, 90%) - Light warm gray
      */
     --theme-text-accent: hsl(0, 20%, 90%);
-    
+
     /**
      * @var --theme-accent-blockquote
      * @type {color}
@@ -163,7 +278,7 @@
      * @default hsl(120, 5%, 15%) - Dark gray-green
      */
     --theme-accent-blockquote: hsl(120, 5%, 15%);
-    
+
     /**
      * @var --hover-color
      * @type {color}
@@ -171,7 +286,7 @@
      * @default #2a2a2a - Medium gray
      */
     --hover-color: #2a2a2a;
-    
+
     /**
      * @var --theme-border
      * @type {color}
@@ -187,7 +302,7 @@
      * @default hsl(0deg 0% 7.5% / 95%) - Very dark gray
      */
     --theme-model: hsl(0deg 0% 7.5% / 95%);
-    
+
     /**
      * @var --theme-model-border
      * @type {color}
@@ -203,16 +318,16 @@
      * @description Primary font stack
      * @fallback Leelawadee UI, system-ui, sans-serif
      */
-    --font-primary: "Manrope", "Leelawadee UI", system-ui, sans-serif;
-    
+    --font-primary: "Manrope", "Sarabun", system-ui, sans-serif;
+
     /**
      * @var --font-text
      * @type {font-family}
      * @description Body text font stack
      * @fallback Leelawadee UI, system-ui, sans-serif
      */
-    --font-text: "Inter Tight", "Leelawadee UI", system-ui, sans-serif;
-    
+    --font-text: "Inter", "Sarabun", system-ui, sans-serif;
+
     /**
      * @var --font-display
      * @type {font-family}
@@ -229,7 +344,7 @@
      * @usage --font-editor: 'Consolas', 'JETBRAINSMONO', 'Leelawadee UI', 'Sans-serif';
      */
     --font-editor: var(--font-text);
-    
+
     /**
      * @var --font-size-base
      * @type {size}
@@ -237,7 +352,7 @@
      * @default 14px
      */
     --font-size-base: 14px;
-    
+
     /**
      * @var --line-height
      * @type {number}
@@ -263,7 +378,7 @@
     --ResetPadding: 0;
     --ResetMargin: 0;
     --ResetBoxSizing: border-box;
-    
+
     /* Buttons */
     /**
      * @var --PrimaryButtonsColors
@@ -281,7 +396,7 @@
      * @default 8px
      */
     --ctx-menu-blur: 8px;
-    
+
     /**
      * @var --ctx-menu-radius
      * @type {size}
@@ -289,7 +404,7 @@
      * @default 6px
      */
     --ctx-menu-radius: 6px;
-    
+
     /**
      * @var --ctx-sub-menu-radius
      * @type {size}
@@ -297,7 +412,7 @@
      * @default 8px
      */
     --ctx-sub-menu-radius: 8px;
-    
+
     /**
      * @var --ctx-menu-padding
      * @type {size}
@@ -305,7 +420,7 @@
      * @default 8px
      */
     --ctx-menu-padding: 8px;
-    
+
     /**
      * @var --ctx-menu-min-width
      * @type {size}
@@ -321,7 +436,7 @@
      * @default hsla(0, 0%, 7.5%, 0.820)
      */
     --ctx-menu-bg: hsla(0, 0%, 7.5%, 0.820);
-    
+
     /**
      * @var --ctx-menu-hover
      * @type {color}
@@ -329,7 +444,7 @@
      * @default hsl(0, 0%, 17.5%)
      */
     --ctx-menu-hover: hsl(0, 0%, 17.5%);
-    
+
     /**
      * @var --ctx-menu-active
      * @type {color}
@@ -337,7 +452,7 @@
      * @default hsl(0, 0%, 5%)
      */
     --ctx-menu-active: hsl(0, 0%, 5%);
-    
+
     /**
      * @var --ctx-menu-text
      * @type {color}
@@ -345,7 +460,7 @@
      * @default hsl(0, 0%, 89%)
      */
     --ctx-menu-text: hsl(0, 0%, 89%);
-    
+
     /**
      * @var --ctx-menu-text-hover
      * @type {color}
@@ -381,7 +496,7 @@
     --editor-padding: 1.6rem 1.4rem;
     --editor-font-size: 16px;
     --editor-line-height: 1.4;
-    --editor-letter-spacing: 0.2px;
+    --editor-letter-spacing: -0.2px;
     --editor-heading-letter-spacing: -0.8px;
     --editor-heading-weight: 550;
     --editor-heading-margin: 1rem;
@@ -452,7 +567,7 @@
 body.win32,
 body.darwin {
     --editor-padding: 1.2rem 1.2rem;
-    --font-editor: 'Consolas', 'JETBRAINSMONO', 'Leelawadee UI', 'Sans-serif';
+    --font-editor: 'Consolas', 'JETBRAINSMONO', 'Sarabun', 'Sans-serif';
 }
 
 /**

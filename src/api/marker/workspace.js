@@ -1,6 +1,23 @@
-import { loadConfiguration, getState, updateState, getConfig } from './utils/config.js';
-import { setupCanvas, getCanvasCoords, requestRedraw, updateViewTransform } from './core/canvas.js';
-import { handleWheel, zoomIn, zoomOut, resetZoom } from './controllers/zoomPan.js';
+import {
+    loadConfiguration,
+    getState,
+    updateState,
+    getConfig
+} from './utils/config.js';
+
+import {
+    setupCanvas,
+    getCanvasCoords,
+    requestRedraw,
+    updateViewTransform
+} from './core/canvas.js';
+
+import {
+    handleWheel,
+    zoomIn,
+    zoomOut,
+    resetZoom
+} from './controllers/zoomPan.js';
 
 /**
  * Initializes a new workspace within a given container element.

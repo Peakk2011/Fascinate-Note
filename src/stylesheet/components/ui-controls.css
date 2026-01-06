@@ -36,8 +36,6 @@
 #format-italic {
     padding: var(--zoom-btn-padding);
     line-height: 0;
-    font-size: var(--zoom-btn-font-size);
-    font-weight: var(--zoom-btn-weight);
     border-radius: var(--zoom-btn-border-radius);
     background-color: var(--PrimaryButtonsColors);
     box-shadow: var(--ctx-menu-shadow);
@@ -47,6 +45,15 @@
     text-align: center;
     border: none;
     transition: var(--zoom-btn-transition);
+}
+
+#reset-zoom span,
+#export-html-btn span,
+#format-bold span,
+#format-italic span {
+    font-family: var(--font-display);
+    font-weight: var(--zoom-btn-weight);
+    font-size: var(--zoom-btn-font-size);
 }
 
 #format-bold,
