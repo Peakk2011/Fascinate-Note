@@ -28,7 +28,7 @@ const isIntelMac = process.arch === 'x64' && process.platform === 'darwin';
  * @private
  * @returns {void}
  */
-function configurePlatformSettings() {
+const configurePlatformSettings = () => {
 	/**
 	 * Disables hardware acceleration and GPU features on Intel-based Macs
 	 * This prevents rendering issues and crashes that can occur on older Intel Mac hardware
@@ -46,7 +46,7 @@ function configurePlatformSettings() {
  * @private
  * @returns {boolean} Returns true if app should quit
  */
-function handleSquirrelEvents() {
+const handleSquirrelEvents = () => {
 	if (OS === 'win32' && process.argv.some(arg => arg.includes('--squirrel'))) {
 		app.quit();
 		return true;
@@ -59,7 +59,7 @@ function handleSquirrelEvents() {
  * @private
  * @returns {void}
  */
-function registerEventHandlers() {
+const registerEventHandlers = () => {
 	/**
 	 * Handles macOS-specific behavior when the app is activated from the dock
 	 * Creates a new window if all windows have been closed
@@ -87,7 +87,7 @@ function registerEventHandlers() {
  * Handles platform configuration, Squirrel events, and app startup
  * @returns {Promise<void>}
  */
-export default async function initFascinateNotes() {
+const initFascinateNotes = async () => {
 	// Configure platform-specific settings
 	configurePlatformSettings();
 
@@ -108,3 +108,5 @@ export default async function initFascinateNotes() {
 	// Register event handlers for app lifecycle
 	registerEventHandlers();
 }
+
+export default initFascinateNotes;

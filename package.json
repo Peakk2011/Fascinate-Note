@@ -12,7 +12,6 @@
     "dev:electron": "electron-forge start",
     "build:renderer": "vite build",
     "package": "electron-forge package",
-    "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
   },

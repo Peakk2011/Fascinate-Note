@@ -16,7 +16,7 @@ let _configCache = null;
 export const getConfig = async () => {
     if (!_configCache) {
         _configCache = await fetchJSON(
-            'renderer/content/pageConfig.json'
+            './renderer/content/pageConfig.json'
         );
     }
 
