@@ -19,7 +19,17 @@
     overflow-y: scroll;
     letter-spacing: var(--editor-letter-spacing);
     caret-color: var(--theme-fg);
+    animation: none;
+}
+
+.editable-div:focus {
     animation: caret-pulse 1.5s infinite alternate;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .editable-div {
+        animation: none !important;
+    }
 }
 
 /*
@@ -71,6 +81,7 @@ body.darwin .editor-placeholder {
 .editable-div div {
     font-family: var(--font-editor);
     letter-spacing: var(--editor-letter-spacing);
+    font-weight: 430;
 }
 
 /** @selector .editable-div p
@@ -78,6 +89,7 @@ body.darwin .editor-placeholder {
  */
 .editable-div p {
     font-family: var(--font-editor);
+    font-weight: 430;
 }
 
 /**

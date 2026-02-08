@@ -240,3 +240,54 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
     pointer-events: none
 }
+
+/**
+ * @media Mobile Devices (up to 480px)
+ * @description Optimized for phones in portrait mode
+ */
+@media screen and (max-width: 480px) {
+    .selection-menu {
+        border-radius: 12px;
+        max-width: calc(100vw - 2rem);
+    }
+
+    .selection-menu button {
+        font-size: 0.85rem;
+        min-height: 0px;
+    }
+
+    .separator {
+        display: none;
+        /* Hide separators on small screens */
+    }
+}
+
+/**
+ * @media Small Tablets (481px - 768px)
+ * @description Optimized for small tablets and large phones
+ */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+    .selection-menu button {
+        font-size: 0.88rem;
+    }
+}
+
+/**
+ * @media Tablets (769px - 1024px)
+ * @description Optimized for tablets in both orientations
+ */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .selection-menu {
+        max-width: 600px;
+    }
+}
+
+/**
+ * @media Large Screens (1025px+)
+ * @description Optimized for desktop and large displays
+ */
+@media screen and (min-width: 1025px) {
+    .selection-menu {
+        max-width: 700px;
+    }
+}

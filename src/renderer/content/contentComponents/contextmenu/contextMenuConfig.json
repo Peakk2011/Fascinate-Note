@@ -116,7 +116,7 @@
     },
     {
       "id": "context-search-google",
-      "label": "Search with Google",
+      "label": "Search this text",
       "command": "searchWithGoogle"
     },
     { "type": "separator" },

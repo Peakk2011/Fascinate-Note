@@ -7,8 +7,10 @@
 const URL_REGEX = /https?:\/\/[^\s\)\]\>]+/gi;
 
 /** Debounce delay for URL scanning (ms) */
-const SCAN_DELAY_DEFAULT = 60;
-const SCAN_DELAY_MUTATION = 50;
+const SCAN_DELAY_DEFAULT = 350;
+const SCAN_DELAY_MUTATION = 400;
+const SCAN_DELAY_INITIAL = 500;
+const SCAN_IDLE_TIMEOUT = 800;
 
 // Utility Functions
 
@@ -155,6 +157,10 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
     
     /** Timer for debounced URL scanning */
     let scanTimer = null;
+    let idleHandle = null;
+    let ignoreMutations = false;
+    let isScanning = false;
+    const pendingScanRoots = new Set();
 
     // Mutation Observer
     const mutationObserver = new MutationObserver((mutations) => {
@@ -173,7 +179,34 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
                 }
             }
         }
-        scheduleScan(SCAN_DELAY_MUTATION);
+
+        if (ignoreMutations) {
+            return;
+        }
+
+        let shouldSchedule = false;
+
+        for (const mutation of mutations) {
+            if (mutation.type === 'characterData') {
+                enqueueScanRoot(mutation.target);
+                shouldSchedule = true;
+                continue;
+            }
+
+            if (mutation.type === 'childList') {
+                if (mutation.target !== editor) {
+                    enqueueScanRoot(mutation.target);
+                }
+                mutation.addedNodes.forEach((node) => {
+                    enqueueScanRoot(node);
+                });
+                shouldSchedule = true;
+            }
+        }
+
+        if (shouldSchedule) {
+            scheduleScan(SCAN_DELAY_MUTATION);
+        }
     });
 
     // URL Scanning & Card Creation
@@ -182,11 +215,50 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
      * Schedules a URL scan with debouncing
      * @param {number} delay - Delay in milliseconds
      */
+    const resolveScanRoot = (node) => {
+        if (!node) return null;
+
+        let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+        if (!el || !editor.contains(el)) return null;
+
+        if (el.closest?.('.link-url-text, .link-card')) return null;
+
+        const block = el.closest?.('p, div, li, blockquote, pre, h1, h2, h3, h4, h5, h6, ul, ol');
+        if (block && editor.contains(block) && !block.closest?.('.link-url-text, .link-card')) {
+            return block;
+        }
+
+        return el;
+    };
+
+    const enqueueScanRoot = (node) => {
+        const root = resolveScanRoot(node);
+        if (!root) return;
+        pendingScanRoots.add(root);
+    };
+
     const scheduleScan = (delay = SCAN_DELAY_DEFAULT) => {
         if (scanTimer) {
             clearTimeout(scanTimer);
         }
-        scanTimer = setTimeout(scanForURLs, delay);
+
+        if (idleHandle && typeof cancelIdleCallback === 'function') {
+            cancelIdleCallback(idleHandle);
+            idleHandle = null;
+        }
+
+        scanTimer = setTimeout(() => {
+            const runScan = () => {
+                idleHandle = null;
+                processPendingScans();
+            };
+
+            if (typeof requestIdleCallback === 'function') {
+                idleHandle = requestIdleCallback(runScan, { timeout: SCAN_IDLE_TIMEOUT });
+            } else {
+                runScan();
+            }
+        }, delay);
     };
 
     /**
@@ -194,8 +266,10 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
      * This version uses a TreeWalker to safely traverse and modify the DOM,
      * preventing the infinite loops and performance issues of the previous implementation.
      */
-    const scanForURLs = () => {
-        const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, {
+    const scanForURLs = (root = editor) => {
+        if (!root || !editor.contains(root)) return;
+
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
             acceptNode(node) {
                 // Reject nodes that are already part of a link or card
                 if (node.parentElement?.closest('.link-url-text, .link-card')) {
@@ -252,6 +326,27 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
                 // Replace the original text node with the new fragment
                 node.parentNode.replaceChild(fragment, node);
             }
+        }
+    };
+
+    const processPendingScans = () => {
+        if (isScanning || pendingScanRoots.size === 0) return;
+
+        isScanning = true;
+        ignoreMutations = true;
+
+        try {
+            const roots = Array.from(pendingScanRoots);
+            pendingScanRoots.clear();
+
+            for (const root of roots) {
+                scanForURLs(root);
+            }
+        } finally {
+            isScanning = false;
+            Promise.resolve().then(() => {
+                ignoreMutations = false;
+            });
         }
     };
 
@@ -387,6 +482,13 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
      * Handles input events for URL scanning
      */
     const handleInputForURLs = () => {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount) {
+            const range = selection.getRangeAt(0);
+            enqueueScanRoot(range.startContainer);
+        } else {
+            enqueueScanRoot(editor);
+        }
         scheduleScan();
     };
 
@@ -403,7 +505,8 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
     editor.addEventListener('input', handleInputForURLs);
 
     // Initial scan
-    scheduleScan(100);
+    enqueueScanRoot(editor);
+    scheduleScan(SCAN_DELAY_INITIAL);
 
     // Public API
 
@@ -421,6 +524,9 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
         if (scanTimer) {
             clearTimeout(scanTimer);
         }
+        if (idleHandle && typeof cancelIdleCallback === 'function') {
+            cancelIdleCallback(idleHandle);
+        }
 
         // Remove all cards
         editor.querySelectorAll('.link-card').forEach((card) => card.remove());
@@ -431,6 +537,7 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
 
         // Clear maps and sets
         processedUrls.clear();
+        pendingScanRoots.clear();
 
         console.log('URL preview system destroyed');
     };

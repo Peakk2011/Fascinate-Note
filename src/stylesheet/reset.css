@@ -403,7 +403,7 @@
      * @description Border radius for context menus
      * @default 6px
      */
-    --ctx-menu-radius: 6px;
+    --ctx-menu-radius: 10px;
 
     /**
      * @var --ctx-sub-menu-radius
@@ -489,7 +489,7 @@
 
     /* Dot Variables */
     --dot-size: 10px;
-    --dot-saved-color: hsl(80, 40%, 60%);
+    --dot-saved-color: hsl(204, 40%, 60%);
     --dot-saving-color: hsl(29, 44%, 56%);
 
     /* Editor Variables */
@@ -567,7 +567,6 @@
 body.win32,
 body.darwin {
     --editor-padding: 1.2rem 1.2rem;
-    --font-editor: 'Consolas', 'JETBRAINSMONO', 'Sarabun', 'Sans-serif';
 }
 
 /**
@@ -608,11 +607,11 @@ body.darwin {
  */
 @media (prefers-color-scheme: light) {
     :root {
-        --theme-bg: #f9f9f9;
+        --theme-bg: #fcfffc;
         --theme-fg: #0f0f0f;
         --hover-color: #dfdfdf;
         --theme-border: hsl(0, 0%, 88%);
-        --theme-accent: hsl(195, 10%, 90%);
+        --theme-accent: hsl(200, 20%, 93%);
         --theme-accent-text: #000000;
         --PrimaryButtonsColors: hsl(50, 10%, 80%);
         --PrimaryButtonsColors: hsl(0, 0%, 95%);
@@ -620,7 +619,7 @@ body.darwin {
         background: var(--theme-bg);
         color: var(--theme-fg);
 
-        --ctx-menu-bg: hsl(0, 0%, 100%);
+        --ctx-menu-bg: hsl(0, 0%, 97%);
         --ctx-menu-hover: hsl(40, 15%, 90%);
         --ctx-menu-active: hsl(0, 0%, 91%);
         --ctx-menu-text: hsl(0, 0%, 0%);
@@ -629,8 +628,8 @@ body.darwin {
             0 12px 24px rgba(0, 0, 0, 0.05),
             0 24px 48px rgba(0, 0, 0, 0.06);
 
-        --theme-accent-selection: hsl(120, 2.5%, 88%);
-        --theme-accent-selection-texts: hsl(120, 12%, 15%);
+        --theme-accent-selection: hsl(200, 40%, 90%);
+        --theme-accent-selection-texts: hsl(200, 80%, 8%);
         --theme-accent-blockquote: hsl(0, 0%, 94%);
 
         --theme-model: hsl(0, 0%, 98%);

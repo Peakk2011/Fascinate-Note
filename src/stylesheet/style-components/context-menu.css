@@ -72,15 +72,21 @@ body.darwin .context-menu {
     max-height: 500px;
 }
 
+#context-translate span {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 13.5px;
+}
+
 .context-menu-item {
-    padding: 0.4rem calc(var(--ctx-menu-padding) * 1.15);
+    padding: 0.4rem calc(var(--ctx-menu-padding) * 1.25);
     border-radius: var(--ctx-sub-menu-radius);
     transition: 200ms cubic-bezier(0.19, 1, 0.22, 1);
     cursor: pointer;
     user-select: none;
     font-family: var(--font-display);
     font-weight: 500;
-    letter-spacing: -0.2px;
+    /* letter-spacing: -0.2px; */
     font-size: 13.5px;
     position: relative;
 

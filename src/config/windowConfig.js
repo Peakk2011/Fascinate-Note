@@ -8,10 +8,10 @@ import { resolvePath } from '../utils/paths.js';
  * @description Default window dimensions and minimum constraints.
  */
 const windowSizeConfig = {
-    width: 460,
-    height: 660,
+    width: 360,
+    height: 600,
     min: {
-        width: 400,
+        width: 320,
         height: 400
     }
 };

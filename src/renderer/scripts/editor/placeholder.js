@@ -29,11 +29,25 @@ export const createPlaceholder = (editor, placeholderText) => {
             parent.appendChild(placeholder);
         }
 
+        const DEEP_CHECK_INTERVAL = 800;
+        let lastKnownEmpty = true;
+        let lastDeepCheck = 0;
+
         /**
-         * Updates the visibility of the placeholder.
-         * It is displayed only when the editor is empty.
+         * Fast empty check using textContent only.
+         * This treats any whitespace as content to avoid costly DOM scans on every keystroke.
          */
-        const isEditorEffectivelyEmpty = () => {
+        const quickIsEmpty = () => {
+            const rawText = editor.textContent || '';
+            const textWithoutZWS = rawText.replace(/\u200B/g, '');
+            return textWithoutZWS.length === 0;
+        };
+
+        /**
+         * Deep empty check for non-text content (images, blocks, etc).
+         * This is heavier and should be used sparingly.
+         */
+        const deepIsEmpty = () => {
             try {
                 // Get raw text content without any cleaning first
                 const rawText = editor.textContent || '';
@@ -109,8 +123,28 @@ export const createPlaceholder = (editor, placeholderText) => {
 
         const updateVisibility = () => {
             try {
-                const empty = isEditorEffectivelyEmpty();
-                placeholder.style.display = empty ? 'block' : 'none';
+                const quickEmpty = quickIsEmpty();
+
+                if (!quickEmpty) {
+                    lastKnownEmpty = false;
+                    placeholder.style.display = 'none';
+                    return;
+                }
+
+                const now = Date.now();
+                const needsDeepCheck =
+                    lastKnownEmpty === false ||
+                    (now - lastDeepCheck) > DEEP_CHECK_INTERVAL;
+
+                if (needsDeepCheck) {
+                    const deepEmpty = deepIsEmpty();
+                    lastKnownEmpty = deepEmpty;
+                    lastDeepCheck = now;
+                    placeholder.style.display = deepEmpty ? 'block' : 'none';
+                    return;
+                }
+
+                placeholder.style.display = lastKnownEmpty ? 'block' : 'none';
             } catch (error) {
                 console.error('Error updating placeholder visibility:', error);
             }
@@ -125,21 +159,13 @@ export const createPlaceholder = (editor, placeholderText) => {
         const handleKeyDown = (e) => {
             // Hide immediately on normal space
             if (e.key === ' ' || e.code === 'Space') {
+                lastKnownEmpty = false;
                 placeholder.style.display = 'none';
             }
 
             // Defer check for nbsp / paste / browser insert
             setTimeout(() => {
-                const text = editor.innerText || editor.textContent;
-
-                // remove both normal spaces and nbsp
-                const cleaned = text.replace(/[\s\u00A0]/g, '');
-
-                if (cleaned.length > 0) {
-                    placeholder.style.display = 'none';
-                } else {
-                    placeholder.style.display = '';
-                }
+                updateVisibility();
             }, 0);
         };
 
@@ -153,7 +179,7 @@ export const createPlaceholder = (editor, placeholderText) => {
             
             mutationObserver._timeout = setTimeout(() => {
                 updateVisibility();
-            }, 30);
+            }, 120);
         });
 
         mutationObserver.observe(editor, {
