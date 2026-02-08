@@ -1,5 +1,7 @@
 const MENU_OFFSET = 12;
 const MENU_HIDE_DELAY = 0;
+const SELECTION_THROTTLE_MS = 80;
+const LARGE_DOC_THRESHOLD = 50000;
 
 /**
  * Returns viewport padding based on the root font size.
@@ -195,6 +197,27 @@ export const initSelectionMenu = (editor) => {
         return { cleanup: () => { } };
     }
 
+    let selectionTimer = null;
+    let lastPositionUpdate = 0;
+
+    const isLargeDocument = () => {
+        const length = Number(editor.dataset?.docLength || 0);
+        return editor.dataset?.performanceMode === '1' || length >= LARGE_DOC_THRESHOLD;
+    };
+
+    const scheduleSelectionUpdate = () => {
+        if (selectionTimer) return;
+
+        const delay = isLargeDocument()
+            ? Math.max(SELECTION_THROTTLE_MS * 2, 140)
+            : SELECTION_THROTTLE_MS;
+
+        selectionTimer = setTimeout(() => {
+            selectionTimer = null;
+            showSelectionMenu();
+        }, delay);
+    };
+
     /**
      * Shows or hides the selection menu based on current selection.
      */
@@ -213,17 +236,34 @@ export const initSelectionMenu = (editor) => {
                 return;
             }
 
-            const rect = range.getBoundingClientRect();
-            const position = calculateMenuPosition(rect, selectionMenu);
+            const largeDoc = isLargeDocument();
+            const alreadyVisible = selectionMenu.classList.contains('show');
 
-            selectionMenu.style.left = `${position.left}px`;
-            selectionMenu.style.top = `${position.top}px`;
+            const now = Date.now();
+            const shouldUpdatePosition =
+                !largeDoc ||
+                !alreadyVisible ||
+                (now - lastPositionUpdate) > 350;
 
-            // Trigger reflow for CSS transitions
-            void selectionMenu.offsetWidth;
+            if (shouldUpdatePosition) {
+                const rect = range.getBoundingClientRect();
+                const position = calculateMenuPosition(rect, selectionMenu);
+
+                selectionMenu.style.left = `${position.left}px`;
+                selectionMenu.style.top = `${position.top}px`;
+                lastPositionUpdate = now;
+
+                if (!largeDoc) {
+                    // Trigger reflow for CSS transitions
+                    void selectionMenu.offsetWidth;
+                }
+            }
 
             selectionMenu.classList.add('show');
-            updateButtonStates(selectionMenu);
+
+            if (!largeDoc) {
+                updateButtonStates(selectionMenu);
+            }
         } catch (error) {
             console.error('Error showing selection menu:', error);
             selectionMenu.classList.remove('show');
@@ -287,9 +327,21 @@ export const initSelectionMenu = (editor) => {
     };
 
     // Attach event listeners
+    const handleSelectionChange = () => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+            if (selectionMenu.classList.contains('show')) {
+                selectionMenu.classList.remove('show');
+            }
+            return;
+        }
+
+        scheduleSelectionUpdate();
+    };
+
     document.addEventListener(
         'selectionchange',
-        showSelectionMenu
+        handleSelectionChange
     );
 
     editor.addEventListener(
@@ -306,7 +358,7 @@ export const initSelectionMenu = (editor) => {
         cleanup() {
             document.removeEventListener(
                 'selectionchange',
-                showSelectionMenu
+                handleSelectionChange
             );
 
             editor.removeEventListener(
@@ -318,6 +370,11 @@ export const initSelectionMenu = (editor) => {
                 'mousedown',
                 handleMenuClick
             );
+
+            if (selectionTimer) {
+                clearTimeout(selectionTimer);
+                selectionTimer = null;
+            }
         }
     };
 }

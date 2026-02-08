@@ -44,6 +44,14 @@ export const setCurrentFontSize = (size) => {
 };
 
 /**
+ * Updates the last save time for throttling save operations.
+ * @param {number} time - The timestamp (ms) of the last save.
+ */
+export const setLastMainProcessSaveTime = (time) => {
+    lastMainProcessSaveTime = time;
+};
+
+/**
  * Tracks an event listener by storing its details in an array.
  * This allows for later removal without needing to keep a reference to the handler elsewhere.
  * @param {HTMLElement|Window} element - The DOM element the listener is attached to.

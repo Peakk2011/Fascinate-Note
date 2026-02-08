@@ -5,6 +5,7 @@ import {
     setAutoSaveTimeout,
     setCurrentFontSize,
     lastMainProcessSaveTime,
+    setLastMainProcessSaveTime,
     addEventListenerTracker
 } from './state.js';
 
@@ -163,20 +164,73 @@ export const createZoomHandlers = (els, saveData) => {
  * save, sets the status to 'typing', and schedules a new save after a configured delay.
  */
 export const createTriggerAutoSave = (setStatus, saveData) => {
+    let idleHandle = null;
+    let throttleTimer = null;
+
     return () => {
         clearTimeout(autoSaveTimeout);
         setStatus('typing');
 
-        const timeout = setTimeout(async () => {
+        if (throttleTimer) {
+            clearTimeout(throttleTimer);
+            throttleTimer = null;
+        }
+
+        if (idleHandle) {
+            if (typeof cancelIdleCallback === 'function') {
+                cancelIdleCallback(idleHandle);
+            } else {
+                clearTimeout(idleHandle);
+            }
+            idleHandle = null;
+        }
+
+        const runSave = async () => {
             setStatus('saving');
             try {
                 await saveData();
+                setLastMainProcessSaveTime(Date.now());
             } catch (error) {
                 console.error('Auto-save failed:', error);
             }
-        },
-            noteFeaturesConfig.autoSaveDelay
-        );
+        };
+
+        const scheduleIdleSave = () => {
+            if (typeof requestIdleCallback === 'function') {
+                idleHandle = requestIdleCallback(
+                    () => {
+                        idleHandle = null;
+                        runSave();
+                    },
+                    {
+                        timeout: noteFeaturesConfig.autoSaveIdleTimeout || 1000
+                    }
+                );
+            } else {
+                idleHandle = setTimeout(() => {
+                    idleHandle = null;
+                    runSave();
+                }, 0);
+            }
+        };
+
+        const timeout = setTimeout(() => {
+            const now = Date.now();
+            const sinceLastSave = now - lastMainProcessSaveTime;
+            const throttleDelay = Math.max(
+                0,
+                noteFeaturesConfig.mainProcessSaveThrottle - sinceLastSave
+            );
+
+            if (throttleDelay > 0) {
+                throttleTimer = setTimeout(() => {
+                    throttleTimer = null;
+                    scheduleIdleSave();
+                }, throttleDelay);
+            } else {
+                scheduleIdleSave();
+            }
+        }, noteFeaturesConfig.autoSaveDelay);
 
         setAutoSaveTimeout(timeout);
     };

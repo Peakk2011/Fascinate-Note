@@ -74,6 +74,9 @@ export const initMathSystem = (editor, positionTooltipAtRange) => {
     
     /** Current math suggestion state */
     let currentSuggestion = null;
+
+    let enabled = true;
+    let isActive = false;
     
     /** Math tooltip element */
     const mathTooltip = document.createElement('div');
@@ -184,6 +187,7 @@ export const initMathSystem = (editor, positionTooltipAtRange) => {
      * Handles input events for math evaluation
      */
     const handleInputForMath = () => {
+        if (!enabled) return;
         scheduleMathEval();
     };
 
@@ -192,6 +196,8 @@ export const initMathSystem = (editor, positionTooltipAtRange) => {
      * @param {KeyboardEvent} event
      */
     const handleKeyDownForMath = (event) => {
+        if (!enabled) return;
+
         // Insert math suggestion on Enter or Tab
         if ((event.key === 'Enter' || event.key === 'Tab') && currentSuggestion) {
             event.preventDefault();
@@ -199,9 +205,40 @@ export const initMathSystem = (editor, positionTooltipAtRange) => {
         }
     };
 
+    const attach = () => {
+        if (isActive) return;
+
+        editor.addEventListener('input', handleInputForMath);
+        editor.addEventListener('keydown', handleKeyDownForMath);
+        isActive = true;
+    };
+
+    const detach = () => {
+        if (!isActive) return;
+
+        editor.removeEventListener('input', handleInputForMath);
+        editor.removeEventListener('keydown', handleKeyDownForMath);
+        isActive = false;
+    };
+
+    const setEnabled = (next) => {
+        enabled = Boolean(next);
+
+        if (!enabled) {
+            if (mathEvalTimer) {
+                clearTimeout(mathEvalTimer);
+                mathEvalTimer = null;
+            }
+            hideMathTooltip();
+            detach();
+            return;
+        }
+
+        attach();
+    };
+
     // Event Listener Registration
-    editor.addEventListener('input', handleInputForMath);
-    editor.addEventListener('keydown', handleKeyDownForMath);
+    setEnabled(true);
 
     // Public API
 
@@ -209,9 +246,10 @@ export const initMathSystem = (editor, positionTooltipAtRange) => {
      * Cleanup function to remove math system
      */
     const destroy = () => {
+        enabled = false;
+
         // Remove event listeners
-        editor.removeEventListener('input', handleInputForMath);
-        editor.removeEventListener('keydown', handleKeyDownForMath);
+        detach();
 
         // Clear timer
         if (mathEvalTimer) {
@@ -227,7 +265,7 @@ export const initMathSystem = (editor, positionTooltipAtRange) => {
         console.log('Math system destroyed');
     };
 
-    return { destroy };
+    return { destroy, setEnabled };
 };
 
 export default initMathSystem;

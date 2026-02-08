@@ -160,6 +160,8 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
     let idleHandle = null;
     let ignoreMutations = false;
     let isScanning = false;
+    let enabled = true;
+    let isActive = false;
     const pendingScanRoots = new Set();
 
     // Mutation Observer
@@ -180,7 +182,7 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
             }
         }
 
-        if (ignoreMutations) {
+        if (ignoreMutations || !enabled) {
             return;
         }
 
@@ -399,6 +401,8 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
      * @param {HTMLElement} thumbElement - Thumbnail element to update
      */
     const fetchUrlPreview = async (url, urlSpan, wrapper, titleElement, thumbElement) => {
+        if (!enabled) return;
+
         try {
             const preview = await resolvePreview(url);
 
@@ -482,6 +486,8 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
      * Handles input events for URL scanning
      */
     const handleInputForURLs = () => {
+        if (!enabled) return;
+
         const selection = window.getSelection();
         if (selection && selection.rangeCount) {
             const range = selection.getRangeAt(0);
@@ -494,19 +500,54 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
 
     // Initialization
 
-    // Set up mutation observer
-    mutationObserver.observe(editor, {
-        childList: true,
-        subtree: true,
-        characterData: true
-    });
+    const attach = () => {
+        if (isActive) return;
 
-    // Register event listeners
-    editor.addEventListener('input', handleInputForURLs);
+        mutationObserver.observe(editor, {
+            childList: true,
+            subtree: true,
+            characterData: true
+        });
 
-    // Initial scan
-    enqueueScanRoot(editor);
-    scheduleScan(SCAN_DELAY_INITIAL);
+        editor.addEventListener('input', handleInputForURLs);
+        isActive = true;
+    };
+
+    const detach = () => {
+        if (!isActive) return;
+
+        editor.removeEventListener('input', handleInputForURLs);
+        mutationObserver.disconnect();
+        isActive = false;
+    };
+
+    const setEnabled = (next) => {
+        enabled = Boolean(next);
+
+        if (!enabled) {
+            detach();
+
+            if (scanTimer) {
+                clearTimeout(scanTimer);
+                scanTimer = null;
+            }
+            if (idleHandle && typeof cancelIdleCallback === 'function') {
+                cancelIdleCallback(idleHandle);
+                idleHandle = null;
+            }
+
+            pendingScanRoots.clear();
+            processedUrls.clear();
+            return;
+        }
+
+        attach();
+        enqueueScanRoot(editor);
+        scheduleScan(SCAN_DELAY_INITIAL);
+    };
+
+    // Initialize as enabled by default
+    setEnabled(true);
 
     // Public API
 
@@ -514,8 +555,10 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
      * Cleanup function to remove URL preview system
      */
     const destroy = () => {
+        enabled = false;
+
         // Remove event listeners
-        editor.removeEventListener('input', handleInputForURLs);
+        detach();
 
         // Disconnect observer
         mutationObserver.disconnect();
@@ -542,7 +585,7 @@ export const initURLPreviewSystem = (editor, sanitizeText) => {
         console.log('URL preview system destroyed');
     };
 
-    return { destroy };
+    return { destroy, setEnabled };
 };
 
 export default initURLPreviewSystem;

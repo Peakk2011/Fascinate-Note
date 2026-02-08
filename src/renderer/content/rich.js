@@ -71,7 +71,15 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
     );
 
     const rendering = initRendering(editor);
-    
+
+    const setPerformanceMode = rendering?.setPerformanceMode
+        ? (enabled) => rendering.setPerformanceMode(enabled)
+        : () => { };
+
+    const getPerformanceMode = rendering?.getPerformanceMode
+        ? () => rendering.getPerformanceMode()
+        : () => false;
+
     editor.addEventListener(
         'input',
         updateVisibility
@@ -89,7 +97,7 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
 
     // Listen for font-size changes
     let fontObserver = null;
-    
+
     const initFontObserver = () => {
         if (!fontObserver) {
             fontObserver = new MutationObserver(syncFontSize);
@@ -115,7 +123,7 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
                 fn
             );
 
-            boundFormatButtons.push({ el,fn });
+            boundFormatButtons.push({ el, fn });
         }
     }
 
@@ -134,8 +142,8 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
                 'click',
                 fn
             );
-            
-            boundFormatButtons.push({ el,fn });
+
+            boundFormatButtons.push({ el, fn });
         }
     }
 
@@ -170,7 +178,7 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
             if (rendering && typeof rendering.destroy === 'function') {
                 rendering.destroy();
             }
-            
+
             editor.removeEventListener(
                 'input',
                 updateVisibility
@@ -206,7 +214,7 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
             editor,
             includeStyles
         ),
-        
+
         downloadHTML: (filename = 'document.html') => {
             downloadHTML(editor, filename);
         },
@@ -220,6 +228,8 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
         },
 
         editor,
-        placeholder
+        placeholder,
+        setPerformanceMode,
+        getPerformanceMode
     };
 };
