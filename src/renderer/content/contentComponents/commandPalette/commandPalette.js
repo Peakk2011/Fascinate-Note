@@ -1,6 +1,6 @@
 import { Mint } from '../../../../framework/mint.js';
 import { fetchJSON } from '../../../../utils/fetch.js';
-import { getBlockElement, getTextBeforeCursor } from '../../../scripts/editor/nodeElement.js';
+import { getBlockElement } from '../../../scripts/editor/nodeElement.js';
 import { processMarkdownInLine } from '../../../scripts/editor/markdown/commands.js';
 
 /**

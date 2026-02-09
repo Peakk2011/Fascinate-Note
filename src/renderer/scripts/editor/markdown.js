@@ -87,11 +87,11 @@ export const handleMarkdown = (e, editor) => {
     const text = blockElement.textContent || '';
     const cursorPos = range.startOffset;
 
-    let beforeCursor = getTextBeforeCursor(
+    let beforeCursor = getTextBeforeCursor({
         node,
         cursorPos,
         blockElement
-    );
+    });
 
     beforeCursor = beforeCursor.replace(/\u00A0/g, ' ');
 

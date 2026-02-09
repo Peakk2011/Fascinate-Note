@@ -148,7 +148,7 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
         const handleCommandPaletteShortcut = (e) => {
             if (!(e.ctrlKey || e.metaKey)) return;
 
-            const keyIsK = (typeof e.key === 'string' && e.key.toLowerCase() === 'k') || e.code === 'KeyK';
+            const keyIsK = (typeof e.key === 'string' && e.key.toLowerCase() === 'p') || e.code === 'KeyK';
             if (keyIsK) {
                 e.preventDefault();
                 commandPaletteAPI.toggle();
@@ -160,57 +160,6 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
             document.removeEventListener('keydown', handleCommandPaletteShortcut);
         });
     });
-
-    /**
-     * Get the text content immediately before the selection/caret inside the current
-     * text node. Returns an empty string if not a text node.
-     * @param {Range} range
-     * @returns {string}
-     */
-    const getTextBeforeCursor = (range) => {
-        if (!range) return '';
-
-        const textNode = range.startContainer;
-        if (textNode.nodeType !== Node.TEXT_NODE) {
-            return '';
-        }
-
-        const offset = range.startOffset;
-        const textContent = textNode.textContent || '';
-
-        // Get text from start of line to cursor
-        const beforeCursor = textContent.substring(0, offset);
-
-        // Check if we're at start of a block element
-        const element = textNode.parentElement;
-        const blockElement = element?.closest('p, div, h1, h2, h3, h4, h5, h6, li, blockquote');
-
-        if (blockElement) {
-            // Get first text node of the block
-            const firstTextNode = getFirstTextNode(blockElement);
-            if (firstTextNode === textNode) {
-                return beforeCursor;
-            }
-        }
-
-        return beforeCursor;
-    };
-
-    /**
-     * Return the first text node within `element` using a TreeWalker,
-     * or `null` if none found.
-     * @param {Element} element
-     * @returns {Text|null}
-     */
-    const getFirstTextNode = (element) => {
-        const walker = document.createTreeWalker(
-            element,
-            NodeFilter.SHOW_TEXT,
-            null,
-            false
-        );
-        return walker.nextNode();
-    };
 
     // Return cleanup function
     return {

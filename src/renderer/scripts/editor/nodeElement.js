@@ -41,15 +41,24 @@ export const getBlockElement = (node, editor) => {
  * @returns {string} Text before cursor
  */
 
-export const getTextBeforeCursor = (node, cursorPos, blockElement) => {
+export const getTextBeforeCursor = ({ range, node, cursorPos, blockElement } = {}) => {
+    if (range) {
+        if (range.startContainer?.nodeType === Node.TEXT_NODE) {
+            return range.startContainer.textContent.substring(0, range.startOffset);
+        }
+        return '';
+    }
+
+    if (!node) return '';
+
     if (node.nodeType === Node.TEXT_NODE) {
         return node.textContent.substring(0, cursorPos);
     }
-    
+
     // Support for cases where the cursor is in an empty block
-    if (blockElement.textContent === '' && blockElement.innerHTML === '<br>') {
+    if (blockElement && blockElement.textContent === '' && blockElement.innerHTML === '<br>') {
         return '';
     }
-    
-    return blockElement.textContent || '';
+
+    return blockElement?.textContent || '';
 };
