@@ -20,6 +20,7 @@
     letter-spacing: var(--editor-letter-spacing);
     caret-color: var(--theme-fg);
     animation: none;
+    font-weight: 430;
 }
 
 .editable-div .editor-block {
