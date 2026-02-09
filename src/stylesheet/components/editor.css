@@ -174,7 +174,7 @@ body.darwin .editor-placeholder {
     padding-left: var(--editor-blockquote-padding);
     padding-right: var(--editor-blockquote-padding);
     border-left: solid var(--editor-blockquote-border) var(--theme-accent);
-    color: var(--theme-text-accent);
+    color: color-mix(in srgb, var(--theme-fg) 65%, transparent);
     background-color: var(--theme-accent-blockquote);
     display: inline-block;
 }
