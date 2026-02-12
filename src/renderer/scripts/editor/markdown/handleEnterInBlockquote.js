@@ -20,42 +20,84 @@ export const handleEnterInBlockquote = (e, editor, node, selection) => {
         return undefined; 
     }
 
-    const text = blockquote.textContent.trim();
+    e.preventDefault();
 
-    if (text === '' || text === '\n') {
-        e.preventDefault();
+    if (!selection.rangeCount) {
+        return true;
+    }
+
+    const range = selection.getRangeAt(0);
+    const text = blockquote.textContent || '';
+
+    let pos = 0;
+
+    try {
+        const preRange = range.cloneRange();
+    
+        preRange.selectNodeContents(blockquote);
+        preRange.setEnd(range.startContainer, range.startOffset);
+    
+        pos = preRange.toString().length;
+    } catch (error) {
+        pos = 0;
+    }
+
+    const lineStart = pos === 0 ? 0 : text.lastIndexOf('\n', pos - 1) + 1;
+    const lineEndRaw = text.indexOf('\n', pos);
+    const lineEnd = lineEndRaw === -1 ? text.length : lineEndRaw;
+    
+    const currentLine = text.slice(lineStart, lineEnd);
+    const currentLineIsEmpty = currentLine.replace(/\u00A0/g, ' ').trim() === '';
+
+    if (currentLineIsEmpty) {
+        let newText = '';
+
+        if (lineEndRaw !== -1) {
+            newText = text.slice(0, lineStart) + text.slice(lineEndRaw + 1);
+        } else if (lineStart > 0 && text[lineStart - 1] === '\n') {
+            newText = text.slice(0, lineStart - 1);
+        } else {
+            newText = text.slice(0, lineStart);
+        }
+
+        const remainingHasContent = newText.replace(/\u00A0/g, ' ').trim() !== '';
 
         const newP = document.createElement('p');
         newP.innerHTML = '<br>';
 
-        blockquote.replaceWith(newP);
+        if (!remainingHasContent) {
+            blockquote.replaceWith(newP);
+        } else {
+            blockquote.textContent = newText;
+            blockquote.after(newP);
+        }
 
-        // Cursor Position
         const newRange = document.createRange();
         newRange.setStart(newP, 0);
         newRange.collapse(true);
-        selection.removeAllRanges();
-        selection.addRange(newRange);
-
-        return true;
-    } else {
-        e.preventDefault();
-
-        const newBlockquote = document.createElement('blockquote');
-        newBlockquote.innerHTML = '<br>';
-
-        blockquote.after(newBlockquote);
-
-        // Cursor Position
-        const newRange = document.createRange();
-        
-        newRange.setStart(newBlockquote, 0);
-        newRange.collapse(true);
+    
         selection.removeAllRanges();
         selection.addRange(newRange);
 
         return true;
     }
+
+    const before = text.slice(0, pos);
+    const after = text.slice(pos);
+
+    blockquote.textContent = before + '\n' + after;
+
+    const newPos = pos + 1;
+    const newRange = document.createRange();
+    const textNode = blockquote.firstChild || blockquote;
+    const newOffset = Math.min(newPos, textNode.textContent.length);
+
+    newRange.setStart(textNode, newOffset);
+    newRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+
+    return true;
 };
 
 /**
@@ -90,11 +132,13 @@ export const handleSpaceInBlockquote = (e, editor) => {
             const textContent = textNode.textContent;
             if (textContent.substring(range.startOffset - 2, range.startOffset) === '  ') {
                 const lineSoFar = textContent.substring(0, range.startOffset - 2);
+                
                 if (lineSoFar.trim() === '') {
                     e.preventDefault();
 
                     textNode.textContent = textContent.substring(0, range.startOffset - 2) + textContent.substring(range.startOffset);
                     range.setStart(textNode, range.startOffset - 2);
+                
                     selection.removeAllRanges();
                     selection.addRange(range);
 
@@ -104,8 +148,10 @@ export const handleSpaceInBlockquote = (e, editor) => {
                     if (blockquote.parentNode) {
                         blockquote.parentNode.insertBefore(newDiv, blockquote.nextSibling);
                         const newRange = document.createRange();
+                
                         newRange.setStart(newDiv, 0);
                         newRange.collapse(true);
+                
                         selection.removeAllRanges();
                         selection.addRange(newRange);
 

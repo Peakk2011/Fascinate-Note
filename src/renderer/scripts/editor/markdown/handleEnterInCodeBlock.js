@@ -24,39 +24,97 @@ export const handleEnterInCodeBlock = (e, editor, node, selection) => {
         return undefined; // That is not code block
     }
 
-    e.preventDefault(); // We will handle all cases for the code block here.
+    e.preventDefault();
 
     const sel = selection;
+    if (!sel.rangeCount) {
+        return true;
+    }
+
     const range = sel.getRangeAt(0);
-    const pos = range.startOffset;
-    const text = codeNode.textContent;
+    const text = codeNode.textContent || '';
+
+    let beforeText = '';
+    let afterText = '';
+
+    try {
+        const startRange = range.cloneRange();
+        startRange.selectNodeContents(codeNode);
+        startRange.setEnd(range.startContainer, range.startOffset);
+        beforeText = startRange.toString();
+
+        const endRange = range.cloneRange();
+        endRange.selectNodeContents(codeNode);
+        endRange.setStart(range.endContainer, range.endOffset);
+        afterText = endRange.toString();
+    } catch (error) {
+        beforeText = text;
+        afterText = '';
+    }
+
+    const beforeLine = (beforeText.split('\n').pop() || '');
+    const afterLine = (afterText.split('\n')[0] || '');
+    const currentLine = beforeLine + afterLine;
+    const currentLineIsEmpty = currentLine.replace(/\u00A0/g, ' ').trim() === '';
+
+    if (currentLineIsEmpty) {
+        const preElement = codeNode.parentElement;
+
+        const beforeLines = beforeText.split('\n');
+        const afterLines = afterText.split('\n');
+        const hasBefore = beforeLines.length > 1;
+        const hasAfter = afterLines.length > 1;
+        const beforeBase = beforeLines.slice(0, -1).join('\n');
+        const afterBase = afterLines.slice(1).join('\n');
+
+        let newText = '';
+        if (hasBefore && hasAfter) {
+            newText = `${beforeBase}\n${afterBase}`;
+        } else if (hasBefore) {
+            newText = beforeBase;
+        } else if (hasAfter) {
+            newText = afterBase;
+        }
+
+        const remainingHasContent = newText.replace(/\u00A0/g, ' ').trim() !== '';
+
+        const newP = document.createElement('p');
+        newP.innerHTML = '<br>';
+
+        if (!remainingHasContent) {
+            preElement.replaceWith(newP);
+        } else {
+            codeNode.textContent = newText;
+            preElement.after(newP);
+        }
+
+        const newRange = document.createRange();
+        newRange.setStart(newP, 0);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+
+        return true;
+    }
 
     // Get text before cursor to determine current line's indentation
-    const textBeforeCursor = text.slice(0, pos);
-    const linesBeforeCursor = textBeforeCursor.split('\n');
-    const currentLineContent = linesBeforeCursor[linesBeforeCursor.length - 1];
-    const indentMatch = currentLineContent.match(/^\s*/);
+    const indentMatch = currentLine.match(/^\s*/);
     const indent = indentMatch ? indentMatch[0] : '';
-    
-    // Insert a new line with the same indentation
-    const before = text.slice(0, pos);
-    const after = text.slice(pos);
 
-    codeNode.textContent = before + '\n' + indent + after;
+    const newText = `${beforeText}\n${indent}${afterText}`;
+    codeNode.textContent = newText;
 
     // Set the new cursor position
-    const newPos = pos + 1 + indent.length;
+    const newPos = beforeText.length + 1 + indent.length;
     const newRange = document.createRange();
 
-    // The text node might not exist if the block was empty, but setting textContent creates it.
-    // Ensure the new position is not out of bounds.
     const textNode = codeNode.firstChild || codeNode;
     const newOffset = Math.min(newPos, textNode.textContent.length);
-    
+
     newRange.setStart(textNode, newOffset);
     newRange.collapse(true);
     sel.removeAllRanges();
     sel.addRange(newRange);
 
-    return true; // We've handled the event
+    return true;
 };

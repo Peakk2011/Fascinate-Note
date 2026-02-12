@@ -2,6 +2,7 @@ import { createPlaceholder } from '../scripts/editor/placeholder.js';
 import { handleMarkdown } from '../scripts/editor/markdown.js';
 import { handlePaste } from '../scripts/editor/handlePaste.js';
 import { initRendering } from '../scripts/editor/rendering.js';
+import { sanitizeInlineArtifacts } from '../scripts/editor/sanitizeInlineArtifacts.js';
 import { exportHTML, downloadHTML, downloadTXT, downloadImage } from '../scripts/editor/download.js';
 
 /**
@@ -39,6 +40,16 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
     const pasteHandler = (e) => {
         handlePaste(e, editor);
     }
+
+    // Inline sanitization (strip unwanted font/span wrappers)
+    let sanitizeRaf = 0;
+    const scheduleInlineSanitize = () => {
+        if (sanitizeRaf) return;
+        sanitizeRaf = requestAnimationFrame(() => {
+            sanitizeRaf = 0;
+            sanitizeInlineArtifacts(editor);
+        });
+    };
 
     // Handle zoom events
     let wheelTimeout = null;
@@ -83,6 +94,16 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
     editor.addEventListener(
         'input',
         updateVisibility
+    );
+
+    editor.addEventListener(
+        'input',
+        scheduleInlineSanitize
+    );
+
+    editor.addEventListener(
+        'paste',
+        scheduleInlineSanitize
     );
 
     editor.addEventListener(
@@ -183,6 +204,21 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
                 'input',
                 updateVisibility
             );
+
+            editor.removeEventListener(
+                'input',
+                scheduleInlineSanitize
+            );
+
+            editor.removeEventListener(
+                'paste',
+                scheduleInlineSanitize
+            );
+
+            if (sanitizeRaf) {
+                cancelAnimationFrame(sanitizeRaf);
+                sanitizeRaf = 0;
+            }
 
             editor.removeEventListener(
                 'focus',

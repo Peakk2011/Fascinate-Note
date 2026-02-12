@@ -152,6 +152,7 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
 
         const contentAfter = blockElement.textContent.replace(/^\/check\s*/, '').trim();
         const textSpan = document.createElement('span');
+        textSpan.dataset.editorKeep = '1';
         textSpan.textContent = contentAfter || '';
         textSpan.contentEditable = 'true';
 

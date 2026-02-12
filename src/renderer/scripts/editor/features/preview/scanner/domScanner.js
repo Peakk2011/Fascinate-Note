@@ -32,6 +32,7 @@ export const createDomScanner = (editor, state, fetchUrlPreview) => {
 
         const span           = document.createElement('span');
         span.className       = 'link-url-text';
+        span.dataset.editorKeep = '1';
         span.textContent     = url;
         span.contentEditable = 'true';
 
