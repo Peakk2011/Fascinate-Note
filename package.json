@@ -30,7 +30,8 @@
     "files": [
       "src/**/*",
       "assets/**/*",
-      "package.json"
+      "package.json",
+      "dist/renderer/**/*"
     ],
     "asar": true,
     "win": {

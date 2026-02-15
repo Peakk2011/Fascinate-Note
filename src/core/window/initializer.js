@@ -16,7 +16,9 @@ export const initializeWindow = () => {
         .setBackgroundThrottling(true);
     
     mainWindow.setMenu(null);
-    new OpenDevTools(mainWindow);
+    new OpenDevTools(mainWindow, {
+        enabled: true
+    });
 
     return mainWindow;
 };

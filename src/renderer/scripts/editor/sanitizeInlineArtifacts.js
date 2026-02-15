@@ -6,17 +6,27 @@
  * @param {Selection} [selection] - Optional selection to preserve caret.
  * @returns {boolean} True if cleanup happened.
  */
-export const sanitizeInlineArtifacts = (editor, selection = window.getSelection()) => {
+export const sanitizeInlineArtifacts = (editor, selection = null) => {
     if (!editor) return false;
+
+    const doc = editor.ownerDocument || document;
+    const win = doc.defaultView;
+    const activeSelection = selection || win?.getSelection?.() || null;
 
     if (!editor.querySelector('font, span')) {
         return false;
     }
 
+    const KEEP_SPAN_CLASSES = new Set([
+        'link-url-text',
+    ]);
+
     const shouldKeepSpan = (span) => {
-        if (span.dataset && span.dataset.editorKeep === '1') return true;
-        if (span.classList && span.classList.length > 0) return true;
+        if (span.dataset?.editorKeep === '1') return true;
         if (span.getAttribute('contenteditable') !== null) return true;
+        if (span.classList?.length > 0) {
+            return Array.from(span.classList).some((className) => KEEP_SPAN_CLASSES.has(className));
+        }
 
         return false;
     };
@@ -33,19 +43,28 @@ export const sanitizeInlineArtifacts = (editor, selection = window.getSelection(
         return false;
     }
 
-    let caretOffset = null;
-    
-    if (selection && selection.rangeCount) {
-        const range = selection.getRangeAt(0);
+    let startMarker = null;
+    let endMarker = null;
 
-        if (editor.contains(range.startContainer)) {
+    if (activeSelection && activeSelection.rangeCount) {
+        const range = activeSelection.getRangeAt(0);
+
+        if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
             try {
-                const preRange = range.cloneRange();
-                preRange.selectNodeContents(editor);
-                preRange.setEnd(range.startContainer, range.startOffset);
-                caretOffset = preRange.toString().length;
+                if (!range.collapsed) {
+                    endMarker = doc.createComment('sanitize-end');
+                    const endRange = range.cloneRange();
+                    endRange.collapse(false);
+                    endRange.insertNode(endMarker);
+                }
+
+                startMarker = doc.createComment('sanitize-start');
+                const startRange = range.cloneRange();
+                startRange.collapse(true);
+                startRange.insertNode(startMarker);
             } catch (error) {
-                caretOffset = null;
+                startMarker = null;
+                endMarker = null;
             }
         }
     }
@@ -63,49 +82,38 @@ export const sanitizeInlineArtifacts = (editor, selection = window.getSelection(
 
     targets.forEach(unwrapElement);
 
-    if (selection && selection.rangeCount) {
-        const currentAnchor = selection.anchorNode;
-        
-        if (currentAnchor && currentAnchor.isConnected && editor.contains(currentAnchor)) {
-            return true;
-        }
-    }
+    if ((startMarker || endMarker) && activeSelection) {
+        try {
+            const hasStart = Boolean(startMarker && startMarker.isConnected);
+            const hasEnd = Boolean(endMarker && endMarker.isConnected);
 
-    if (caretOffset !== null && selection) {
-        const walker = document.createTreeWalker(
-            editor,
-            NodeFilter.SHOW_TEXT,
-            null
-        );
+            if (hasStart || hasEnd) {
+                const newRange = doc.createRange();
 
-        let node = walker.nextNode();
-        let remaining = Math.max(0, caretOffset);
+                if (hasStart && hasEnd) {
+                    newRange.setStartAfter(startMarker);
+                    newRange.setEndBefore(endMarker);
+                } else if (hasStart) {
+                    newRange.setStartAfter(startMarker);
+                    newRange.collapse(true);
+                } else {
+                    newRange.setStartBefore(endMarker);
+                    newRange.collapse(true);
+                }
 
-        while (node) {
-            const len = node.textContent.length;
-        
-            if (remaining <= len) {
-                const newRange = document.createRange();
-
-                newRange.setStart(node, remaining);
-                newRange.collapse(true);
-                
-                selection.removeAllRanges();
-                selection.addRange(newRange);
-                
-                return true;
+                activeSelection.removeAllRanges();
+                activeSelection.addRange(newRange);
             }
-        
-            remaining -= len;
-            node = walker.nextNode();
+        } catch (error) {
+            // Ignore selection restoration errors and keep cleanup result.
+        } finally {
+            if (startMarker?.parentNode) {
+                startMarker.parentNode.removeChild(startMarker);
+            }
+            if (endMarker?.parentNode) {
+                endMarker.parentNode.removeChild(endMarker);
+            }
         }
-
-        // Fallback place caret at end
-        const endRange = document.createRange();
-        endRange.selectNodeContents(editor);
-        endRange.collapse(false);
-        selection.removeAllRanges();
-        selection.addRange(endRange);
     }
 
     return true;
