@@ -1,7 +1,5 @@
 <img src="./assets/icons/icon.png" width="100" alt='Fascinate Notes'>
 
-<br>
-
 # Fascinate Notes
 
 <br>
