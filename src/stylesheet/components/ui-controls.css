@@ -232,12 +232,14 @@
 }
 
 .math-suggestion-tooltip {
-    background: var(--tooltip-bg, #111);
-    color: #fff;
+    background: var(--PrimaryButtonsColors);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+    font-family: var(--font-display);
     padding: 6px 8px;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 0.92rem;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    font-weight: 500;
+    box-shadow: var(--ctx-menu-shadow);
     pointer-events: none
 }
 

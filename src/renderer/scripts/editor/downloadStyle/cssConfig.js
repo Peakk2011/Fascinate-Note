@@ -17,18 +17,40 @@ const { designConfig } = Design;
  * @property {string} codeBg
  * @property {string} headingBorder
  * @property {string} links
+ * @property {string} linkMenuBackground
+ * @property {string} linkMenuShadow
+ * @property {string} linkCardText
+ * @property {string} linkCardBorder
+ * @property {string} linkCardButtonBackground
+ * @property {string} linkCardHoverBackground
  */
+
+const linkCardShared = {
+    blur: '8px',
+    zoomBtnBorderRadius: '100vmax',
+    zoomBtnHoverColor: '#000000',
+    zoomBtnHoverWeight: '500',
+};
 
 /** @type {Record<ThemeMode, ThemeColors>} */
 const theme = {
     light: {
         text: '#000',
-        background: '#faf9f5',
+        background: '#fcfffc',
         muted: '#666',
         border: '#a7a6a3',
         codeBg: '#eae9e5',
         headingBorder: '#a7a6a3',
         links: 'rgb(50, 50, 153)',
+
+        // Link card
+        linkMenuBackground: 'hsl(0, 0%, 97%)', // = --ctx-menu-bg
+        linkMenuShadow:
+            '0 12px 24px rgba(0, 0, 0, 0.05), 0 24px 48px rgba(0, 0, 0, 0.06)', // = --ctx-menu-shadow (light)
+        linkCardText: '#0f0f0f', // = --theme-fg (light)
+        linkCardBorder: 'hsl(0, 0%, 88%)', // = --theme-border (light)
+        linkCardButtonBackground: 'hsl(0, 0%, 95%)', // = --PrimaryButtonsColors (light)
+        linkCardHoverBackground: 'hsl(200, 20%, 93%)', // = --theme-accent (light)
     },
     dark: {
         text: '#f4f4f4',
@@ -38,6 +60,15 @@ const theme = {
         codeBg: '#1f1f1f',
         headingBorder: '#333',
         links: 'hsla(240, 85%, 69%, 1)',
+
+        // Link card
+        linkMenuBackground: 'hsla(0, 0%, 7.5%, 0.820)', // = --ctx-menu-bg
+        linkMenuShadow:
+            '0px 24px 38px hsla(0, 0%, 0%, 0.14), 0px 9px 46px hsla(0, 0%, 0%, 0.12), 0px 11px 15px hsla(0, 0%, 0%, 0.20)', // = --ctx-menu-shadow (dark)
+        linkCardText: '#ffffff', // = --theme-fg (dark)
+        linkCardBorder: 'hsl(0, 0%, 20%)', // = --theme-border (dark)
+        linkCardButtonBackground: 'hsl(0, 0%, 10%)', // = --PrimaryButtonsColors (dark)
+        linkCardHoverBackground: 'hsl(120, 7%, 85%)', // = --theme-accent (dark)
     },
 };
 
@@ -86,6 +117,59 @@ const themeStyles = (mode) => {
 
         th {
             background: ${colors.codeBg};
+        }
+
+        .link-card,
+        .link-card-badge {
+            background: ${colors.linkMenuBackground};
+        }
+
+        .link-card {
+            box-shadow: ${colors.linkMenuShadow};
+        }
+
+        .link-card:hover {
+            box-shadow:
+                ${colors.linkMenuShadow},
+                0 4px 12px rgba(0, 0, 0, .08),
+                0 16px 40px rgba(0, 0, 0, .12);
+        }
+
+        .link-card-thumb {
+            box-shadow: ${colors.linkMenuShadow};
+            border: ${colors.linkCardBorder} solid 1px;
+            outline: ${colors.linkCardBorder} solid 1px;
+        }
+
+        .link-card-title {
+            color: ${colors.linkCardText};
+        }
+
+        .link-card-badge {
+            color: ${colors.linkCardText};
+            border: ${colors.linkCardBorder} solid 1px;
+            outline: ${colors.linkCardBorder} solid 1px;
+        }
+
+        .link-card-open {
+            background-color: ${colors.linkCardButtonBackground};
+            box-shadow: ${colors.linkMenuShadow};
+            border: ${colors.linkCardBorder} solid 1px;
+            outline: ${colors.linkCardBorder} solid 1px;
+            color: ${colors.linkCardText};
+        }
+
+        .link-card-open:hover {
+            background-color: ${colors.linkCardHoverBackground};
+            color: ${linkCardShared.zoomBtnHoverColor};
+            fill: ${linkCardShared.zoomBtnHoverColor};
+            font-weight: ${linkCardShared.zoomBtnHoverWeight};
+        }
+
+        .link-url-text {
+            color: ${colors.linkCardText};
+            border-bottom: solid 1px ${colors.linkCardText};
+            border-bottom-color: color-mix(in srgb, ${colors.linkCardText} 65%, transparent);
         }
     `;
 };
@@ -251,6 +335,160 @@ export const downloadMarkupsContent = {
             text-align: center;
             margin-top: ${spacing[2]};
             font-style: italic;
+        }
+
+        .link-card {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+
+            background: ${theme.light.linkMenuBackground};
+            backdrop-filter: blur(${linkCardShared.blur});
+            box-shadow: ${theme.light.linkMenuShadow};
+            transition: transform 160ms ease, box-shadow 160ms ease;
+            cursor: default;
+            user-select: none;
+            margin: 1.5rem 0;
+            margin-bottom: 4rem;
+
+            width: 220px;
+            position: relative;
+            pointer-events: auto;
+        }
+
+        .link-card:hover {
+            box-shadow:
+                ${theme.light.linkMenuShadow},
+                0 4px 12px rgba(0, 0, 0, .08),
+                0 16px 40px rgba(0, 0, 0, .12);
+        }
+
+        .link-card-thumb {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            box-shadow: ${theme.light.linkMenuShadow};
+            border: ${theme.light.linkCardBorder} solid 1px;
+            outline: ${theme.light.linkCardBorder} solid 1px;
+            pointer-events: none;
+        }
+
+        .link-card-thumb img {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .link-card-body {
+            display: flex;
+            /* flex-direction: column; */
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            pointer-events: auto;
+            user-select: none;
+        }
+
+        .link-card-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            color: ${theme.light.linkCardText};
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+
+            pointer-events: none;
+            user-select: none;
+            display: none;
+        }
+
+        .link-card-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: ${theme.light.linkMenuBackground};
+            color: ${theme.light.linkCardText};
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            border: ${theme.light.linkCardBorder} solid 1px;
+            outline: ${theme.light.linkCardBorder} solid 1px;
+            backdrop-filter: blur(6px);
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .link-card-open {
+            padding: 1rem 0.8rem;
+            line-height: 0;
+            border-radius: ${linkCardShared.zoomBtnBorderRadius};
+            background-color: ${theme.light.linkCardButtonBackground};
+            box-shadow: ${theme.light.linkMenuShadow};
+            border: ${theme.light.linkCardBorder} solid 1px;
+            outline: ${theme.light.linkCardBorder} solid 1px;
+            color: ${theme.light.linkCardText};
+            width: fit-content;
+            display: inline-block;
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+
+            cursor: pointer;
+            pointer-events: auto;
+            text-decoration: none;
+            display: inline-block;
+            align-self: flex-start;
+            user-select: none;
+
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+        }
+
+        .link-card-open:hover {
+            background-color: ${theme.light.linkCardHoverBackground};
+            cursor: pointer;
+            color: ${linkCardShared.zoomBtnHoverColor};
+            fill: ${linkCardShared.zoomBtnHoverColor};
+            font-weight: ${linkCardShared.zoomBtnHoverWeight};
+        }
+
+        .link-card-open {
+            color: ${theme.light.linkCardText};
+            font-size: 0.85rem;
+        }
+
+        .link-card-url-source {
+            display: none;
+        }
+
+        .link-url-text {
+            color: ${theme.light.linkCardText};
+            cursor: text;
+            border-bottom: solid 1px ${theme.light.linkCardText};
+            border-bottom-color: color-mix(in srgb, ${theme.light.linkCardText} 65%, transparent);
+            font-weight: 500;
+            letter-spacing: -0.4px;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        .inline-url-editor {
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            padding: 4px 6px;
+            border-radius: 6px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+            pointer-events: auto;
         }
 
         @media (prefers-color-scheme: dark) {
