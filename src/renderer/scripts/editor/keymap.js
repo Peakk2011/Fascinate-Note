@@ -1,4 +1,102 @@
 import { handleSpaceInBlockquote } from './markdown/handleEnterInBlockquote.js';
+import { processInlineMarkdown, processMarkdownInLine, handleCodeBlockExit } from './markdown/commands.js';
+
+/**
+ * History tracking for sentence-based undo
+ */
+class EditorHistory {
+    constructor() {
+        this.stack = [];
+        this.currentIndex = -1;
+        this.lastTextUpdate = 0;
+        this.textBuffer = '';
+        this.sentenceDelay = 500; // ms
+        this.sentenceTimer = null;
+    }
+
+    recordText(newContent, previousContent) {
+        clearTimeout(this.sentenceTimer);
+        const now = Date.now();
+        
+        // If within sentence delay, group with previous
+        if (this.currentIndex >= 0 && (now - this.lastTextUpdate) < this.sentenceDelay) {
+            const lastAction = this.stack[this.currentIndex];
+            if (lastAction && lastAction.type === 'text') {
+                lastAction.content = newContent;
+                lastAction.timestamp = now;
+            }
+        } else {
+            // New action
+            this.addAction({
+                type: 'text',
+                content: newContent,
+                previous: previousContent,
+                timestamp: now
+            });
+        }
+        
+        this.lastTextUpdate = now;
+        
+        // Schedule sentence finalization
+        this.sentenceTimer = setTimeout(() => {
+            // Sentence is complete
+        }, this.sentenceDelay);
+    }
+
+    recordFormat(action, previousHTML, newHTML) {
+        clearTimeout(this.sentenceTimer);
+        this.addAction({
+            type: 'format',
+            action,
+            previous: previousHTML,
+            content: newHTML,
+            timestamp: Date.now()
+        });
+    }
+
+    addAction(action) {
+        // Remove any actions after current index (branching)
+        this.stack = this.stack.slice(0, this.currentIndex + 1);
+        this.stack.push(action);
+        this.currentIndex++;
+        
+        // Limit history size
+        if (this.stack.length > 200) {
+            this.stack.shift();
+            this.currentIndex--;
+        }
+    }
+
+    canUndo() {
+        return this.currentIndex >= 0;
+    }
+
+    canRedo() {
+        return this.currentIndex < this.stack.length - 1;
+    }
+
+    getHistory() {
+        return this.stack;
+    }
+
+    clear() {
+        this.stack = [];
+        this.currentIndex = -1;
+    }
+}
+
+// Global history instance per editor
+const editorHistories = new WeakMap();
+
+/**
+ * Get or create history for an editor
+ */
+const getHistoryForEditor = (editor) => {
+    if (!editorHistories.has(editor)) {
+        editorHistories.set(editor, new EditorHistory());
+    }
+    return editorHistories.get(editor);
+};
 
 /**
  * Handles keyboard shortcuts for the editor.
@@ -27,6 +125,23 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
     const isModKey = e.ctrlKey || e.metaKey;
 
     try {
+        // Inline markdown formatting (**, *, ~~, `)
+        if (!isModKey) {
+            const selection = window.getSelection();
+            if (selection && selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                const beforeCursor = range.startContainer.nodeType === Node.TEXT_NODE
+                    ? range.startContainer.textContent.slice(0, range.startOffset)
+                    : '';
+                    
+                const blockElement = range.startContainer.nodeType === Node.TEXT_NODE
+                    ? range.startContainer.parentElement?.closest('p, div, li, blockquote, h1, h2, h3, h4')
+                    : range.startContainer.closest?.('p, div, li, blockquote, h1, h2, h3, h4');
+
+                if (blockElement && processInlineMarkdown(e, beforeCursor, blockElement, selection)) return;
+            }
+        }
+
         // Tab / Shift+Tab for indentation
         if (e.key === 'Tab') {
             const selection = window.getSelection();
@@ -114,6 +229,27 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
 
         // Handle space in blockquote
         if (e.key === ' ') { if (handleSpaceInBlockquote(e, editor)) return; }
+
+        // Handle Enter key — code block exit + block-level markdown shortcuts (# - 1. /h1 etc.)
+        if (e.key === 'Enter' && !isModKey) {
+            const selection = window.getSelection();
+            
+            if (selection && selection.rangeCount) {
+                const range = selection.getRangeAt(0);
+                const currentElement = range.startContainer;
+
+                const beforeCursor = currentElement.nodeType === Node.TEXT_NODE
+                    ? currentElement.textContent.slice(0, range.startOffset)
+                    : '';
+
+                const blockElement = currentElement.nodeType === Node.TEXT_NODE
+                    ? currentElement.parentElement?.closest('p, div, li, blockquote, h1, h2, h3, h4')
+                    : currentElement.closest?.('p, div, li, blockquote, h1, h2, h3, h4');
+
+                if (handleCodeBlockExit(e, currentElement, selection)) return;
+                if (blockElement && processMarkdownInLine(e, beforeCursor, blockElement, selection)) return;
+            }
+        }
 
         if (isModKey) {
             // 2. Clipboard operations
@@ -348,7 +484,19 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             if (e.code === 'KeyB') {
                 e.preventDefault();
                 try {
-                    document.execCommand('bold');
+                    const selection = window.getSelection();
+                    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+                        const range = selection.getRangeAt(0);
+                        const previousHTML = range.cloneContents().innerHTML;
+                        
+                        document.execCommand('bold');
+                        
+                        // Record for history
+                        const history = getHistoryForEditor(editor);
+                        history.recordFormat('bold', previousHTML, range.cloneContents().innerHTML);
+                    } else {
+                        document.execCommand('bold');
+                    }
                 } catch (error) {
                     console.error('[Keymap] Bold failed:', error);
                 }
@@ -359,7 +507,19 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             if (e.code === 'KeyI') {
                 e.preventDefault();
                 try {
-                    document.execCommand('italic');
+                    const selection = window.getSelection();
+                    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+                        const range = selection.getRangeAt(0);
+                        const previousHTML = range.cloneContents().innerHTML;
+                        
+                        document.execCommand('italic');
+                        
+                        // Record for history
+                        const history = getHistoryForEditor(editor);
+                        history.recordFormat('italic', previousHTML, range.cloneContents().innerHTML);
+                    } else {
+                        document.execCommand('italic');
+                    }
                 } catch (error) {
                     console.error('[Keymap] Italic failed:', error);
                 }
@@ -370,7 +530,19 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             if (e.code === 'KeyU') {
                 e.preventDefault();
                 try {
-                    document.execCommand('underline');
+                    const selection = window.getSelection();
+                    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+                        const range = selection.getRangeAt(0);
+                        const previousHTML = range.cloneContents().innerHTML;
+                        
+                        document.execCommand('underline');
+                        
+                        // Record for history
+                        const history = getHistoryForEditor(editor);
+                        history.recordFormat('underline', previousHTML, range.cloneContents().innerHTML);
+                    } else {
+                        document.execCommand('underline');
+                    }
                 } catch (error) {
                     console.error('[Keymap] Underline failed:', error);
                 }

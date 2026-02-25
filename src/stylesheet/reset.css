@@ -505,12 +505,14 @@
     --editor-blockquote-border: 2px;
     --editor-blockquote-line-height: 1.6;
     --editor-blockquote-weight: 550;
-    --editor-list-padding: 1rem;
-    --editor-bullet-size: 22px;
-    --editor-bullet-offset-x: -4px;
+    --editor-list-padding: 1.5rem;
+    --editor-bullet-size: 18px;
+    --editor-bullet-offset-x: 4px;
     --editor-bullet-offset-y: -5.5px;
     --editor-hr-opacity: 0.4;
     --editor-placeholder-opacity: 0.65;
+    --editor-bold-weight: 650;
+    --editor-bold-letter-spacing: -0.3px;
 
     /* Code block / inline code tokens */
     --code-font-family: 'JETBRAINSMONO', 'Courier New', monospace;

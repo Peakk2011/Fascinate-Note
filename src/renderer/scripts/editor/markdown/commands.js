@@ -32,7 +32,6 @@ const setCursorAtEnd = (element, selection) => {
  * @returns {boolean} Whether handled
  */
 export const handleCodeBlockExit = (e, currentElement, selection) => {
-    // Check if we're in a code element inside pre
     const codeElement = currentElement.closest('code');
     const preElement = currentElement.closest('pre');
 
@@ -43,9 +42,134 @@ export const handleCodeBlockExit = (e, currentElement, selection) => {
         newP.innerHTML = '<br>';
         preElement.after(newP);
 
-        // Move cursor to new paragraph
         setCursorAtEnd(newP, selection);
         return true;
+    }
+
+    return false;
+};
+
+/*
+    Update 20260225 Version 1.0.12
+    Inline Markdown Formatting
+    Triggers on every keypress when the closing character of a pattern is typed.
+
+    Supported patterns:
+        ***text***  →  <strong><em>text</em></strong>
+        **text**    →  <strong>text</strong>
+        *text*      →  <em>text</em>
+        ~~text~~    →  <s>text</s>
+        `text`      →  <code>text</code>
+*/
+
+/**
+ * Apply inline markdown formatting when the user finishes typing a pattern.
+ * Call this on EVERY keydown event (not just Enter).
+ *
+ * @param {KeyboardEvent} e             - Keyboard event
+ * @param {string} beforeCursor         - Text content before the cursor position
+ * @param {HTMLElement} blockElement    - The current block-level element 
+ * @param {Selection} selection         - Current window selection
+ * @returns {boolean}                   - Whether a pattern was matched and replaced
+ */
+export const processInlineMarkdown = (e, beforeCursor, blockElement, selection) => {
+    const range = selection.getRangeAt(0);
+    const textNode = range.startContainer;
+
+    // Only operate on text nodes
+    if (textNode.nodeType !== Node.TEXT_NODE) return false;
+
+    /**
+     * Replace matched inline pattern with an HTML element,
+     * preserving text before and after the match in the same text node.
+     *
+     * @param {RegExp} pattern          - Regex that matches the full pattern at end of string, capturing inner content
+     * @param {string} tag              - Outer HTML tag (e.g. 'strong', 'em', 'code', 's')
+     * @param {string|null} innerTag    - Optional inner tag for nested wrapping (e.g. 'em' inside 'strong')
+     * @returns {boolean}               - Whether replacement happened
+     */
+    const replaceInlinePattern = (pattern, tag, innerTag = null) => {
+        const fullText = textNode.textContent;
+        const cursorOffset = range.startOffset;
+
+        const textUpToCursor = fullText.slice(0, cursorOffset);
+        const match = textUpToCursor.match(pattern);
+        if (!match) return false;
+
+        const matchStart = textUpToCursor.lastIndexOf(match[0]);
+        const matchEnd = matchStart + match[0].length;
+        const content = match[1];
+
+        const before = fullText.slice(0, matchStart);
+        const after = fullText.slice(matchEnd);
+
+        // Build replacement element
+        const el = document.createElement(tag);
+        if (innerTag) {
+            const inner = document.createElement(innerTag);
+            inner.textContent = content;
+            el.appendChild(inner);
+        } else {
+            el.textContent = content;
+        }
+
+        const beforeNode = document.createTextNode(before);
+        const afterNode = document.createTextNode('\u200B' + after);
+
+        const parent = textNode.parentNode;
+        parent.insertBefore(beforeNode, textNode);
+        parent.insertBefore(el, textNode);
+        parent.insertBefore(afterNode, textNode);
+        parent.removeChild(textNode);
+
+        // Place cursor right after the zero-width space
+        const newRange = document.createRange();
+        newRange.setStart(afterNode, 1);
+        newRange.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+
+        return true;
+    };
+
+    // ***bold+italic*** — must be before ** and *
+    if (beforeCursor.endsWith('***')) {
+        if (replaceInlinePattern(/\*\*\*((?:[^*]|\*(?!\*\*))+)\*\*\*$/, 'strong', 'em')) {
+            e.preventDefault();
+            return true;
+        }
+    }
+
+    // **bold**
+    if (beforeCursor.endsWith('**')) {
+        if (replaceInlinePattern(/\*\*((?:[^*]|\*(?!\*))+)\*\*$/, 'strong')) {
+            e.preventDefault();
+            return true;
+        }
+    }
+
+    // *italic*
+    if (beforeCursor.endsWith('*')) {
+        if (replaceInlinePattern(/\*((?:[^*])+)\*$/, 'em')) {
+            e.preventDefault();
+            return true;
+        }
+    }
+
+    // ~~strikethrough~~
+    if (beforeCursor.endsWith('~~')) {
+        if (replaceInlinePattern(/~~((?:[^~]|~(?!~))+)~~$/, 's')) {
+            e.preventDefault();
+            return true;
+        }
+    }
+
+    // `inline code`
+    if (beforeCursor.endsWith('`')) {
+        if (replaceInlinePattern(/`([^`]+)`$/, 'code')) {
+            e.preventDefault();
+            return true;
+        }
     }
 
     return false;
@@ -95,6 +219,49 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
 
         if (contentAfter) {
             quote.textContent = contentAfter;
+        } else {
+            quote.innerHTML = '<br>';
+        }
+
+        if (isFirstLine) {
+            blockElement.innerHTML = '';
+            blockElement.appendChild(quote);
+        } else {
+            blockElement.replaceWith(quote);
+        }
+
+        setCursorAtEnd(quote, selection);
+        return true;
+    }
+
+    // > - Blockquote (Markdown style formatting)
+    if (beforeCursor.endsWith('> ') || beforeCursor.endsWith('>\t')) {
+        e.preventDefault();
+
+        let beforeBlockquote = beforeCursor.replace(/>\s*$/, '').trim();
+
+        if (beforeBlockquote) {
+            const quote = document.createElement('blockquote');
+            quote.innerHTML = '<br>';
+
+            blockElement.textContent = beforeBlockquote;
+            blockElement.after(quote);
+
+            setCursorAtEnd(quote, selection);
+            return true;
+        }
+
+        const quote = document.createElement('blockquote');
+        const existingHTML = (blockElement && blockElement.innerHTML)
+            ? blockElement.innerHTML.replace(/>\s*/, '').trim()
+            : '';
+
+        if (existingHTML) {
+            const frag = document.createDocumentFragment();
+            while (blockElement.firstChild) {
+                frag.appendChild(blockElement.firstChild);
+            }
+            quote.appendChild(frag);
         } else {
             quote.innerHTML = '<br>';
         }
@@ -195,7 +362,6 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
     if (beforeCursor.match(/^\/table\s*$/)) {
         e.preventDefault();
 
-        // Create table structure
         const table = document.createElement('table');
         table.className = 'fascinate-notes-table';
         const thead = document.createElement('thead');
@@ -203,19 +369,16 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
         const trHead = document.createElement('tr');
         const trBody = document.createElement('tr');
 
-        // Create header cells
         const th1 = document.createElement('th');
         th1.innerHTML = '<br>';
         const th2 = document.createElement('th');
         th2.innerHTML = '<br>';
 
-        // Create body cells
         const td1 = document.createElement('td');
         td1.innerHTML = '<br>';
         const td2 = document.createElement('td');
         td2.innerHTML = '<br>';
 
-        // Assemble table
         trHead.appendChild(th1);
         trHead.appendChild(th2);
         thead.appendChild(trHead);
@@ -317,12 +480,6 @@ export const processMarkdownInLine = (e, beforeCursor, blockElement, selection, 
         setCursorAtEnd(li, selection);
         return true;
     }
-
-    // Thing happen too often or are too complex to implement here:
-    // - Blockquote with > (easy to trigger accidentally)
-    // - Horizontal Rule with --- *** ___ (confusing)
-    // - Code Block with ``` (too hard to type)
-    // - Task List with - [ ] (too complex)
 
     return false;
 };

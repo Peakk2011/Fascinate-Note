@@ -116,6 +116,15 @@ body.darwin .editor-placeholder {
     width: var(--editor-heading-width);
 }
 
+.editable-div h1 div,
+.editable-div h2 div,
+.editable-div h3 div,
+.editable-div h4 div {
+    font-family: var(--font-display);
+    letter-spacing: var(--editor-heading-letter-spacing);
+    font-weight: var(--editor-heading-weight);
+}
+
 /* 
  * @selector .editable-div h1
  * @description H1 specific override
@@ -161,6 +170,12 @@ body.darwin .editor-placeholder {
     font-family: var(--font-editor);
 }
 
+.editable-div i {
+    font-style: italic;
+    font-family: var(--font-editor);
+    font-weight: 430;
+}
+
 /**
  * @selector .editable-div blockquote
  * @description Quote block with left border accent
@@ -189,6 +204,8 @@ body.darwin .editor-placeholder {
     padding-left: var(--editor-list-padding);
     list-style: none;
     background-color: var(--theme-bg);
+    font-family: var(--font-editor);
+    font-weight: 430;
 }
 
 .editable-div ul li::before {
@@ -198,6 +215,7 @@ body.darwin .editor-placeholder {
     top: 0;
     transform: translate(var(--editor-bullet-offset-x), var(--editor-bullet-offset-y));
     font-size: var(--editor-bullet-size);
+    font-family: var(--font-editor);
 }
 
 /**
@@ -221,6 +239,8 @@ body.darwin .editor-placeholder {
     list-style: none;
     counter-increment: item;
     background-color: var(--theme-bg);
+    font-family: var(--font-editor);
+    font-weight: 430;
 }
 
 .editable-div ol li::marker {
@@ -242,6 +262,15 @@ body.darwin .editor-placeholder {
 .editable-div hr {
     border: solid 1px currentColor;
     opacity: var(--editor-hr-opacity);
+}
+
+/**
+ * @selector .editable-div em, s, strong, mark
+ * @description Inline text styles: italic, strikethrough, bold, highlight
+ */
+.editable-div em, s, strong, mark {
+    font-family: var(--font-editor);
+    font-weight: 430;
 }
 
 /**

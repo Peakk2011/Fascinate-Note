@@ -11,8 +11,18 @@ import { exportHTML, downloadHTML, downloadTXT, downloadImage } from '../scripts
  * @param {string} options.editorId - ID of contentEditable element
  * @param {string} [options.placeholderText] - Placeholder text when empty
  * @param {Object} [options.formatButtons] - Format button IDs: {bold, italic}
- * @returns {{cleanup: Function, updatePlaceholder: Function, editor: HTMLElement, placeholder: HTMLElement, exportHTML: Function, downloadHTML: Function, downloadTXT: Function, downloadImage: Function}|null}
+ * @returns {{
+ *      cleanup: Function,
+ *      updatePlaceholder: Function,
+ *      editor: HTMLElement,
+ *      placeholder: HTMLElement,
+ *      exportHTML: Function,
+ *      downloadHTML: Function,
+ *      downloadTXT: Function,
+ *      downloadImage: Function
+ * }|null}
  */
+
 export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} } = {}) => {
     const editor = document.getElementById(editorId);
     if (!editor) {
@@ -91,9 +101,30 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
         ? () => rendering.getPerformanceMode()
         : () => false;
 
+    // Track previous content for history
+    let previousContent = editor.innerHTML;
+    let lastInputTime = 0;
+
     editor.addEventListener(
         'input',
         updateVisibility
+    );
+
+    // Simple history tracking on input
+    const trackInputHandler = (e) => {
+        const now = Date.now();
+        const currentContent = editor.innerHTML;
+        
+        // Log content changes for potential undo tracking
+        if (currentContent !== previousContent) {
+            lastInputTime = now;
+        }
+        previousContent = currentContent;
+    };
+
+    editor.addEventListener(
+        'input',
+        trackInputHandler
     );
 
     editor.addEventListener(
@@ -207,6 +238,11 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
 
             editor.removeEventListener(
                 'input',
+                trackInputHandler
+            );
+
+            editor.removeEventListener(
+                'input',
                 scheduleInlineSanitize
             );
 
@@ -266,6 +302,20 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
         editor,
         placeholder,
         setPerformanceMode,
-        getPerformanceMode
+        getPerformanceMode,
+        
+        // History methods
+        showHistory() {
+            const formatButtons = document.querySelectorAll('[data-history-action]');
+            console.log(`History for ${formatButtons.length} format actions logged in keymap`);
+        },
+        
+        getEditorHistory() {
+            return {
+                type: 'editor',
+                content: previousContent,
+                lastInputTime: lastInputTime
+            };
+        }
     };
 };

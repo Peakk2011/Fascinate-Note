@@ -19,7 +19,7 @@ export const handleMarkdown = (e, editor) => {
     // Handle Enter key first
     if (e.key === 'Enter') {
         // Handle Enter in an empty heading
-        
+
         if (handleEnterInHeading(e, editor)) {
             return;
         }
@@ -51,7 +51,7 @@ export const handleMarkdown = (e, editor) => {
         e.code === 'Space' ||
         e.key === 'Spacebar';
 
-        if (!keyIsSpace) {
+    if (!keyIsSpace) {
         return;
     }
 
@@ -94,6 +94,73 @@ export const handleMarkdown = (e, editor) => {
     });
 
     beforeCursor = beforeCursor.replace(/\u00A0/g, ' ');
+
+    /*
+        Double-space to exit blockquote: if inside a blockquote and the
+        user types a space immediately after a previous space (rapidly)
+        Use a WeakMap to track the last space timestamp per block element.
+    */
+
+    if (!handleMarkdown._lastSpaceMap) handleMarkdown._lastSpaceMap = new WeakMap();
+    const lastSpaceMap = handleMarkdown._lastSpaceMap;
+
+    if (blockElement.tagName === 'BLOCKQUOTE') {
+        const now = Date.now();
+        const last = lastSpaceMap.get(blockElement) || 0;
+
+        if (beforeCursor.endsWith(' ') && (now - last) < 500) {
+            e.preventDefault();
+
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+
+            // find last text node inside blockquote
+            const walker = document.createTreeWalker(
+                blockElement,
+                NodeFilter.SHOW_TEXT,
+                null
+            );
+
+            let lastTextNode = null;
+            while (walker.nextNode()) {
+                lastTextNode = walker.currentNode;
+            }
+
+            if (!lastTextNode ||
+                range.endContainer !== lastTextNode ||
+                range.endOffset !== lastTextNode.length) {
+                lastSpaceMap.set(blockElement, now);
+                return;
+            }
+
+            // trim trigger space
+            lastTextNode.textContent =
+                lastTextNode.textContent.replace(/\s$/, '');
+
+            // create inline exit container
+            const exitSpan = document.createElement('span');
+            exitSpan.setAttribute('data-exit', 'true');
+            exitSpan.appendChild(document.createTextNode('\u200B')); // zero width space
+
+            blockElement.parentNode.insertBefore(
+                exitSpan,
+                blockElement.nextSibling
+            );
+
+            // move caret inside span AFTER zero-width char
+            const newRange = document.createRange();
+            newRange.setStart(exitSpan.firstChild, 1);
+            newRange.collapse(true);
+
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+
+            lastSpaceMap.delete(blockElement);
+            return;
+        }
+
+        lastSpaceMap.set(blockElement, now);
+    }
 
     return processMarkdownInLine(
         e,
