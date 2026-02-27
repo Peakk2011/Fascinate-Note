@@ -1,3 +1,5 @@
+import { createImageBlock } from './features/images/imageComponents.js';
+
 /**
  * Parse markdown syntax in pasted text and convert to HTML elements.
  * Supports nested lists, nested blockquotes, and inline formatting.
@@ -271,17 +273,31 @@ const parseMarkdownInPastedText = (text) => {
  * - Smooth fade-in animation for pasted content
  * - Maintains cursor position after paste
  * - Parses markdown syntax in pasted text (# ## > - 1. etc.)
+ * - Supports image paste (clipboard images)
  */
 export const handlePaste = (e, editor) => {
     try {
-        e.preventDefault();
-
         // Extract clipboard data
         const clipboardData = e.clipboardData || window.clipboardData;
         if (!clipboardData) {
             console.warn('Clipboard data not available');
             return;
         }
+
+        // Image paste support
+        const imageItems = Array.from(clipboardData.items || [])
+            .filter(item => item.kind === 'file' && item.type.startsWith('image/'));
+
+        if (imageItems.length) {
+            e.preventDefault();
+            const files = imageItems
+                .map(item => item.getAsFile())
+                .filter(Boolean);
+            insertImagesFromFiles(files, editor);
+            return;
+        }
+
+        e.preventDefault();
 
         const html = clipboardData.getData('text/html');
         const text = clipboardData.getData('text/plain');
@@ -424,6 +440,62 @@ export const handlePaste = (e, editor) => {
         console.error('Paste operation failed:', error);
         console.warn('Could not paste content. Please try again.');
     }
+};
+
+/**
+ * Insert one or more image files into the editor.
+ * @param {File[]} files
+ * @param {HTMLElement} editor
+ */
+export const insertImagesFromFiles = (files, editor) => {
+    if (!editor || !files || files.length === 0) return;
+
+    files
+        .filter(file => file && file.type && file.type.startsWith('image/'))
+        .forEach(file => insertImageFile(file, editor));
+};
+
+const insertImageFile = (file, editor) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+        const dataUrl = reader.result;
+        if (typeof dataUrl === 'string') {
+            insertImageDataUrl(editor, dataUrl, file.name);
+        }
+    };
+    reader.readAsDataURL(file);
+};
+
+const insertImageDataUrl = (editor, dataUrl, name = 'Image') => {
+    const selection = window.getSelection();
+
+    const { block } = createImageBlock({ dataUrl, name, editor });
+
+    const spacer = document.createElement('div');
+    spacer.innerHTML = '<br>';
+
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(block);
+    fragment.appendChild(spacer);
+
+    if (!selection || selection.rangeCount === 0) {
+        editor.appendChild(fragment);
+        editor.focus();
+        return;
+    }
+
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    range.insertNode(fragment);
+
+    const newRange = document.createRange();
+    newRange.setStart(spacer, 0);
+    newRange.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(newRange);
+
+    editor.focus();
+    editor.dispatchEvent(new Event('input', { bubbles: true }));
 };
 
 /**

@@ -296,6 +296,14 @@
     --theme-border: hsl(0, 0%, 20%);
 
     /**
+     * @var --image-border-color
+     * @type {color}
+     * @description Image selection/resize border color
+     * @default #70a1c2 - Medium blue-gray
+     */
+    --image-border-color: #70a1c2;
+
+    /**
      * @var --theme-model
      * @type {color}
      * @description Modal background color
@@ -594,6 +602,7 @@ body.darwin {
         --theme-accent: hsl(120, 7%, 85%);
         --hover-color: #2a2a2a;
         --theme-border: hsl(0, 0%, 20%);
+        --image-border-color: #70a1c2;
         --PrimaryButtonsColors: hsl(0, 0%, 10%);
         color-scheme: dark;
         background: var(--theme-bg);
@@ -613,6 +622,7 @@ body.darwin {
         --theme-fg: #0f0f0f;
         --hover-color: #dfdfdf;
         --theme-border: hsl(0, 0%, 88%);
+        --image-border-color: #b0c6cb;
         --theme-accent: hsl(200, 20%, 93%);
         --theme-accent-text: #000000;
         --PrimaryButtonsColors: hsl(50, 10%, 80%);

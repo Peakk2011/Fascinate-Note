@@ -218,6 +218,31 @@ export const initSelectionMenu = (editor) => {
         }, delay);
     };
 
+    const isImageSelection = (range) => {
+        if (!range) return false;
+
+        const node = range.commonAncestorContainer;
+        const element = node.nodeType === Node.ELEMENT_NODE
+            ? node
+            : node.parentElement;
+
+        if (element?.closest?.('.image-block')) {
+            return true;
+        }
+
+        if (range.startContainer === editor && range.endContainer === editor) {
+            const nodes = Array.from(editor.childNodes)
+                .slice(range.startOffset, range.endOffset);
+            return nodes.some((child) => {
+                if (child.nodeType !== Node.ELEMENT_NODE) return false;
+                if (child.classList?.contains('image-block')) return true;
+                return Boolean(child.querySelector?.('img'));
+            });
+        }
+
+        return false;
+    };
+
     /**
      * Shows or hides the selection menu based on current selection.
      */
@@ -232,6 +257,11 @@ export const initSelectionMenu = (editor) => {
 
             const range = selection.getRangeAt(0);
             if (!editor.contains(range.commonAncestorContainer)) {
+                selectionMenu.classList.remove('show');
+                return;
+            }
+
+            if (isImageSelection(range)) {
                 selectionMenu.classList.remove('show');
                 return;
             }
@@ -330,6 +360,14 @@ export const initSelectionMenu = (editor) => {
     const handleSelectionChange = () => {
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+            if (selectionMenu.classList.contains('show')) {
+                selectionMenu.classList.remove('show');
+            }
+            return;
+        }
+
+        const range = selection.getRangeAt(0);
+        if (isImageSelection(range)) {
             if (selectionMenu.classList.contains('show')) {
                 selectionMenu.classList.remove('show');
             }

@@ -23,6 +23,36 @@
     font-weight: 430;
 }
 
+/* Collab cursor overlay */
+.textarea-container {
+    position: relative;
+}
+
+.collab-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.collab-caret {
+    position: absolute;
+    width: 3px;
+    border-radius: 2px;
+}
+
+.collab-label {
+    position: absolute;
+    transform: translateY(-100%);
+    padding: 6px 8px;
+    border-radius: 100vmax;
+    color: #ffffff;
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: var(--ctx-menu-shadow);
+}
+
 .editable-div .editor-block {
     display: block;
     content-visibility: auto;
@@ -268,9 +298,98 @@ body.darwin .editor-placeholder {
  * @selector .editable-div em, s, strong, mark
  * @description Inline text styles: italic, strikethrough, bold, highlight
  */
-.editable-div em, s, strong, mark {
+.editable-div em,
+s,
+strong,
+mark {
     font-family: var(--font-editor);
     font-weight: 430;
+}
+
+/* Image blocks */
+.image-block {
+    margin: 16px 0;
+    position: relative;
+    display: block;
+    max-width: 100%;
+    border: 2.5px solid transparent;
+    border-radius: 0px;
+    background-color: var(--theme-bg);
+    transition: var(--zoom-btn-transition);
+    user-select: none;
+    cursor: pointer;
+}
+
+.note-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    box-shadow: var(--ctx-menu-shadow);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+    border-radius: 6px;
+    width: 100%;
+    object-fit: contain;
+}
+
+.image-block.is-selected {
+    border-color: var(--image-border-color);
+    padding: 1rem;
+}
+
+/* .image-block.is-centered {} */
+
+.image-block.is-border-hover {
+    cursor: nwse-resize;
+}
+
+.image-block.is-dragging {
+    cursor: grabbing;
+}
+
+.image-block.is-resizing,
+.image-block.is-dragging,
+.image-block.is-resizing .note-image,
+.image-block.is-dragging .note-image {
+    transition: none !important;
+}
+
+.image-resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--image-border-color);
+    background: #ffffff;
+    border-radius: 0px;
+    display: none;
+}
+
+.image-resize-handle:hover,
+.image-resize-handle:active {
+    background: var(--image-border-color);
+}
+
+.image-block.is-selected .image-resize-handle {
+    display: block;
+}
+
+.image-resize-handle.nw {
+    top: -6px;
+    left: -6px;
+}
+
+.image-resize-handle.ne {
+    top: -6px;
+    right: -6px;
+}
+
+.image-resize-handle.se {
+    bottom: -6px;
+    right: -6px;
+}
+
+.image-resize-handle.sw {
+    bottom: -6px;
+    left: -6px;
 }
 
 /**

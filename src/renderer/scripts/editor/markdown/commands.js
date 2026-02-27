@@ -32,8 +32,18 @@ const setCursorAtEnd = (element, selection) => {
  * @returns {boolean} Whether handled
  */
 export const handleCodeBlockExit = (e, currentElement, selection) => {
-    const codeElement = currentElement.closest('code');
-    const preElement = currentElement.closest('pre');
+    if (!currentElement) return false;
+
+    const element = currentElement.nodeType === Node.ELEMENT_NODE
+        ? currentElement
+        : currentElement.parentElement;
+
+    if (!element || typeof element.closest !== 'function') {
+        return false;
+    }
+
+    const codeElement = element.closest('code');
+    const preElement = element.closest('pre');
 
     if (codeElement && preElement) {
         e.preventDefault();

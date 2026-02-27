@@ -2,7 +2,7 @@
 
 ```bash
 USER
- |  npm run dev
+ |  npm run start
  v
 SHELL (cmd / bash / zsh)
  |  exec "npm"
@@ -12,7 +12,7 @@ OS KERNEL
  v
 NODE (npm-cli.js)
  |  read package.json
- |  resolve script: "dev"
+ |  resolve script: "start"
  |  spawn: node dev.js
  v
 OS KERNEL
@@ -33,7 +33,7 @@ NODE (npm)               NODE (npm)               (terminal)
  |                           |
  |                           |
  v                           v
-ELECTRON-FORGE         VITE DEV SERVER
+ELECTRON (electron .)  VITE DEV SERVER
  |  spawn electron.exe
  v
 ELECTRON MAIN PROCESS
@@ -171,7 +171,7 @@ Current approach:
 # Short startup flow
 
 ```bash
-USER (npm run dev)
+USER (npm run start)
     ↓
 SHELL (terminal)
     ↓
@@ -183,7 +183,7 @@ OS KERNEL (new process)
     ↓
 NODE (dev.js) [SUPERVISOR]
     ↓
-    ├→ ELECTRON-FORGE
+    ├→ ELECTRON (electron .)
     │     ↓
     │   ELECTRON MAIN PROCESS
     │     ↓

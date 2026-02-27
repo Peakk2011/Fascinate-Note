@@ -3,6 +3,8 @@ import { OS } from '../config/osConfig.js';
 import { safeLog, safeError } from '../utils/safeLogger.js';
 
 export class IpcManager {
+    static osHandlerRegistered = false;
+
     constructor() {
         this.handlers = new Map();
     }
@@ -14,7 +16,10 @@ export class IpcManager {
 
     // OS
     setupOSHandler() {
+        if (IpcManager.osHandlerRegistered) return;
+
         ipcMain.handle('get-os', () => OS);
+        IpcManager.osHandlerRegistered = true;
     }
 
     // Register Handler
@@ -54,11 +59,6 @@ export class IpcManager {
             ipcMain.removeListener(channel, handler);
         });
         this.handlers.clear();
-
-        // Remove handlers
-        ['get-os'].forEach(ch =>
-            ipcMain.removeHandler(ch)
-        );
 
         // safeLog('IPC Manager cleaned up');
     }

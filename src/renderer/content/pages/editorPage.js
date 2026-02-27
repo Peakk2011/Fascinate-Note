@@ -50,6 +50,7 @@ import { initRealtimeCollab } from '../../scripts/collab/realtimeCollab.js';
  * @property {Function} onSave - called with current HTML content
  * @property {Function} onSearch
  * @property {Function} onReplace
+ * @property {Function} onNewWindow
  */
 
 /**
@@ -158,6 +159,18 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
                     modelFind.show(true); // Pass true to open replace tab
                 } else {
                     console.warn('modelFind.show(true) is not available.');
+                }
+            },
+            /**
+             * Called on Ctrl/Cmd + Shift + N
+             */
+            onNewWindow: async () => {
+                if (window.electronAPI && typeof window.electronAPI.newWindow === 'function') {
+                    try {
+                        await window.electronAPI.newWindow();
+                    } catch (error) {
+                        console.error('Failed to create new window:', error);
+                    }
                 }
             }
         };

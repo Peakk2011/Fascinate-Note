@@ -17,5 +17,14 @@
     "exportMenuId": "export-menu",
     "exportMenuHtmlText": "Download as HTML",
     "exportMenuTxtText": "Download as plain text",
-    "exportMenuImageText": "Download as image"
+    "exportMenuImageText": "Download as image",
+    "collab": {
+        "enabled": true,
+        "serverUrl": "ws://localhost:1234",
+        "room": "fascinate-notes",
+        "mapName": "note",
+        "debounceMs": 120,
+        "connectionTimeoutMs": 2000,
+        "autoDisableOnFail": true
+    }
 }

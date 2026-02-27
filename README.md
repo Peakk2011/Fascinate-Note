@@ -63,19 +63,17 @@ npm run start
 ## Build
 
 ```bash
-# Build renderer assets
-npm run build:renderer
-
-# Package desktop app
-npx electron-builder
+# Build renderer assets + package app
+npm run build
 ```
 
 ## Scripts
 
 - `npm run start` - Run development mode (`dev.js`)
 - `npm run dev:renderer` - Start Vite renderer dev server
-- `npm run dev:electron` - Start Electron via Electron Forge
+- `npm run dev:electron` - Start Electron (electron .)
 - `npm run build:renderer` - Build renderer assets with Vite
+- `npm run build` - Build renderer assets and package with electron-builder
 
 ## Project Structure
 

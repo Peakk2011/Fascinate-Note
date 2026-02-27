@@ -3,7 +3,7 @@
  * Handles all initialization logic for the Electron application
  */
 
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { createWindow } from './core/createWindow.js';
 import { preloadAssets } from './core/preloadAssets.js';
 import { OS } from './config/osConfig.js';
@@ -55,6 +55,31 @@ const handleSquirrelEvents = () => {
 }
 
 /**
+ * Registers IPC handlers that should be initialized once.
+ */
+let newWindowHandlerRegistered = false;
+
+const registerIpcHandlers = () => {
+	if (newWindowHandlerRegistered) return;
+
+	ipcMain.handle('new-window', async () => {
+		try {
+			await createWindow();
+			return true;
+		} catch (error) {
+			console.error('Failed to create new window:', error);
+			return false;
+		}
+	});
+
+	app.on('will-quit', () => {
+		ipcMain.removeHandler('new-window');
+	});
+
+	newWindowHandlerRegistered = true;
+};
+
+/**
  * Registers application event handlers
  * @private
  * @returns {void}
@@ -98,6 +123,9 @@ const initFascinateNotes = async () => {
 
 	// Wait for Electron to be ready
 	await app.whenReady();
+
+	// Register IPC handlers (new window, etc.)
+	registerIpcHandlers();
 
 	// Preload application assets
 	await preloadAssets();

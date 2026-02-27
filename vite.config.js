@@ -30,7 +30,10 @@ export default defineConfig({
     base: './',
 
     optimizeDeps: {
-        include: ['dom-to-image']
+        include: ['dom-to-image', 'yjs', 'y-websocket']
+    },
+    resolve: {
+        dedupe: ['yjs', 'y-protocols', 'lib0']
     },
 
     build: {

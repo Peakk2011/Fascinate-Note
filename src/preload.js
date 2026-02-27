@@ -9,6 +9,7 @@ const { contextBridge, ipcRenderer } = require('electron');
  * @typedef {Object} ElectronAPI
  * @property {() => Promise<string>} getOS - Retrieves the operating system platform identifier
  * @property {() => void} closeApp - Sends a signal to close the application
+ * @property {() => Promise<boolean>} newWindow - Creates a new application window
  */
 
 try {
@@ -40,6 +41,13 @@ try {
          * @returns {void}
          */
         closeApp: () => ipcRenderer.send('close-app'),
+
+        /**
+         * Requests the main process to create a new window
+         * @function newWindow
+         * @returns {Promise<boolean>}
+         */
+        newWindow: () => ipcRenderer.invoke('new-window'),
     });
 } catch (error) {
     /**

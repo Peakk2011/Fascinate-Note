@@ -11,6 +11,7 @@ import { processInlineMarkdown, processMarkdownInLine, handleCodeBlockExit } fro
  * @param {Function} callbacks.onReplace            - Callback when replace is triggered
  * @param {Function} callbacks.onUndo               - Callback when undo is triggered
  * @param {Function} callbacks.onRedo               - Callback when redo is triggered
+ * @param {Function} callbacks.onNewWindow          - Callback when new window is triggered
  */
 export const handleKeydown = (e, editor, callbacks = {}) => {
     // Validate inputs
@@ -248,6 +249,20 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                         callbacks.onSave(editor.innerHTML);
                     } catch (error) {
                         console.error('[Keymap] Save callback failed:', error);
+                    }
+                }
+                return;
+            }
+
+            // 8. New Window (Ctrl/Cmd + Shift + N)
+            if (isModKey && e.shiftKey && e.code === 'KeyN') {
+                e.preventDefault();
+
+                if (callbacks.onNewWindow && typeof callbacks.onNewWindow === 'function') {
+                    try {
+                        callbacks.onNewWindow();
+                    } catch (error) {
+                        console.error('[Keymap] New window callback failed:', error);
                     }
                 }
                 return;

@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
 import { IpcManager } from '../ipcManager.js';
 import { getWindowConfig } from '../../config/windowConfig.js';
 import { OpenDevTools } from '../devtools.js';
@@ -16,8 +16,11 @@ export const initializeWindow = () => {
         .setBackgroundThrottling(true);
     
     mainWindow.setMenu(null);
+
+    const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+    
     new OpenDevTools(mainWindow, {
-        enabled: true
+        enabled: isDev
     });
 
     return mainWindow;
