@@ -2,103 +2,6 @@ import { handleSpaceInBlockquote } from './markdown/handleEnterInBlockquote.js';
 import { processInlineMarkdown, processMarkdownInLine, handleCodeBlockExit } from './markdown/commands.js';
 
 /**
- * History tracking for sentence-based undo
- */
-class EditorHistory {
-    constructor() {
-        this.stack = [];
-        this.currentIndex = -1;
-        this.lastTextUpdate = 0;
-        this.textBuffer = '';
-        this.sentenceDelay = 500; // ms
-        this.sentenceTimer = null;
-    }
-
-    recordText(newContent, previousContent) {
-        clearTimeout(this.sentenceTimer);
-        const now = Date.now();
-        
-        // If within sentence delay, group with previous
-        if (this.currentIndex >= 0 && (now - this.lastTextUpdate) < this.sentenceDelay) {
-            const lastAction = this.stack[this.currentIndex];
-            if (lastAction && lastAction.type === 'text') {
-                lastAction.content = newContent;
-                lastAction.timestamp = now;
-            }
-        } else {
-            // New action
-            this.addAction({
-                type: 'text',
-                content: newContent,
-                previous: previousContent,
-                timestamp: now
-            });
-        }
-        
-        this.lastTextUpdate = now;
-        
-        // Schedule sentence finalization
-        this.sentenceTimer = setTimeout(() => {
-            // Sentence is complete
-        }, this.sentenceDelay);
-    }
-
-    recordFormat(action, previousHTML, newHTML) {
-        clearTimeout(this.sentenceTimer);
-        this.addAction({
-            type: 'format',
-            action,
-            previous: previousHTML,
-            content: newHTML,
-            timestamp: Date.now()
-        });
-    }
-
-    addAction(action) {
-        // Remove any actions after current index (branching)
-        this.stack = this.stack.slice(0, this.currentIndex + 1);
-        this.stack.push(action);
-        this.currentIndex++;
-        
-        // Limit history size
-        if (this.stack.length > 200) {
-            this.stack.shift();
-            this.currentIndex--;
-        }
-    }
-
-    canUndo() {
-        return this.currentIndex >= 0;
-    }
-
-    canRedo() {
-        return this.currentIndex < this.stack.length - 1;
-    }
-
-    getHistory() {
-        return this.stack;
-    }
-
-    clear() {
-        this.stack = [];
-        this.currentIndex = -1;
-    }
-}
-
-// Global history instance per editor
-const editorHistories = new WeakMap();
-
-/**
- * Get or create history for an editor
- */
-const getHistoryForEditor = (editor) => {
-    if (!editorHistories.has(editor)) {
-        editorHistories.set(editor, new EditorHistory());
-    }
-    return editorHistories.get(editor);
-};
-
-/**
  * Handles keyboard shortcuts for the editor.
  * @param {KeyboardEvent} e                         - The keyboard event.
  * @param {HTMLElement} editor                      - The editor element.
@@ -133,7 +36,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                 const beforeCursor = range.startContainer.nodeType === Node.TEXT_NODE
                     ? range.startContainer.textContent.slice(0, range.startOffset)
                     : '';
-                    
+
                 const blockElement = range.startContainer.nodeType === Node.TEXT_NODE
                     ? range.startContainer.parentElement?.closest('p, div, li, blockquote, h1, h2, h3, h4')
                     : range.startContainer.closest?.('p, div, li, blockquote, h1, h2, h3, h4');
@@ -185,27 +88,17 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
 
             try {
                 if (e.shiftKey) {
-                    // Decrease indentation
                     const success = document.execCommand('outdent');
                     if (!success) {
                         console.warn('[Keymap] Outdent command not supported or failed');
                     }
                 } else {
-                    // Insert 4 spaces for tab
-                    // const range = selection.getRangeAt(0);
-
-                    // Use non-breaking spaces for better consistency
                     const indent = document.createTextNode('\u00A0\u00A0\u00A0\u00A0');
-
-                    // Delete any selected content first
                     range.deleteContents();
                     range.insertNode(indent);
-
-                    // Move cursor after the inserted spaces
                     range.setStartAfter(indent);
                     range.setEndAfter(indent);
                     range.collapse(false);
-
                     selection.removeAllRanges();
                     selection.addRange(range);
                 }
@@ -215,7 +108,6 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                     error: error.message
                 });
 
-                // Attempt to restore selection state
                 try {
                     const range = selection.getRangeAt(0);
                     selection.removeAllRanges();
@@ -233,7 +125,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
         // Handle Enter key — code block exit + block-level markdown shortcuts (# - 1. /h1 etc.)
         if (e.key === 'Enter' && !isModKey) {
             const selection = window.getSelection();
-            
+
             if (selection && selection.rangeCount) {
                 const range = selection.getRangeAt(0);
                 const currentElement = range.startContainer;
@@ -253,8 +145,6 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
 
         if (isModKey) {
             // 2. Clipboard operations
-            // Use e.code to support all keyboard layouts
-
             if (e.code === 'KeyC' || e.code === 'KeyX' || e.code === 'KeyV') {
                 return;
             }
@@ -280,10 +170,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                         }
                     }
                 } catch (error) {
-                    console.error(
-                        '[Keymap] Undo/Redo failed:',
-                        error
-                    );
+                    console.error('[Keymap] Undo/Redo failed:', error);
                 }
                 return;
             }
@@ -299,10 +186,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                         document.execCommand('redo');
                     }
                 } catch (error) {
-                    console.error(
-                        '[Keymap] Redo failed:',
-                        error
-                    );
+                    console.error('[Keymap] Redo failed:', error);
                 }
                 return;
             }
@@ -312,7 +196,6 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                 e.preventDefault();
 
                 try {
-                    // Use Range API for more reliable selection
                     const range = document.createRange();
                     range.selectNodeContents(editor);
 
@@ -320,12 +203,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                     selection.removeAllRanges();
                     selection.addRange(range);
                 } catch (error) {
-                    console.error(
-                        '[Keymap] Select All failed:',
-                        error
-                    );
-
-                    // Fallback to execCommand
+                    console.error('[Keymap] Select All failed:', error);
                     document.execCommand('selectAll');
                 }
                 return;
@@ -339,10 +217,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                     try {
                         callbacks.onSearch();
                     } catch (error) {
-                        console.error(
-                            '[Keymap] Search callback failed:',
-                            error
-                        );
+                        console.error('[Keymap] Search callback failed:', error);
                     }
                 } else {
                     console.warn('[Keymap] Search callback not provided');
@@ -351,39 +226,29 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             }
 
             // 6. Replace
-            if (e.code === 'KeyH') {
+            if (isModKey && e.code === 'KeyH') {
                 e.preventDefault();
 
                 if (callbacks.onReplace && typeof callbacks.onReplace === 'function') {
                     try {
                         callbacks.onReplace();
                     } catch (error) {
-                        console.error(
-                            '[Keymap] Replace callback failed:',
-                            error
-                        );
+                        console.error('[Keymap] Replace callback failed:', error);
                     }
-                } else {
-                    console.warn('[Keymap] Replace callback not provided');
                 }
                 return;
             }
 
             // 7. Save
-            if (e.code === 'KeyS') {
+            if (isModKey && e.code === 'KeyS') {
                 e.preventDefault();
 
                 if (callbacks.onSave && typeof callbacks.onSave === 'function') {
                     try {
                         callbacks.onSave(editor.innerHTML);
                     } catch (error) {
-                        console.error(
-                            '[Keymap] Save callback failed:',
-                            error
-                        );
+                        console.error('[Keymap] Save callback failed:', error);
                     }
-                } else {
-                    console.warn('[Keymap] Save callback not provided');
                 }
                 return;
             }
@@ -399,23 +264,19 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                     const range = selection.getRangeAt(0);
 
                     if (e.shiftKey) {
-                        // Ctrl/Cmd + Shift + Enter (Insert line above)
                         const br = document.createElement('br');
                         range.insertNode(br);
                         range.setStartAfter(br);
                         range.collapse(true);
-
                         selection.removeAllRanges();
                         selection.addRange(range);
                     } else {
-                        // Ctrl/Cmd + Enter (Insert line below)
                         const currentNode = range.startContainer;
 
                         const parent = currentNode.nodeType === Node.TEXT_NODE
                             ? currentNode.parentNode
                             : currentNode;
 
-                        // Find the end of the current line/paragraph
                         let node = parent;
                         while (node && node !== editor && node.nextSibling) {
                             node = node.nextSibling;
@@ -426,19 +287,14 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                             node.parentNode.insertBefore(br, node.nextSibling);
                             range.setStartAfter(br);
                             range.collapse(true);
-
                             selection.removeAllRanges();
                             selection.addRange(range);
                         } else {
-                            // Fallback
                             document.execCommand('insertParagraph');
                         }
                     }
                 } catch (error) {
-                    console.error(
-                        '[Keymap] Insert line failed:',
-                        error
-                    );
+                    console.error('[Keymap] Insert line failed:', error);
                 }
                 return;
             }
@@ -454,16 +310,12 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                     const range = selection.getRangeAt(0);
                     let node = range.startContainer;
 
-                    // Find the containing block element
                     while (node && node !== editor && node.nodeType !== Node.ELEMENT_NODE) {
                         node = node.parentNode;
                     }
 
                     if (node && node !== editor) {
                         let startNode = node;
-                        let endNode = node;
-
-                        // Expand selection to include entire line
                         const lineRange = document.createRange();
                         lineRange.selectNodeContents(startNode);
                         lineRange.deleteContents();
@@ -474,7 +326,6 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                     }
                 } catch (error) {
                     console.error('[Keymap] Delete line failed:', error);
-                    // Fallback to simple delete
                     document.execCommand('delete');
                 }
                 return;
@@ -484,19 +335,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             if (e.code === 'KeyB') {
                 e.preventDefault();
                 try {
-                    const selection = window.getSelection();
-                    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
-                        const range = selection.getRangeAt(0);
-                        const previousHTML = range.cloneContents().innerHTML;
-                        
-                        document.execCommand('bold');
-                        
-                        // Record for history
-                        const history = getHistoryForEditor(editor);
-                        history.recordFormat('bold', previousHTML, range.cloneContents().innerHTML);
-                    } else {
-                        document.execCommand('bold');
-                    }
+                    document.execCommand('bold');
                 } catch (error) {
                     console.error('[Keymap] Bold failed:', error);
                 }
@@ -507,19 +346,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             if (e.code === 'KeyI') {
                 e.preventDefault();
                 try {
-                    const selection = window.getSelection();
-                    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
-                        const range = selection.getRangeAt(0);
-                        const previousHTML = range.cloneContents().innerHTML;
-                        
-                        document.execCommand('italic');
-                        
-                        // Record for history
-                        const history = getHistoryForEditor(editor);
-                        history.recordFormat('italic', previousHTML, range.cloneContents().innerHTML);
-                    } else {
-                        document.execCommand('italic');
-                    }
+                    document.execCommand('italic');
                 } catch (error) {
                     console.error('[Keymap] Italic failed:', error);
                 }
@@ -530,19 +357,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
             if (e.code === 'KeyU') {
                 e.preventDefault();
                 try {
-                    const selection = window.getSelection();
-                    if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
-                        const range = selection.getRangeAt(0);
-                        const previousHTML = range.cloneContents().innerHTML;
-                        
-                        document.execCommand('underline');
-                        
-                        // Record for history
-                        const history = getHistoryForEditor(editor);
-                        history.recordFormat('underline', previousHTML, range.cloneContents().innerHTML);
-                    } else {
-                        document.execCommand('underline');
-                    }
+                    document.execCommand('underline');
                 } catch (error) {
                     console.error('[Keymap] Underline failed:', error);
                 }
@@ -562,28 +377,15 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
  */
 export const keyMap = (editor, callbacks = {}) => {
     if (!editor || !editor.isContentEditable) {
-        console.error(
-            '[Keymap] Cannot initialize: invalid editor'
-        );
+        console.error('[Keymap] Cannot initialize: invalid editor');
         return () => { };
     }
 
-    const handler = (e) => handleKeydown(
-        e,
-        editor,
-        callbacks
-    );
+    const handler = (e) => handleKeydown(e, editor, callbacks);
 
-    editor.addEventListener(
-        'keydown',
-        handler
-    );
+    editor.addEventListener('keydown', handler);
 
-    // Cleanup function
     return () => {
-        editor.removeEventListener(
-            'keydown',
-            handler
-        );
+        editor.removeEventListener('keydown', handler);
     };
 };

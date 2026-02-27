@@ -5,6 +5,7 @@ import { initZoomControls } from '../pageComponents/zoomControls.js';
 import { initExportMenu } from '../pageComponents/exportMenu.js';
 import { initSelectionMenu } from '../pageComponents/selectionMenu.js';
 import { initEditorMask } from '../pageComponents/editorMask.js';
+import { initRealtimeCollab } from '../../scripts/collab/realtimeCollab.js';
 
 /**
  * @typedef {Object} EditorConfig
@@ -76,6 +77,30 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
 
     // Store cleanup functions
     const cleanupFunctions = [];
+
+    // Ensure local content is loaded before collaboration sync
+    if (noteAPI && typeof noteAPI.loadData === 'function') {
+        try {
+            await noteAPI.loadData();
+        } catch (error) {
+            console.warn('Failed to load local content before collab:', error);
+        }
+    }
+
+    // Initialize realtime collaboration (optional)
+    if (config?.collab?.enabled) {
+        const collabController = initRealtimeCollab(editorElement, {
+            serverUrl: config.collab.serverUrl,
+            room: config.collab.room,
+            mapName: config.collab.mapName,
+            debounceMs: config.collab.debounceMs,
+            connectionTimeoutMs: config.collab.connectionTimeoutMs,
+            autoDisableOnFail: config.collab.autoDisableOnFail,
+            userName: config.collab.userName,
+            userColor: config.collab.userColor
+        });
+        cleanupFunctions.push(() => collabController.destroy());
+    }
 
     // Initialize other components first
     modelFind.init({ pageConfig: config, noteAPI });
