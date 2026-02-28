@@ -186,7 +186,7 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
         const handleCommandPaletteShortcut = (e) => {
             if (!(e.ctrlKey || e.metaKey)) return;
 
-            const keyIsK = (typeof e.key === 'string' && e.key.toLowerCase() === 'p') || e.code === 'KeyK';
+            const keyIsK = e.code === 'KeyK' || (typeof e.key === 'string' && e.key.toLowerCase() === 'k');
             if (keyIsK) {
                 e.preventDefault();
                 commandPaletteAPI.toggle();

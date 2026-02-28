@@ -447,7 +447,7 @@ export const createModelFind = async () => {
                 // Keyboard shortcuts
                 addEventListener(document, 'keydown', (e) => {
                     // Ctrl/Cmd + F to open find
-                    if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    if ((e.ctrlKey || e.metaKey) && (e.code === 'KeyF' || e.key === 'f' || e.key === 'F')) {
                         e.preventDefault();
                         showModal();
                         return;

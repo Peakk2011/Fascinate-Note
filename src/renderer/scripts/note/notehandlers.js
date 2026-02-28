@@ -277,13 +277,19 @@ export const setupEventListeners = (
     const keydownHandler = async (e) => {
         if (e.ctrlKey || e.metaKey) {
             try {
-                if (e.key === '=' || e.key === '+') {
+                const key = typeof e.key === 'string' ? e.key : '';
+                const code = e.code;
+                const isZoomIn = code === 'Equal' || code === 'NumpadAdd' || key === '=' || key === '+';
+                const isZoomOut = code === 'Minus' || code === 'NumpadSubtract' || key === '-' || key === '_';
+                const isReset = code === 'Digit0' || code === 'Numpad0' || key === '0';
+
+                if (isZoomIn) {
                     e.preventDefault();
                     await zoomIn();
-                } else if (e.key === '-' || e.key === '_') {
+                } else if (isZoomOut) {
                     e.preventDefault();
                     await zoomOut();
-                } else if (e.key === '0') {
+                } else if (isReset) {
                     e.preventDefault();
                     await resetZoom();
                 }
