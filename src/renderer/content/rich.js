@@ -45,7 +45,6 @@ export const initRichEditor = ({ editorId, placeholderText, formatButtons = {} }
 
     // Markdown handler wrapper
     const markdownHandler = (e) => {
-        handleKeydown(e, editor);
         handleMarkdown(e, editor);
     }
 

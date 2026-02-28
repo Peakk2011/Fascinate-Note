@@ -1,8 +1,8 @@
 import { createStatusIndicatorMarkup } from '../pageComponents/statusIndicator.js';
-import { createZoomControlsMarkup } from '../pageComponents/zoomControls.js';
-import { createExportMenuMarkup } from '../pageComponents/exportMenu.js';
 import { createSelectionMenuMarkup } from '../pageComponents/selectionMenu.js';
 import { createTitlebarMarkup } from '../pageComponents/titlebar.js';
+import { createWorkspaceMenuMarkup } from '../pageComponents/workspaceMenu.js';
+import { createFileDropOverlayMarkup } from '../pageComponents/fileDropOverlay.js';
 
 /**
  * Generates the complete HTML markup for the page editor.
@@ -38,19 +38,16 @@ import { createTitlebarMarkup } from '../pageComponents/titlebar.js';
 export const createPageMarkup = (config, modelFind, contextMenu, titlebar, commandPalette) => {
     return `
         ${titlebar ? titlebar.markups : ''}
+        ${createWorkspaceMenuMarkup(config)}
         <div id="workspace-container" style="display: none;"></div>
         ${createStatusIndicatorMarkup(config)}
         
         <div class="${config.textareaContainerClass}">
             <div id="${config.textareaId}" contenteditable="true" spellcheck="false" class="editable-div" data-placeholder="${config.textareaPlaceholder}"></div>
-
-            <div class="${config.zoomControlsClass}">
-                ${createZoomControlsMarkup(config)}
-                ${createExportMenuMarkup(config)}
-            </div>
         </div>
 
         ${createSelectionMenuMarkup()}
+        ${createFileDropOverlayMarkup()}
         
         ${modelFind.markups}
         ${contextMenu.markups}

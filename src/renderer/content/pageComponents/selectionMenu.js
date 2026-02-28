@@ -1,3 +1,5 @@
+import { insertImagesFromFiles } from '../../scripts/editor/handlePaste.js';
+
 const MENU_OFFSET = 12;
 const MENU_HIDE_DELAY = 0;
 const SELECTION_THROTTLE_MS = 80;
@@ -176,6 +178,12 @@ export const createSelectionMenuMarkup = () => {
             <span class="separator"></span>
             <button data-command="insertUnorderedList" title="Unordered List">• List</button>
             <button data-command="insertOrderedList" title="Ordered List">1. List</button>
+            <span class="separator"></span>
+            <button data-command="insertImage" class="selection-menu-image-btn" title="Insert Image">
+                <svg class="selection-menu-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 18.5v-13Zm2.5-.5a.5.5 0 0 0-.5.5v8.2l3.5-3.5a1.2 1.2 0 0 1 1.7 0l4.1 4.1 1.7-1.7a1.2 1.2 0 0 1 1.7 0L20 14.3V5.5a.5.5 0 0 0-.5-.5h-11Zm4 2.8a1.7 1.7 0 1 0 0 3.4 1.7 1.7 0 0 0 0-3.4Zm-4.5 10v.7a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-1.2l-2.1-2.1-1.7 1.7a1.2 1.2 0 0 1-1.7 0l-4.1-4.1-2.9 2.9Z" fill="currentColor"></path>
+                </svg>
+            </button>
         </div>
     `;
 }
@@ -304,6 +312,22 @@ export const initSelectionMenu = (editor) => {
      * Handles clicks on the menu buttons and executes corresponding commands.
      * @param {MouseEvent} e - The click event.
      */
+    const imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.accept = 'image/png,image/jpeg,image/jpg,image/webp';
+    imageInput.className = 'selection-menu-file-input';
+
+    const handleImageChange = () => {
+        const files = Array.from(imageInput.files || []);
+        if (!files.length) return;
+        insertImagesFromFiles(files, editor);
+        imageInput.value = '';
+    };
+
+    imageInput.addEventListener('change', handleImageChange);
+
+    selectionMenu.appendChild(imageInput);
+
     const handleMenuClick = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -314,7 +338,9 @@ export const initSelectionMenu = (editor) => {
         const command = button.dataset.command;
         const value = button.dataset.value || null;
 
-        if (command === 'formatBlock') {
+        if (command === 'insertImage') {
+            imageInput.click();
+        } else if (command === 'formatBlock') {
             try {
                 const currentValue = document.queryCommandValue('formatBlock').toUpperCase();
                 const newValue = (currentValue === value) ? 'P' : value;
@@ -408,6 +434,10 @@ export const initSelectionMenu = (editor) => {
                 'mousedown',
                 handleMenuClick
             );
+            imageInput.removeEventListener('change', handleImageChange);
+            if (imageInput.parentElement) {
+                imageInput.parentElement.removeChild(imageInput);
+            }
 
             if (selectionTimer) {
                 clearTimeout(selectionTimer);

@@ -11,6 +11,8 @@ Mint.include('stylesheet/style-components/find.css');
  */
 export const createModelFind = async () => {
     let config;
+    let showHandler = null;
+    let hideHandler = null;
 
     try {
         config = await fetchJSON(
@@ -24,7 +26,7 @@ export const createModelFind = async () => {
         );
     }
 
-    return {
+    const api = {
         markups: `
             <div id="${config.modalId}" class="${config.modalClass}" role="dialog" aria-labelledby="find-modal-title" aria-modal="true">
                 <div class="${config.contentClass}">
@@ -532,7 +534,23 @@ export const createModelFind = async () => {
             initializeEventListeners();
             // console.info('[ModelFind] Component initialized successfully');
             // Return cleanup function
-            return { destroy };
+            showHandler = showModal;
+            hideHandler = hideModal;
+            return { destroy, show: showModal, hide: hideModal };
         }
     };
+
+    api.show = () => {
+        if (typeof showHandler === 'function') {
+            showHandler();
+        }
+    };
+
+    api.hide = () => {
+        if (typeof hideHandler === 'function') {
+            hideHandler();
+        }
+    };
+
+    return api;
 };

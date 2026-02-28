@@ -7,6 +7,7 @@ import { getConfig } from './pageServices/configService.js';
 import { createCommandPalette } from './contentComponents/commandPalette/commandPalette.js';
 import { createPageMarkup } from './pages/pageMarkup.js';
 import { createTitlebar, initTitlebar } from './pageComponents/titlebar.js';
+import { initFileDropOverlay } from './pageComponents/fileDropOverlay.js';
 import { initEditorPage } from './pages/editorPage.js';
 import '../../api/cursor-behavior.js';
 
@@ -83,6 +84,20 @@ export const Page = {
                 contextMenu,
                 commandPalette
             );
+
+            try {
+                const editorElement = document.getElementById(config.textareaId);
+                const overlay = initFileDropOverlay({ editor: editorElement, noteAPI });
+                if (result && typeof result.cleanup === 'function') {
+                    const origCleanup = result.cleanup.bind(result);
+                    result.cleanup = () => {
+                        try { overlay.cleanup(); } catch (e) { }
+                        origCleanup();
+                    };
+                }
+            } catch (e) {
+                console.warn('initFileDropOverlay failed', e);
+            }
 
             // Initialize titlebar behavior
             try {

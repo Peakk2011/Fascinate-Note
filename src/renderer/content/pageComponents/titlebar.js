@@ -34,6 +34,8 @@ export const createTitlebarMarkup = () => {
 export const initTitlebar = (threshold = 60) => {
     const el = document.getElementById('title-bar') || document.querySelector('.application-titlebar');
     const workspaceToggleBtn = document.getElementById('workspace-toggle-btn');
+    const workspaceMenu = document.getElementById('workspace-menu');
+    const workspaceMarkerBtn = document.getElementById('workspace-open-marker');
     const workspaceContainer = document.getElementById('workspace-container');
 
     if (!el) {
@@ -42,6 +44,7 @@ export const initTitlebar = (threshold = 60) => {
 
     let workspaceApi = null;
     let isWorkspaceInitialized = false;
+    let menuOpen = false;
 
     const onScroll = () => {
         /** @type {number} */
@@ -74,18 +77,75 @@ export const initTitlebar = (threshold = 60) => {
                 editorContainer.style.display = 'block';
             }
         }
+
+        if (!isWorkspaceVisible && workspaceApi?.refreshCurrentNote) {
+            const editor = document.querySelector('.editable-div');
+            workspaceApi.refreshCurrentNote(editor?.innerHTML || '');
+        }
+    };
+
+    const closeMenu = () => {
+        menuOpen = false;
+        if (workspaceMenu) {
+            if (workspaceMenu.contains(document.activeElement)) {
+                workspaceToggleBtn?.focus();
+            }
+            workspaceMenu.classList.remove('is-open');
+            workspaceMenu.setAttribute('aria-hidden', 'true');
+            workspaceMenu.setAttribute('inert', '');
+        }
+    };
+
+    const openMenu = () => {
+        menuOpen = true;
+        if (workspaceMenu) {
+            workspaceMenu.classList.add('is-open');
+            workspaceMenu.setAttribute('aria-hidden', 'false');
+            workspaceMenu.removeAttribute('inert');
+        }
+    };
+
+    const toggleMenu = () => {
+        if (!workspaceMenu) return;
+        menuOpen ? closeMenu() : openMenu();
+    };
+
+    const handleMenuClick = (e) => {
+        if (!workspaceMenu || !menuOpen) return;
+        if (workspaceMenu.contains(e.target) || workspaceToggleBtn?.contains(e.target)) {
+            return;
+        }
+        closeMenu();
+    };
+
+    const handleMenuEscape = (e) => {
+        if (e.key !== 'Escape') return;
+        if (menuOpen) {
+            closeMenu();
+        }
     };
 
     const listenerOptions = { passive: true };
     window.addEventListener('scroll', onScroll, listenerOptions);
-    workspaceToggleBtn?.addEventListener('click', toggleWorkspace);
+    const handleMarkerClick = async () => {
+        await toggleWorkspace();
+        closeMenu();
+    };
+
+    workspaceToggleBtn?.addEventListener('click', toggleMenu);
+    workspaceMarkerBtn?.addEventListener('click', handleMarkerClick);
+    document.addEventListener('mousedown', handleMenuClick);
+    document.addEventListener('keydown', handleMenuEscape);
 
     onScroll();
 
     return {
         destroy() {
             window.removeEventListener('scroll', onScroll);
-            workspaceToggleBtn?.removeEventListener('click', toggleWorkspace);
+            workspaceToggleBtn?.removeEventListener('click', toggleMenu);
+            workspaceMarkerBtn?.removeEventListener('click', handleMarkerClick);
+            document.removeEventListener('mousedown', handleMenuClick);
+            document.removeEventListener('keydown', handleMenuEscape);
             el.classList.remove('scrolled');
             if (workspaceApi) {
                 workspaceApi.destroy();
