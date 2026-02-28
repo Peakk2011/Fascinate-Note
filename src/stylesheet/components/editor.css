@@ -50,7 +50,7 @@
     font-size: 11px;
     line-height: 1;
     white-space: nowrap;
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
 }
 
 .editable-div .editor-block {
@@ -324,7 +324,7 @@ mark {
     max-width: 100%;
     height: auto;
     display: block;
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     outline: solid var(--zoom-btn-border-width) var(--theme-border);
     border-radius: 6px;
     width: 100%;

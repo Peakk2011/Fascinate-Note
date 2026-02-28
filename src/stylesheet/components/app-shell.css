@@ -98,6 +98,80 @@ body.darwin .status {
 }
 
 /**
+ * @component WorkspaceMenu
+ * @description Toggle menu for marker + zoom controls
+ */
+.workspace-menu {
+    position: fixed;
+    right: calc(var(--status-right) - 4px);
+    bottom: calc(var(--status-top) + 36px);
+    min-width: 220px;
+    background: color-mix(in srgb, var(--theme-bg) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--theme-border) 70%, transparent);
+    border-radius: 16px;
+    box-shadow: var(--ctx-menu-shadow);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(6px);
+    transition: opacity 160ms ease, transform 160ms ease;
+    z-index: calc(var(--titlebar-z-index) + 2);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+}
+
+.workspace-menu.is-open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.workspace-menu-header {
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: color-mix(in srgb, var(--theme-fg) 85%, transparent);
+}
+
+.workspace-menu-action {
+    border: none;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--PrimaryButtonsColors) 85%, transparent);
+    color: var(--theme-fg);
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.workspace-menu-action:hover {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+}
+
+.workspace-menu-divider {
+    height: 1px;
+    width: 100%;
+    background: color-mix(in srgb, var(--theme-border) 70%, transparent);
+}
+
+.workspace-menu-controls .zoom-controls {
+    position: static;
+    transform: none;
+    opacity: 1;
+    gap: 10px;
+}
+
+.workspace-menu-controls .export-menu {
+    bottom: calc(100% + 8px);
+}
+
+/**
  * @selector #statusText
  * @description Text label for status indicator
  */

@@ -5,7 +5,7 @@
  */
 .editable-div pre {
     background-color: var(--PrimaryButtonsColors);
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     outline: solid var(--zoom-btn-border-width) var(--theme-border);
     border-radius: 6px;
     padding: 16px;

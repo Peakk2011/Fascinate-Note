@@ -1,0 +1,188 @@
+/**
+ * @component MarkerWorkspace
+ * @description Canvas-based marker view with draggable windows and iOS-style toolbar
+ */
+#workspace-container {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--theme-bg) 92%, transparent);
+    z-index: 6;
+    overflow: hidden;
+}
+
+.marker-layer {
+    position: absolute;
+    inset: 0;
+    transform-origin: 0 0;
+    user-select: none;
+}
+
+.marker-window {
+    position: absolute;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--theme-bg) 88%, #ffffff 12%);
+    border: 1px solid color-mix(in srgb, var(--theme-border) 65%, transparent);
+    box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.28),
+        0 4px 12px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    color: var(--theme-fg);
+    min-width: 200px;
+    min-height: 120px;
+}
+
+.marker-window.is-current {
+    border-color: var(--image-border-color);
+}
+
+.marker-window.is-selected {
+    outline: 2px solid var(--image-border-color);
+    outline-offset: 2px;
+}
+
+.marker-window.is-dragging {
+    cursor: grabbing;
+}
+
+.marker-window-ghost {
+    pointer-events: none;
+    background: transparent;
+    border: 2px dashed color-mix(in srgb, var(--image-border-color) 70%, transparent);
+    box-shadow: none;
+}
+
+.marker-window-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid color-mix(in srgb, var(--theme-border) 50%, transparent);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--theme-bg) 80%, transparent) 0%,
+        color-mix(in srgb, var(--theme-bg) 95%, transparent) 100%
+    );
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    cursor: grab;
+}
+
+.marker-window-title {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--theme-fg);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    outline: none;
+}
+
+.marker-window-title:read-only {
+    opacity: 0.8;
+}
+
+.marker-window-group {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--marker-group-color, var(--image-border-color)) 20%, transparent);
+    color: var(--marker-group-color, var(--image-border-color));
+    display: none;
+}
+
+.marker-window-group.show {
+    display: inline-flex;
+}
+
+.marker-window-color {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--theme-border) 70%, transparent);
+    background: var(--marker-window-color, var(--image-border-color));
+    padding: 0;
+    cursor: pointer;
+}
+
+.marker-window-color-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+.marker-window-content {
+    padding: 12px 14px 16px;
+    font-size: 13px;
+    line-height: 1.45;
+    color: color-mix(in srgb, var(--theme-fg) 82%, transparent);
+    overflow: hidden;
+    user-select: text;
+}
+
+.marker-window-content[contenteditable="true"] {
+    outline: none;
+}
+
+.marker-toolbar {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 24px;
+    background: color-mix(in srgb, var(--theme-bg) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--theme-border) 60%, transparent);
+    box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.marker-toolbar-btn {
+    border: none;
+    padding: 8px 14px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--PrimaryButtonsColors) 80%, transparent);
+    color: var(--theme-fg);
+    font-family: var(--font-display);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--ctx-menu-shadow);
+}
+
+.marker-toolbar-btn:hover {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+}
+
+.marker-group-select {
+    border: none;
+    padding: 7px 12px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--theme-bg) 70%, transparent);
+    color: var(--theme-fg);
+    font-family: var(--font-text);
+    font-size: 12px;
+    cursor: pointer;
+}
+
+@media (prefers-color-scheme: light) {
+    #workspace-container {
+        background: color-mix(in srgb, #ffffff 80%, transparent);
+    }
+
+    .marker-window {
+        background: color-mix(in srgb, #ffffff 96%, transparent);
+    }
+}

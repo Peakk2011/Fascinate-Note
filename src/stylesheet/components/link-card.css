@@ -8,7 +8,7 @@
     /* border: var(--theme-border) solid 1.5px; */
     background: var(--ctx-menu-bg);
     backdrop-filter: blur(var(--ctx-menu-blur));
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     transition: transform 160ms ease, box-shadow 160ms ease;
     cursor: default;
     user-select: none;
@@ -22,7 +22,7 @@
 
 .link-card:hover {
     box-shadow:
-        var(--ctx-menu-shadow),
+        var(--theme-shadow),
         0 4px 12px rgba(0, 0, 0, .08),
         0 16px 40px rgba(0, 0, 0, .12);
 }
@@ -36,7 +36,7 @@
     align-items: center;
     justify-content: center;
 
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     border: var(--theme-border) solid 1px;
     outline: var(--theme-border) solid 1px;
     pointer-events: none;
@@ -98,7 +98,7 @@
     line-height: 0;
     border-radius: var(--zoom-btn-border-radius);
     background-color: var(--PrimaryButtonsColors);
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     border: var(--theme-border) solid 1px;
     outline: var(--theme-border) solid 1px;
     color: var(--theme-fg);

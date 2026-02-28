@@ -488,6 +488,16 @@
         0px 9px 46px hsla(0, 0%, 0%, 0.12),
         0px 11px 15px hsla(0, 0%, 0%, 0.20);
 
+    /* 
+    Reuse context menu shadow for theme shadow */
+    /**
+     * @var --theme-shadow
+     * @type {box-shadow}
+     * @description Standard global shadow variables for Fasincate Notes
+     * @layers 3 shadow layers for depth
+     */
+    --theme-shadow: var(--ctx-menu-shadow);
+
     /* Status Variables */
     --status-font-size: 14px;
     --status-gap: 6px;

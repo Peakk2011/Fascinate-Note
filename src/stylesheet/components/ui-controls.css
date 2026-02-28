@@ -38,7 +38,7 @@
     line-height: 0;
     border-radius: var(--zoom-btn-border-radius);
     background-color: var(--PrimaryButtonsColors);
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     outline: solid var(--zoom-btn-border-width) var(--theme-border);
     width: fit-content;
     display: inline-block;
@@ -103,7 +103,7 @@
     transform: translateX(-50%);
     background-color: var(--export-menu-bg);
     border: 1px solid var(--theme-border);
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     min-width: var(--export-menu-min-width);
     border-radius: var(--export-menu-border-radius);
     z-index: var(--export-menu-z-index);
@@ -155,7 +155,7 @@
 .selection-menu {
     position: fixed;
     background-color: var(--ctx-menu-bg);
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     outline: solid 1.5px var(--theme-border);
     border-radius: var(--selection-menu-border-radius);
     padding: var(--selection-menu-padding);
@@ -231,6 +231,58 @@
     font-size: var(--selection-btn-icon-size);
 }
 
+.selection-menu-icon {
+    width: 16px;
+    height: 16px;
+    display: block;
+}
+
+.selection-menu-image-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.selection-menu-file-input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+}
+
+/* File drop overlay */
+.file-drop-overlay {
+    position: fixed;
+    inset: 0;
+    background: color-mix(in srgb, var(--theme-bg) 65%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    transition: opacity 160ms ease;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.file-drop-overlay.show {
+    opacity: 1;
+}
+
+.file-drop-card {
+    padding: 18px 24px;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--theme-bg) 85%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--theme-border) 70%, transparent);
+    color: var(--theme-fg);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: var(--theme-shadow);
+}
+
 .math-suggestion-tooltip {
     background: var(--PrimaryButtonsColors);
     outline: solid var(--zoom-btn-border-width) var(--theme-border);
@@ -239,7 +291,7 @@
     border-radius: 8px;
     font-size: 0.92rem;
     font-weight: 500;
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     pointer-events: none
 }
 

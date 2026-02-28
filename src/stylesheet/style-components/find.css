@@ -24,7 +24,7 @@
     background-color: var(--theme-model);
     color: var(--theme-fg);
     outline: 1.5px solid var(--theme-model-border);
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     margin: auto;
     border-radius: 10px;
     width: 70%;
@@ -100,7 +100,7 @@
     bottom: 1.5rem;
     background-color: var(--PrimaryButtonsColors);
     outline: solid 1px var(--theme-border);
-    box-shadow: var(--ctx-menu-shadow);
+    box-shadow: var(--theme-shadow);
     border: none;
     border-radius: 100vmax;
     cursor: pointer;
