@@ -581,6 +581,19 @@
     --titlebar-z-index: 10;
     --titlebar-font-size: 14px;
     --titlebar-font-weight: 400;
+
+    /* Marker */
+    --marker-bg: hsl(0, 0%, 9%);
+    --marker-window-bg: hsl(0, 0%, 11%);
+    --marker-window-border: hsl(0, 0%, 18%);
+    --marker-header-bg: hsl(0, 0%, 9%);
+    --marker-header-border: hsl(0, 0%, 16%);
+    --marker-ghost-border: #70a1c2;
+    --marker-group-badge-bg: hsl(0, 0%, 15%);
+    --marker-color-btn-border: hsl(0, 0%, 22%);
+    --marker-content-color: hsl(0, 0%, 75%);
+    --marker-toolbar-bg: hsl(0, 0%, 10%);
+    --marker-toolbar-border: hsl(0, 0%, 20%);
 }
 
 /* Platform-specific styles variables */
@@ -656,6 +669,18 @@ body.darwin {
 
         --theme-model: hsl(0, 0%, 98%);
         --theme-model-border: var(--theme-border);
+
+        --marker-bg: hsl(120, 100%, 99%);
+        --marker-window-bg: #ffffff;
+        --marker-window-border: hsl(0, 0%, 88%);
+        --marker-header-bg: hsl(0, 0%, 98%);
+        --marker-header-border: hsl(0, 0%, 90%);
+        --marker-ghost-border: #b0c6cb;
+        --marker-group-badge-bg: hsl(0, 0%, 92%);
+        --marker-color-btn-border: hsl(0, 0%, 80%);
+        --marker-content-color: hsl(0, 0%, 30%);
+        --marker-toolbar-bg: hsl(0, 0%, 97%);
+        --marker-toolbar-border: hsl(0, 0%, 88%);
     }
 }
 

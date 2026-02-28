@@ -51,7 +51,13 @@ export const resolvePreview = async (url, signal) => {
         const res = await fetch(`https://noembed.com/embed?url=${encoded}`, { signal });
         if (res.ok) {
             const data = await res.json();
-            if (data.error) throw new Error(data.error);
+            if (data.error) {
+                const message = String(data.error || '').toLowerCase();
+                if (message.includes('no matching providers')) {
+                    return { title: parsed.hostname, image: null, providerName: '' };
+                }
+                throw new Error(data.error);
+            }
             return {
                 title:        data.title         || parsed.hostname,
                 image:        data.thumbnail_url || null,

@@ -67,7 +67,18 @@ export const initTitlebar = (threshold = 60) => {
 
         if (!isWorkspaceVisible && !isWorkspaceInitialized) {
             try {
-                workspaceApi = await createWorkspace(workspaceContainer);
+                workspaceApi = await createWorkspace(workspaceContainer, {
+                    onOpenNote: async (noteId) => {
+                        if (window.noteAPI && typeof window.noteAPI.openNote === 'function') {
+                            await window.noteAPI.openNote(noteId);
+                            // close workspace after opening
+                            toggleWorkspace();
+                        }
+                    },
+                    onReturnToEditor: () => {
+                        toggleWorkspace();
+                    }
+                });
                 isWorkspaceInitialized = true;
                 console.log('Workspace initialized.');
             } catch (error) {
@@ -78,9 +89,11 @@ export const initTitlebar = (threshold = 60) => {
             }
         }
 
-        if (!isWorkspaceVisible && workspaceApi?.refreshCurrentNote) {
+        if (!isWorkspaceVisible) {
+            // workspace just became visible and update preview
             const editor = document.querySelector('.editable-div');
-            workspaceApi.refreshCurrentNote(editor?.innerHTML || '');
+            workspaceApi?.refreshCurrentNote && workspaceApi.refreshCurrentNote(editor?.innerHTML || '');
+            workspaceApi?.refreshAllNotes && workspaceApi.refreshAllNotes();
         }
     };
 

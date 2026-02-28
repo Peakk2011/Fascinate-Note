@@ -72,6 +72,9 @@ export const Page = {
                 this._getContextMenu(),
                 this._getCommandPalette()
             ]);
+            
+            // make available for workspace callbacks
+            window.noteAPI = noteAPI;
 
             if (!noteAPI) {
                 throw new Error('Failed to initialize note features');

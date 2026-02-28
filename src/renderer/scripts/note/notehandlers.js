@@ -9,10 +9,27 @@ import {
     addEventListenerTracker
 } from './state.js';
 
-let editorContent = {
-    text: '',
-    fontSize: noteFeaturesConfig.defaultFontSize
-};
+import {
+    createNote,
+    getCurrentNote,
+    getCurrentNoteId,
+    getNoteById,
+    getFontSize,
+    setCurrentNoteId,
+    setFontSize,
+    updateNote
+} from './noteStore.js';
+
+// const ensureCurrentNote = () => {
+//     let current = getCurrentNote();
+//     if (!current) {
+//         current = createNote();
+//         if (current?.id) {
+//             setCurrentNoteId(current.id);
+//         }
+//     }
+//     return current;
+// };
 
 /**
  * Creates a function to update the status indicator UI.
@@ -32,7 +49,7 @@ export const createSetStatus = (els) => {
             return;
         }
 
-        els.statusText.textContent = customText || statusConfig;
+        els.statusText.textContent = customText ?? (statusConfig ?? '');
         els.saveIndicator.className = `dot ${statusType}`;
     };
 };
@@ -47,15 +64,31 @@ export const createSetStatus = (els) => {
 export const createLoadData = (els, setStatus) => {
     return async () => {
         try {
-            const savedContent = localStorage.getItem('editorContent');
+            const currentNoteId = getCurrentNoteId();
+            let currentNote = currentNoteId ? getNoteById(currentNoteId) : null;
             
-            if (savedContent) {
-                editorContent = JSON.parse(savedContent);
+            // only create a new note if truly no current note exists
+            if (!currentNote && !currentNoteId) {
+                currentNote = createNote();
+                if (currentNote?.id) {
+                    setCurrentNoteId(currentNote.id);
+                }
             }
+            
+            if (!currentNote) {
+                console.warn('No note available to load; creating fallback');
+                currentNote = createNote();
+                if (currentNote?.id) {
+                    setCurrentNoteId(currentNote.id);
+                }
+            }
+            
+            const html = currentNote?.html || '';
+            const fontSize = getFontSize(noteFeaturesConfig.defaultFontSize);
 
-            els.textarea.innerHTML = editorContent.text;
-            setCurrentFontSize(editorContent.fontSize);
-            els.textarea.style.fontSize = `${editorContent.fontSize}px`;
+            els.textarea.innerHTML = html;
+            setCurrentFontSize(fontSize);
+            els.textarea.style.fontSize = `${fontSize}px`;
         } catch (error) {
             console.error('Error loading data:', error);
             setStatus('error', 'Failed to load');
@@ -74,23 +107,27 @@ export const createLoadData = (els, setStatus) => {
 export const createSaveData = (els, setStatus) => {
     return async () => {
         try {
-            editorContent = {
-                text: els.textarea.innerHTML,
-                fontSize: currentFontSize
-            };
+            const html = els.textarea.innerHTML;
+            const currentId = getCurrentNoteId();
 
-            localStorage.setItem(
-                'editorContent',
-                JSON.stringify(editorContent)
-            );
+            if (currentId) {
+                updateNote(currentId, { html });
+            } else {
+                const note = createNote({ html });
+                if (note?.id) {
+                    setCurrentNoteId(note.id);
+                }
+            }
+
+            setFontSize(currentFontSize);
 
             setStatus(
                 'saved',
-                `Saved ${new Date().toLocaleTimeString('th-Th')
-                }`
+                `Saved ${new Date().toLocaleTimeString('th-Th')}`
             );
 
-            setTimeout(() => setStatus('saved'), 1000);
+            // clear the message after a short delay by switching to 'idle' state
+            setTimeout(() => setStatus('idle'), 1000);
 
         } catch (error) {
             console.error('Error saving:', error);
@@ -139,9 +176,7 @@ export const createZoomHandlers = (els, saveData) => {
     const resetZoom = async () => {
         try {
             setCurrentFontSize(noteFeaturesConfig.defaultFontSize);
-            els.textarea.style.fontSize = `
-                ${noteFeaturesConfig.defaultFontSize}px
-            `;
+            els.textarea.style.fontSize = `${noteFeaturesConfig.defaultFontSize}px`;
             await saveData();
         } catch (error) {
             console.error('Error resetting zoom:', error);
@@ -168,7 +203,10 @@ export const createTriggerAutoSave = (setStatus, saveData) => {
     let throttleTimer = null;
 
     return () => {
-        clearTimeout(autoSaveTimeout);
+        if (autoSaveTimeout) {
+            clearTimeout(autoSaveTimeout);
+            setAutoSaveTimeout(null);
+        }
         setStatus('typing');
 
         if (throttleTimer) {
@@ -243,7 +281,7 @@ const debouncedInputHandler = (triggerAutoSave) => {
         if (debounceTimer) clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
             triggerAutoSave();
-        }, 10);
+        }, 200);
     };
 };
 
@@ -264,9 +302,7 @@ export const setupEventListeners = (
     resetZoom
 ) => {
     const inputHandler = debouncedInputHandler(triggerAutoSave);
-    els.textarea.addEventListener(
-        'input', inputHandler
-    );
+    els.textarea.addEventListener('input', inputHandler);
 
     addEventListenerTracker(
         els.textarea,

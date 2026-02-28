@@ -70,7 +70,11 @@ const initialize = async () => {
         }
 
         // 2. Create the workspace and wait for its API
-        const workspaceApi = await createWorkspace(container);
+        const workspaceApi = await createWorkspace(container, {
+            onOpenNote: (noteId) => console.log('open note', noteId),
+            onReturnToEditor: () => console.log('return to editor')
+        });
+        
         console.log('Workspace initialized successfully!', workspaceApi);
 
         // 3. Get control elements from the DOM

@@ -1,7 +1,7 @@
 {
   "name": "fascinate-note",
   "productName": "Fascinate Note",
-  "version": "1.0.14",
+  "version": "1.1.0",
   "description": "Feel the idea before you write it.",
   "main": "src/main.js",
   "type": "module",

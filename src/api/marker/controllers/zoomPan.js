@@ -16,24 +16,35 @@ import { updateViewTransform } from '../core/canvas.js';
  * @property {boolean} isAnimating          - Animation state flag
  */
 
-// Animation state
-/** @type {ZoomState} */
-const zoomState = {
-    targetScale: 1,
-    currentScale: 1,
-    targetPanX: 0,
-    targetPanY: 0,
-    currentPanX: 0,
-    currentPanY: 0,
-    animationFrame: null,
-    isAnimating: false
-};
-
-// Constants
-const ANIMATION_DURATION = 200;             // milliseconds
+// Animation smoothing/easing constants
 const ANIMATION_EASING = 0.15;              // Smoothing factor (0-1, higher = faster)
 const EPSILON = 0.001;                      // Threshold for stopping animation
 const HALF = 0.5;
+
+/**
+ * Retrieve or initialize per-workspace zoom state.
+ * Placing the object on the global state rather than module scope
+ * avoids a singleton when multiple workspaces are mounted in the
+ * same page. The state object is already shared by the rest of the
+ * API, so this keeps the animation data scoped appropriately.
+ * @returns {ZoomState}
+ */
+const getZoomState = () => {
+    const state = getState();
+    if (!state.zoomState) {
+        state.zoomState = {
+            targetScale: state.scale,
+            currentScale: state.scale,
+            targetPanX: state.panX,
+            targetPanY: state.panY,
+            currentPanX: state.panX,
+            currentPanY: state.panY,
+            animationFrame: null,
+            isAnimating: false
+        };
+    }
+    return state.zoomState;
+};
 
 /**
  * Handles mouse wheel events for zoom and pan
@@ -48,8 +59,12 @@ export const handleWheel = (e) => {
         const config = getConfig().constants;
 
         const rect = state.canvasContainer.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        // record last mouse position so that button-based zooms can use a sensible center
+        state.lastMouseX = e.clientX - rect.left;
+        state.lastMouseY = e.clientY - rect.top;
+
+        const mouseX = state.lastMouseX;
+        const mouseY = state.lastMouseY;
 
         if (e.ctrlKey || e.metaKey) {
             // Zoom operation
@@ -95,26 +110,38 @@ export const handleWheel = (e) => {
 
 /**
  * Animates zoom to target scale and position
+ *
+ * The `rect` argument used to be required for constraining pan, but we
+ * now re-query the container size on every frame. It is left in the API
+ * for backwards compatibility, callers may simply pass whatever rect they
+ * have at hand.
+ *
  * @param {number} targetScale              - Target zoom scale
  * @param {number} targetPanX               - Target pan X position
  * @param {number} targetPanY               - Target pan Y position
- * @param {DOMRect} rect                    - Container bounding rect
+ * @param {DOMRect} [rect]                  - Deprecated bounding rect
  * @returns {void}
  */
 const animateZoom = (targetScale, targetPanX, targetPanY, rect) => {
     try {
         const state = getState();
+        const zs = getZoomState();
 
-        zoomState.targetScale = targetScale;
-        zoomState.targetPanX = targetPanX;
-        zoomState.targetPanY = targetPanY;
-        zoomState.currentScale = state.scale;
-        zoomState.currentPanX = state.panX;
-        zoomState.currentPanY = state.panY;
+        // always sync current values from state so that if another
+        // animation was in progress we restart the easing from the
+        // *current* scale/pan rather than whatever was left in the
+        // old zoomState object (fixes the small jank when interrupting)
+        zs.currentScale = state.scale;
+        zs.currentPanX = state.panX;
+        zs.currentPanY = state.panY;
 
-        if (!zoomState.isAnimating) {
-            zoomState.isAnimating = true;
-            startAnimation(rect);
+        zs.targetScale = targetScale;
+        zs.targetPanX = targetPanX;
+        zs.targetPanY = targetPanY;
+
+        if (!zs.isAnimating) {
+            zs.isAnimating = true;
+            startAnimation(); // rect will be grabbed per-frame
         }
     } catch (error) {
         console.error('Error animating zoom:', error);
@@ -123,25 +150,31 @@ const animateZoom = (targetScale, targetPanX, targetPanY, rect) => {
 
 /**
  * Animates pan to target position
+ *
+ * See notes on `animateZoom` about the `rect` argument; we no longer
+ * consume it internally.
+ *
  * @param {number} targetPanX               - Target pan X position
  * @param {number} targetPanY               - Target pan Y position
- * @param {DOMRect} rect                    - Container bounding rect
+ * @param {DOMRect} [rect]                  - Deprecated bounding rect
  * @returns {void}
  */
-const animatePan = (targetPanX, targetPanY, rect) => {
+export const animatePan = (targetPanX, targetPanY, rect) => {
     try {
         const state = getState();
+        const zs = getZoomState();
 
-        zoomState.targetScale = state.scale;
-        zoomState.targetPanX = targetPanX;
-        zoomState.targetPanY = targetPanY;
-        zoomState.currentScale = state.scale;
-        zoomState.currentPanX = state.panX;
-        zoomState.currentPanY = state.panY;
+        zs.currentScale = state.scale;
+        zs.currentPanX = state.panX;
+        zs.currentPanY = state.panY;
 
-        if (!zoomState.isAnimating) {
-            zoomState.isAnimating = true;
-            startAnimation(rect);
+        zs.targetScale = state.scale;
+        zs.targetPanX = targetPanX;
+        zs.targetPanY = targetPanY;
+
+        if (!zs.isAnimating) {
+            zs.isAnimating = true;
+            startAnimation();
         }
     } catch (error) {
         console.error('Error animating pan:', error);
@@ -153,16 +186,20 @@ const animatePan = (targetPanX, targetPanY, rect) => {
  * @param {DOMRect} rect                    - Container bounding rect
  * @returns {void}
  */
-const startAnimation = (rect) => {
+const startAnimation = () => {
     try {
         const animate = () => {
             try {
                 const state = getState();
+                const zs = getZoomState();
+
+                // captured at the time the animation started.
+                const rect = state.canvasContainer.getBoundingClientRect();
 
                 // Calculate interpolation
-                const scaleDiff = zoomState.targetScale - zoomState.currentScale;
-                const panXDiff = zoomState.targetPanX - zoomState.currentPanX;
-                const panYDiff = zoomState.targetPanY - zoomState.currentPanY;
+                const scaleDiff = zs.targetScale - zs.currentScale;
+                const panXDiff = zs.targetPanX - zs.currentPanX;
+                const panYDiff = zs.targetPanY - zs.currentPanY;
 
                 // Check if animation should stop
                 const isComplete =
@@ -172,49 +209,54 @@ const startAnimation = (rect) => {
 
                 if (isComplete) {
                     // Snap to final values
-                    state.scale = zoomState.targetScale;
-                    state.panX = zoomState.targetPanX;
-                    state.panY = zoomState.targetPanY;
+                    state.scale = zs.targetScale;
+                    state.panX = zs.targetPanX;
+                    state.panY = zs.targetPanY;
 
-                    constrainPan(rect);
+                    constrainPan();
                     updateViewTransform();
 
-                    zoomState.isAnimating = false;
-                    zoomState.animationFrame = null;
+                    zs.isAnimating = false;
+                    zs.animationFrame = null;
                     return;
                 }
 
                 // Apply easing
-                zoomState.currentScale += scaleDiff * ANIMATION_EASING;
-                zoomState.currentPanX += panXDiff * ANIMATION_EASING;
-                zoomState.currentPanY += panYDiff * ANIMATION_EASING;
+                zs.currentScale += scaleDiff * ANIMATION_EASING;
+                zs.currentPanX += panXDiff * ANIMATION_EASING;
+                zs.currentPanY += panYDiff * ANIMATION_EASING;
 
                 // Update state
-                state.scale = zoomState.currentScale;
-                state.panX = zoomState.currentPanX;
-                state.panY = zoomState.currentPanY;
+                state.scale = zs.currentScale;
+                state.panX = zs.currentPanX;
+                state.panY = zs.currentPanY;
 
-                constrainPan(rect);
+                constrainPan();
                 updateViewTransform();
 
                 // Continue animation
-                zoomState.animationFrame = requestAnimationFrame(animate);
+                zs.animationFrame = requestAnimationFrame(animate);
             } catch (error) {
                 console.error('Error in animation frame:', error);
 
-                zoomState.isAnimating = false;
-                zoomState.animationFrame = null;
+                const zs = getZoomState();
+                zs.isAnimating = false;
+                zs.animationFrame = null;
             }
         };
 
         // Cancel existing animation
-        if (zoomState.animationFrame !== null) {
-            cancelAnimationFrame(zoomState.animationFrame);
+        const zs = getZoomState();
+        if (zs.animationFrame !== null) {
+            cancelAnimationFrame(zs.animationFrame);
         }
 
-        zoomState.animationFrame = requestAnimationFrame(animate);
+        zs.animationFrame = requestAnimationFrame(animate);
     } catch (error) {
         console.error('Error starting animation:', error);
+        // calls can retry
+        const zs = getZoomState();
+        zs.isAnimating = false;
     }
 };
 
@@ -223,9 +265,10 @@ const startAnimation = (rect) => {
  * @param {DOMRect} containerRect           - Container bounding rect
  * @returns {void}
  */
-const constrainPan = (containerRect) => {
+const constrainPan = () => {
     try {
         const state = getState();
+        const containerRect = state.canvasContainer.getBoundingClientRect();
 
         const scaledWidth = state.canvasWidth * state.scale;
         const scaledHeight = state.canvasHeight * state.scale;
@@ -260,8 +303,9 @@ export const zoomIn = () => {
     try {
         const state = getState();
         const config = getConfig().constants;
-        const centerX = state.lastMouseX;
-        const centerY = state.lastMouseY;
+        const rect = state.canvasContainer.getBoundingClientRect();
+        const centerX = state.lastMouseX ?? rect.width / 2;
+        const centerY = state.lastMouseY ?? rect.height / 2;
 
         zoom(config.ZOOM_STEP, centerX, centerY);
     } catch (error) {
@@ -277,8 +321,9 @@ export const zoomOut = () => {
     try {
         const state = getState();
         const config = getConfig().constants;
-        const centerX = state.lastMouseX;
-        const centerY = state.lastMouseY;
+        const rect = state.canvasContainer.getBoundingClientRect();
+        const centerX = state.lastMouseX ?? rect.width / 2;
+        const centerY = state.lastMouseY ?? rect.height / 2;
 
         zoom(1 / config.ZOOM_STEP, centerX, centerY);
     } catch (error) {
@@ -294,6 +339,10 @@ export const resetZoom = () => {
     try {
         const state = getState();
         const rect = state.canvasContainer.getBoundingClientRect();
+
+        // reset pointer position as well so that subsequent zooms are centered
+        state.lastMouseX = rect.width / 2;
+        state.lastMouseY = rect.height / 2;
 
         const targetScale = 1;
         const targetPanX = (rect.width - state.canvasWidth) * HALF;

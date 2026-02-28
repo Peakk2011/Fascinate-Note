@@ -16,17 +16,25 @@ import {
     handleWheel,
     zoomIn,
     zoomOut,
-    resetZoom
+    resetZoom,
+    animatePan
 } from './controllers/zoomPan.js';
+
+import { initMarkerBoard } from './markerBoard.js';
+import { createMarkerGroupModal } from './markerGroupModal.js';
 
 /**
  * Initializes a new workspace within a given container element.
- * 
- * @param {HTMLElement} container - The container element to create the workspace in.
+ * @param {HTMLElement} container                       - The container element to create the workspace in.
+ * @param {Object} [options]                            - Optional callbacks for integration.
+ * @param {function(string):void} [options.onOpenNote]  - Called when a marker window is activated and
+ *     the associated note should be opened in the editor.
+ * @param {function():void} [options.onReturnToEditor]  - Called when the current note window is clicked
+ *     to return focus back to the main editor (e.g. close workspace view).
  * @returns {Promise<Object>} A promise that resolves to the workspace API.
  * @throws {Error} If the container element is not found or invalid.
  */
-export const createWorkspace = async (container) => {
+export const createWorkspace = async (container, options = {}) => {
     if (!container || !(container instanceof HTMLElement)) {
         throw new Error('A valid container HTMLElement must be provided.');
     }
@@ -40,7 +48,7 @@ export const createWorkspace = async (container) => {
     const canvas = document.createElement('canvas');
     canvas.id = 'workspace-canvas';
     container.appendChild(canvas);
-    
+
     // 3. Initialize state with DOM elements
     updateState({
         canvasContainer: container,
@@ -50,17 +58,78 @@ export const createWorkspace = async (container) => {
 
     // 4. Initial setup
     setupCanvas();
-    
+
+    let board = null;
+
+    const groupModalInstance = createMarkerGroupModal({
+        onConfirm: (name) => board?.addGroup(name)
+    });
+
+    document.body.insertAdjacentHTML('beforeend', groupModalInstance.markups);
+    const groupModal = groupModalInstance.init();
+
+    board = initMarkerBoard({
+        container,
+        getCanvasCoords,
+        groupModal,
+        onOpenNote: options.onOpenNote,
+        onReturnToEditor: options.onReturnToEditor
+    });
+
+    if (board?.layer) {
+        updateState({ markerLayer: board.layer });
+    }
+
+    // helper to update last mouse coords for zoom centering
+    const updateMousePos = (e) => {
+        const rect = container.getBoundingClientRect();
+        const state = getState();
+        state.lastMouseX = e.clientX - rect.left;
+        state.lastMouseY = e.clientY - rect.top;
+    };
+
+    container.addEventListener('pointermove', updateMousePos);
+
+    // middle-button dragging support
+    let middleDrag = null;
+    container.addEventListener('mousedown', (e) => {
+        if (e.button === 1) {
+            e.preventDefault();
+            middleDrag = { x: e.clientX, y: e.clientY };
+            window.addEventListener('mousemove', onMiddleMove);
+            window.addEventListener('mouseup', onMiddleUp);
+        }
+    });
+
+    const onMiddleMove = (e) => {
+        if (!middleDrag) return;
+        const dx = e.clientX - middleDrag.x;
+        const dy = e.clientY - middleDrag.y;
+        const state = getState();
+        const rect = container.getBoundingClientRect();
+        const newPanX = state.panX + dx;
+        const newPanY = state.panY + dy;
+        animatePan(newPanX, newPanY, rect);
+        middleDrag.x = e.clientX;
+        middleDrag.y = e.clientY;
+    };
+
+    const onMiddleUp = (e) => {
+        if (e.button === 1) {
+            middleDrag = null;
+            window.removeEventListener('mousemove', onMiddleMove);
+            window.removeEventListener('mouseup', onMiddleUp);
+        }
+    };
+
     // 5. Add event listeners
     container.addEventListener('wheel', handleWheel, { passive: false });
 
-    // Handle window resizing
-    const resizeObserver = new ResizeObserver(entries => {
-        // setupCanvas will handle recalculating dimensions and redrawing
+    const resizeObserver = new ResizeObserver(() => {
         setupCanvas();
     });
     resizeObserver.observe(container);
-    
+
     // 6. Return public API
     const api = {
         zoomIn,
@@ -68,13 +137,18 @@ export const createWorkspace = async (container) => {
         resetZoom,
         getCanvasCoords,
         redraw: requestRedraw,
-        /**
-         * Cleans up the workspace, removing event listeners and observers.
-         */
+        refreshCurrentNote: (html) => {
+            board?.refreshCurrentNote(html);
+        },
+        refreshAllNotes: () => {
+            board?.refreshAllNotes && board.refreshAllNotes();
+        },
         destroy: () => {
             container.removeEventListener('wheel', handleWheel);
+            container.removeEventListener('pointermove', updateMousePos);
             resizeObserver.disconnect();
-            container.innerHTML = ''; // Clear canvas and SVG
+            container.innerHTML = '';
+            board?.destroy();
         }
     };
 

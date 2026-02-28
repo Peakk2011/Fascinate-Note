@@ -161,10 +161,8 @@ export const requestRedraw = () => {
         // The canvas content is always drawn at a 1:1 scale relative to the window.
         // Panning and zooming are handled by CSS transforms.
 
-        // Draw grid if zoomed in enough
-        if (state.scale > 0.25) {
-            drawGrid(ctx, state, config, state.scale);
-        }
+
+        drawGrid(ctx, state, config, state.scale);
         
         ctx.restore();
     } catch (err) {
@@ -179,7 +177,7 @@ export const requestRedraw = () => {
 export const updateViewTransform = () => {
     try {
         const state = getState();
-        const { canvas, svg, scale, panX, panY } = state;
+        const { canvas, svg, markerLayer, scale, panX, panY } = state;
 
         if (!canvas || !svg) return;
 
@@ -191,6 +189,11 @@ export const updateViewTransform = () => {
         
         svg.style.transformOrigin = '0 0';
         svg.style.transform = transform;
+
+        if (markerLayer) {
+            markerLayer.style.transformOrigin = '0 0';
+            markerLayer.style.transform = transform;
+        }
     } catch (error) {
         console.error('Error updating view transform:', error);
     }
@@ -212,11 +215,19 @@ const drawGrid = (ctx, state, config, scale) => {
         const panX = state.panX;
         const panY = state.panY;
         
-        // Calculate opacity based on zoom level
-        const opacity = Math.min(1, (scale - 0.25) / 0.25);
-        const alphaValue = opacity * 0.5;
+
+        // opacity ramps from 0 at scale=0.25 to 1 at scale=0.5
+        let opacity = (scale - 0.25) / 0.25;
+        opacity = Math.max(0, Math.min(1, opacity));
         
-        ctx.fillStyle = 'rgba(128,128,128,' + alphaValue + ')';
+        let alphaValue = opacity * 0.5;
+        if (alphaValue < 0.1) {
+            alphaValue = 0.1;
+        }
+        
+        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const baseColor = darkMode ? 255 : 0;
+        ctx.fillStyle = `rgba(${baseColor},${baseColor},${baseColor},${alphaValue})`;
         
         // Calculate dot radius based on zoom
         const dotRadius = 1 / scale;

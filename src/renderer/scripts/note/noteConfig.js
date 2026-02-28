@@ -26,6 +26,7 @@ export const noteFeaturesConfig = {
         typing: 'Typing...',
         saving: 'Saving...',
         saved: 'Saved',
-        error: 'Error saving'
-    }  
+        error: 'Error saving',
+        idle: '' 
+    }
 };

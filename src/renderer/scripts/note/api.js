@@ -33,6 +33,17 @@ import {
     addEventListenerTracker
 } from './state.js';
 
+import {
+    createNote as createNoteEntry,
+    deleteNote as deleteNoteEntry,
+    getCurrentNote,
+    getCurrentNoteId as getCurrentNoteIdEntry,
+    getNoteById,
+    listNotes,
+    setCurrentNoteId,
+    updateNote
+} from './noteStore.js';
+
 /**
  * Handler creation functions and event setup utilities
  */
@@ -101,6 +112,14 @@ import {
  * @property {() => void} zoomOut - Decreases the editor font size
  * @property {() => void} resetZoom - Resets the editor font size to default
  * @property {() => number} getCurrentFontSize - Returns the current font size value
+ * @property {() => Array<Object>} listNotes - Returns all saved notes
+ * @property {(noteId: string) => Object|null} getNoteById - Returns a note snapshot
+ * @property {() => Object|null} getCurrentNote - Returns the active note snapshot
+ * @property {() => string|null} getCurrentNoteId - Returns the active note ID
+ * @property {(noteId: string) => Promise<Object|null>} openNote - Opens a note in the editor
+ * @property {(options?: {title?: string, html?: string, open?: boolean}) => Promise<Object>} createNote - Creates a new note
+ * @property {(noteId: string, title: string) => Object|null} setNoteTitle - Updates note title
+ * @property {(noteId: string) => Promise<{deleted: Object|null, currentNoteId: string|null}>} deleteNote - Deletes a note
  * @property {() => void} cleanup - Cleans up event listeners and timers to prevent memory leaks
  */
 
@@ -273,6 +292,35 @@ export const noteFeatures = async (
             clearTimeout(autoSaveTimeout);
         };
 
+        const getCurrentNoteId = () => getCurrentNoteIdEntry();
+
+        const openNote = async (noteId) => {
+            if (!noteId) return null;
+            const note = getNoteById(noteId);
+            if (!note) return null;
+            setCurrentNoteId(noteId);
+            await loadData();
+            return note;
+        };
+
+        const createNote = async ({ title, html, open } = {}) => {
+            const note = createNoteEntry({ title, html });
+            if (open && note?.id) {
+                await openNote(note.id);
+            }
+            return note;
+        };
+
+        const setNoteTitle = (noteId, title) => updateNote(noteId, { title });
+
+        const deleteNote = async (noteId) => {
+            const result = deleteNoteEntry(noteId);
+            if (result.currentNoteId && result.currentNoteId !== noteId) {
+                await loadData();
+            }
+            return result;
+        };
+
         /**
          * Returns the public API object for controlling note features
          * All methods are bound to the current instance and closure scope
@@ -285,6 +333,14 @@ export const noteFeatures = async (
             zoomOut,
             resetZoom,
             getCurrentFontSize: () => currentFontSize,
+            listNotes,
+            getNoteById,
+            getCurrentNote,
+            getCurrentNoteId,
+            openNote,
+            createNote,
+            setNoteTitle,
+            deleteNote,
             cleanup
         };
     } catch (error) {
