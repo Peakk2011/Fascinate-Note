@@ -1,85 +1,43 @@
 import {
-    loadConfiguration,
-    getState,
-    updateState,
-    getConfig
-} from './utils/config.js';
-
-// note storage integration for marker windows
-import {
     createNote,
     getNoteById,
     updateNote,
     deleteNote,
-    getCurrentNoteId
+    getCurrentNoteId,
+    getFontSize
 } from '../../renderer/scripts/note/noteStore.js';
 
 const STORAGE_KEYS = {
     windows: 'markerWindows',
-    groups: 'markerGroups'
+    groups: 'markerGroups',
+    activeGroup: 'markerActiveGroup'
 };
 
 const CURRENT_WINDOW_ID = 'current-note';
-const DEFAULT_WINDOW_SIZE = { width: 320, height: 200 };
+const DEFAULT_WINDOW_SIZE = { width: 300, height: 240 };
 const MIN_WINDOW_SIZE = { width: 220, height: 140 };
+const PLACEHOLDER_TEXT = 'Click to open and edit this note';
+
+// Utilities
 
 const safeParse = (value, fallback) => {
     if (!value) return fallback;
-    try {
-        return JSON.parse(value);
-    } catch {
-        return fallback;
-    }
+    try { return JSON.parse(value); } catch { return fallback; }
 };
 
 const saveToStorage = (key, value) => {
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-    } catch {
-        // Ignore storage errors.
-    }
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch { }
 };
 
 const loadWindows = () => safeParse(localStorage.getItem(STORAGE_KEYS.windows), []);
 const loadGroups = () => safeParse(localStorage.getItem(STORAGE_KEYS.groups), []);
+const loadActiveGroup = () => localStorage.getItem(STORAGE_KEYS.activeGroup) || null;
 
 const createId = () => {
-    // crypto.randomUUID() is available in modern browsers
-
     if (typeof crypto !== 'undefined' && crypto.randomUUID) {
         return `win_${crypto.randomUUID()}`;
     }
-
-    // Timestamp + random bytes
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).slice(2, 15);
-    return `win_${timestamp}_${random}`;
-};
-
-const migrateWindows = (windows) => {
-    windows.forEach((win) => {
-        if (!win.hasOwnProperty('noteId')) {
-            win.noteId = null; // will be populated lazily by refreshWindowPreview
-        }
-    });
-};
-
-// Update title/content preview for a single window based on its note
-const refreshWindowPreview = (win) => {
-    if (!win.noteId) {
-        const note = createNote({ title: win.title || 'New Note' });
-        win.noteId = note.id;
-    }
-    const note = getNoteById(win.noteId);
-    if (note) {
-        win.title = note.title || win.title;
-        win.content = truncateText(htmlToText(note.html), 260);
-    }
-};
-
-// Convenience helper to update all windows at once
-const refreshAllPreviews = (windows) => {
-    windows.forEach(refreshWindowPreview);
+    return `win_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 };
 
 const sanitizeText = (text) => {
@@ -95,53 +53,59 @@ const htmlToText = (html) => {
 
 const truncateText = (text, max = 220) => {
     if (text.length <= max) return text;
-    return `${text.slice(0, max).trim()}…`;
+    return `${[...text].slice(0, max).join('').trim()}…`;
 };
 
-const getGroupById = (groups, id) => groups.find((group) => group.id === id);
+const getGroupById = (groups, id) => groups.find((g) => g.id === id);
+const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
 
-const randomColor = () => {
-    const hue = Math.floor(Math.random() * 360);
-    return `hsl(${hue}, 70%, 60%)`;
+// Migration & preview
+
+const migrateWindows = (windows) => {
+    windows.forEach((win) => {
+        if (!Object.prototype.hasOwnProperty.call(win, 'noteId')) win.noteId = null;
+        // all windows are equal — remove isCurrent flag from storage if needed
+    });
 };
+
+const refreshWindowPreview = (win) => {
+    if (!win.noteId) {
+        const note = createNote({ title: win.title || 'New Note' });
+        win.noteId = note?.id ?? null;
+    }
+    if (!win.noteId) return;
+    const note = getNoteById(win.noteId);
+    if (note) {
+        win.title = note.title || win.title;
+        win.content = truncateText(htmlToText(note.html), 260);
+    }
+};
+
+const refreshAllPreviews = (windows) => windows.forEach(refreshWindowPreview);
+
+// Ensure current window
+// current-note is now equal to every other window — it can be renamed and deleted.
+// The only special thing: it starts with the active editor note linked.
 
 const ensureCurrentWindow = (windows) => {
-    const existing = windows.find((item) => item.id === CURRENT_WINDOW_ID);
-    if (existing) {
-        existing.isCurrent = true;
-        existing.title = existing.title || 'Current Notes';
-        // make sure it has a linked note id
-        if (!existing.noteId) {
-            existing.noteId = getCurrentNoteId();
-        }
-        return existing;
-    }
-
+    if (windows.length > 0) return; // only create if no windows at all
+    const note = createNote({ title: 'Current Notes' });
     const current = {
         id: CURRENT_WINDOW_ID,
         title: 'Current Notes',
         content: '',
-        x: 360,
-        y: 260,
-        width: 360,
-        height: 220,
+        x: 360, y: 260,
+        width: 360, height: 220,
         color: '#7aa5ff',
         groupId: null,
-        isCurrent: true,
-        noteId: getCurrentNoteId()
+        isCurrent: false,
+        noteId: note?.id ?? getCurrentNoteId()
     };
     windows.unshift(current);
-    return current;
 };
 
-/**
- * @param {Object} options
- * @param {HTMLElement} options.container
- * @param {Function} options.getCanvasCoords
- * @param {{ show: Function, hide: Function } | null} options.groupModal
- * @param {Function|null} [options.onOpenNote] - Callback to open a note in the editor.
- * @param {Function|null} [options.onReturnToEditor] - Callback to return to the editor from current view.
- */
+// Main
+
 export const initMarkerBoard = ({
     container,
     getCanvasCoords,
@@ -150,6 +114,8 @@ export const initMarkerBoard = ({
     onReturnToEditor = null
 } = {}) => {
     if (!container) return null;
+
+    // DOM
 
     const layer = document.createElement('div');
     layer.className = 'marker-layer';
@@ -164,71 +130,78 @@ export const initMarkerBoard = ({
     `;
     container.appendChild(toolbar);
 
-    // bottom navigation bar for extra controls
     const bottomBar = document.createElement('div');
     bottomBar.className = 'marker-bottombar';
     bottomBar.innerHTML = `
         <button class="marker-bottom-btn" data-action="clear-all" title="Clear all windows">🗑️</button>
-        <button class="marker-bottom-btn" data-action="mission-view" title="Show all windows">☰</button>
+        <button class="marker-bottom-btn" data-action="mission-view" title="Mission Control">☰</button>
     `;
     container.appendChild(bottomBar);
 
+    // State
+
     let windows = loadWindows();
     let groups = loadGroups();
+    let activeGroupId = loadActiveGroup();
+    let missionOverlay = null;
+    let activeWindowId = null;
+    let _closingInProgress = false; // race condition guard
 
-    // make sure every stored window has an associated note id and up-to-date preview
     migrateWindows(windows);
     refreshAllPreviews(windows);
-
     ensureCurrentWindow(windows);
 
     const windowMap = new Map();
     const selectedIds = new Set();
     let dragState = null;
-    let createState = null;
+    let resizeState = null;
 
-    // bring a window to the top of the z-order / DOM order
-    const bringToFront = (id) => {
-        const idx = windows.findIndex(w => w.id === id);
-        if (idx === -1) return;
-        const [win] = windows.splice(idx, 1);
-        windows.push(win);
-        const el = windowMap.get(id);
-        if (el && el.parentNode) {
-            el.parentNode.appendChild(el);
-        }
-        persist();
-        if (missionOverlay) updateMissionOverlay();
-    };
-
-    const removeWindowById = (id) => {
-        const idx = windows.findIndex(w => w.id === id);
-        if (idx === -1) return;
-        const [removed] = windows.splice(idx, 1);
-        const el = windowMap.get(id);
-        if (el) el.remove();
-        windowMap.delete(id);
-        if (removed.noteId) {
-            deleteNote(removed.noteId);
-        }
-        persist();
-        if (missionOverlay) updateMissionOverlay();
-    };
+    // Persistence
 
     const persist = () => {
         saveToStorage(STORAGE_KEYS.windows, windows);
         saveToStorage(STORAGE_KEYS.groups, groups);
+        if (activeGroupId !== null) {
+            localStorage.setItem(STORAGE_KEYS.activeGroup, activeGroupId);
+        } else {
+            localStorage.removeItem(STORAGE_KEYS.activeGroup);
+        }
     };
+
+    persist();
+
+    // Group filtering
+
+    const getVisibleWindows = () => {
+        if (activeGroupId === null) return windows;
+        return windows.filter((w) => w.groupId === activeGroupId);
+    };
+
+    const setActiveGroup = (groupId) => {
+        activeGroupId = groupId || null;
+        persist();
+        applyVisibility();
+        updateToolbarGroups();
+    };
+
+    const applyVisibility = () => {
+        const visible = new Set(getVisibleWindows().map((w) => w.id));
+        windowMap.forEach((el, id) => {
+            el.style.display = visible.has(id) ? '' : 'none';
+        });
+    };
+
+    // Toolbar groups
 
     const updateToolbarGroups = () => {
         const select = toolbar.querySelector('.marker-group-select');
         if (!select) return;
         select.innerHTML = '';
 
-        const noneOption = document.createElement('option');
-        noneOption.value = '';
-        noneOption.textContent = 'No Group';
-        select.appendChild(noneOption);
+        const noneOpt = document.createElement('option');
+        noneOpt.value = '';
+        noneOpt.textContent = 'All Notes';
+        select.appendChild(noneOpt);
 
         groups.forEach((group) => {
             const opt = document.createElement('option');
@@ -236,38 +209,55 @@ export const initMarkerBoard = ({
             opt.textContent = group.name;
             select.appendChild(opt);
         });
+
+        select.value = activeGroupId || '';
     };
+
+    // Window styles
 
     const updateWindowStyles = (element, data) => {
         element.style.left = `${data.x}px`;
         element.style.top = `${data.y}px`;
         element.style.width = `${data.width}px`;
         element.style.height = `${data.height}px`;
-        element.style.setProperty('--marker-window-color', data.color || '#7aa5ff');
-
-        if (data.isCurrent) {
-            element.classList.add('is-current');
-        } else {
-            element.classList.remove('is-current');
-        }
     };
 
     const updateGroupBadge = (element, groupId) => {
         const badge = element.querySelector('.marker-window-group');
         if (!badge) return;
-
         if (!groupId) {
             badge.textContent = '';
             badge.classList.remove('show');
             badge.style.removeProperty('--marker-group-color');
             return;
         }
-
         const group = getGroupById(groups, groupId);
         badge.textContent = group?.name || 'Group';
         badge.style.setProperty('--marker-group-color', group?.color || '#7aa5ff');
         badge.classList.add('show');
     };
+
+    // Active window
+
+    const setActiveWindow = (id) => {
+        if (activeWindowId === id) return;
+        if (activeWindowId) windowMap.get(activeWindowId)?.classList.remove('is-active');
+        activeWindowId = id;
+        if (id) windowMap.get(id)?.classList.add('is-active');
+    };
+
+    // Font size
+
+    const getEditorFontSize = () => getFontSize(16);
+
+    const syncAllFontSizes = () => {
+        windowMap.forEach((el) => {
+            const contentEl = el.querySelector('.marker-window-content');
+            if (contentEl) contentEl.style.fontSize = `${getEditorFontSize()}px`;
+        });
+    };
+
+    // Selection
 
     const updateSelectionStyles = () => {
         windowMap.forEach((element, id) => {
@@ -280,21 +270,65 @@ export const initMarkerBoard = ({
         updateSelectionStyles();
     };
 
+    const bringToFront = (id) => {
+        const idx = windows.findIndex((w) => w.id === id);
+        if (idx === -1) return;
+        const [win] = windows.splice(idx, 1);
+        windows.push(win);
+        const el = windowMap.get(id);
+        if (el?.parentNode) el.parentNode.appendChild(el);
+        persist();
+    };
+
     const selectWindow = (id, { toggle } = {}) => {
         if (!id) return;
         if (toggle) {
-            if (selectedIds.has(id)) {
-                selectedIds.delete(id);
-            } else {
-                selectedIds.add(id);
-            }
+            selectedIds.has(id) ? selectedIds.delete(id) : selectedIds.add(id);
         } else {
             selectedIds.clear();
             selectedIds.add(id);
             bringToFront(id);
         }
+        setActiveWindow(id);
         updateSelectionStyles();
     };
+
+    // Remove
+
+    const removeWindowById = (id) => {
+        if (_closingInProgress) return;
+        const idx = windows.findIndex((w) => w.id === id);
+        if (idx === -1) return;
+
+        const [removed] = windows.splice(idx, 1);
+        const el = windowMap.get(id);
+        windowMap.delete(id);
+
+        if (el) {
+            el.style.transition = 'opacity 180ms ease, transform 180ms ease';
+            el.style.opacity = '0';
+            el.style.transform = (el.style.transform || '') + ' scale(0.88)';
+            setTimeout(() => el.remove(), 200);
+        }
+
+        if (removed.noteId) deleteNote(removed.noteId);
+
+        // If no windows left — go back to editor and create fresh window on next open
+        if (windows.length === 0) {
+            _closingInProgress = true;
+            persist();
+            // small delay so animation plays
+            setTimeout(() => {
+                _closingInProgress = false;
+                onReturnToEditor?.();
+            }, 220);
+            return;
+        }
+
+        persist();
+    };
+
+    // Create window element
 
     const createWindowElement = (data) => {
         const element = document.createElement('div');
@@ -302,6 +336,7 @@ export const initMarkerBoard = ({
         element.dataset.id = data.id;
         updateWindowStyles(element, data);
 
+        // Header
         const header = document.createElement('div');
         header.className = 'marker-window-header';
 
@@ -311,85 +346,95 @@ export const initMarkerBoard = ({
         title.value = data.title || 'Untitled';
         title.spellcheck = false;
         title.autocomplete = 'off';
-        title.readOnly = Boolean(data.isCurrent);
+        title.readOnly = false; // all windows are editable
 
         const badge = document.createElement('span');
         badge.className = 'marker-window-group';
 
-        const colorButton = document.createElement('button');
-        colorButton.className = 'marker-window-color';
-        colorButton.type = 'button';
-        colorButton.setAttribute('title', 'Change color');
-
-        const colorInput = document.createElement('input');
-        colorInput.type = 'color';
-        colorInput.className = 'marker-window-color-input';
-        colorInput.value = data.color || '#7aa5ff';
-
         const closeButton = document.createElement('button');
         closeButton.className = 'marker-window-close';
         closeButton.type = 'button';
-        closeButton.setAttribute('title', 'Close');
+        closeButton.setAttribute('title', 'Delete window');
         closeButton.textContent = '×';
 
-        colorButton.appendChild(colorInput);
         header.appendChild(title);
         header.appendChild(badge);
-        header.appendChild(colorButton);
         header.appendChild(closeButton);
 
+        // Content — shows preview text, placeholder if empty
         const content = document.createElement('div');
         content.className = 'marker-window-content';
-        // windows act as previews only; editing happens in the main editor
         content.contentEditable = 'false';
         content.spellcheck = false;
-        content.textContent = data.content || '';
+        content.style.fontSize = `${getEditorFontSize()}px`;
+        content.style.overflow = 'auto';
+        content.style.flex = '1';
+
+        const isEmpty = !data.content || data.content.trim() === '';
+        if (isEmpty) {
+            content.textContent = '';
+            content.dataset.placeholder = PLACEHOLDER_TEXT;
+            content.classList.add('is-placeholder');
+        } else {
+            content.textContent = data.content;
+            content.classList.remove('is-placeholder');
+        }
+
+        // Resize handle
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'marker-window-resize';
 
         element.appendChild(header);
         element.appendChild(content);
+        element.appendChild(resizeHandle);
 
         updateGroupBadge(element, data.groupId);
 
-        title.addEventListener('input', () => {
-            data.title = title.value.trim() || 'Untitled';
-            if (data.noteId) {
-                updateNote(data.noteId, { title: data.title });
-            }
-            persist();
-            if (missionOverlay) updateMissionOverlay();
+        // Title events
+
+        title.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            selectWindow(data.id);
         });
 
-        colorButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            colorInput.click();
+        title.addEventListener('pointerup', (e) => {
+            e.stopPropagation();
+        });
+
+        title.addEventListener('focus', () => {
+            setActiveWindow(data.id);
+        });
+
+        title.addEventListener('input', () => {
+            data.title = title.value.trim() || 'Untitled';
+            if (data.noteId) updateNote(data.noteId, { title: data.title });
+            persist();
+        });
+
+        // Close button
+
+        closeButton.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
         });
 
         closeButton.addEventListener('click', (e) => {
+            e.preventDefault();
             e.stopPropagation();
             removeWindowById(data.id);
         });
 
-        colorInput.addEventListener('input', () => {
-            data.color = colorInput.value;
-            updateWindowStyles(element, data);
-            persist();
-            if (missionOverlay) updateMissionOverlay();
-        });
+        // Window body click/drag
 
-
-        // track click vs drag for opening notes
         let clickStart = null;
+
         element.addEventListener('pointerdown', (e) => {
             if (e.button !== 0) return;
+            if (e.target.closest('.marker-window-resize')) return;
+            if (e.target.closest('.marker-window-title')) return;
+            if (e.target.closest('.marker-window-close')) return;
             clickStart = { x: e.clientX, y: e.clientY };
-
-            // selection logic
-            if (!e.target.closest('.marker-window-color-input') &&
-                !e.target.closest('.marker-window-color') &&
-                !e.target.closest('.marker-window-close')) {
-                const toggle = e.metaKey || e.ctrlKey || e.shiftKey;
-                selectWindow(data.id, { toggle });
-            }
+            const toggle = e.metaKey || e.ctrlKey || e.shiftKey;
+            selectWindow(data.id, { toggle });
         });
 
         element.addEventListener('pointerup', (e) => {
@@ -397,57 +442,92 @@ export const initMarkerBoard = ({
             const dx = Math.abs(e.clientX - clickStart.x);
             const dy = Math.abs(e.clientY - clickStart.y);
             clickStart = null;
-            // treat as open if click without movement and not part of a drag
-            if (dx < 5 && dy < 5 && !dragState) {
-                if (data.id === CURRENT_WINDOW_ID) {
-                    if (onReturnToEditor) {
-                        // simple zoom-out animation then invoke callback
-                        const anim = container.animate([
-                            { transform: 'scale(1)' },
-                            { transform: 'scale(0.8)' }
-                        ], { duration: 250, easing: 'ease-in-out' });
-                        anim.finished.then(() => onReturnToEditor());
-                    }
-                } else {
-                    if (data.noteId && onOpenNote) {
-                        onOpenNote(data.noteId);
-                    } else if (!data.noteId) {
-                        console.warn(`Window ${data.id} has no noteId; note may have failed to created`);
-                    }
+            if (dx < 5 && dy < 5 && !dragState && !missionOverlay) {
+                if (data.noteId && onOpenNote) {
+                    onOpenNote(data.noteId);
+                } else if (!data.noteId) {
+                    console.warn(`[MarkerBoard] Window ${data.id} has no noteId`);
                 }
             }
         });
 
+        // Drag header (normal mode only)
+
         header.addEventListener('pointerdown', (e) => {
             if (e.button !== 0) return;
-            // ignore clicks on controls
-            if (e.target.closest('.marker-window-color')) return;
             if (e.target.closest('.marker-window-close')) return;
-            // if user clicked the title input and it's editable, let them type instead of dragging
-            const titleEl = e.target.closest('.marker-window-title');
-            if (titleEl && !titleEl.readOnly) {
-                return;
-            }
+            if (e.target.closest('.marker-window-title')) return;
+            if (missionOverlay) return; // mission drag handled below
 
             e.preventDefault();
             bringToFront(data.id);
+            setActiveWindow(data.id);
+
             const coords = getCanvasCoords(e);
             dragState = {
                 id: data.id,
                 offsetX: coords.x - data.x,
                 offsetY: coords.y - data.y
             };
-
             element.classList.add('is-dragging');
             window.addEventListener('pointermove', onDragMove);
             window.addEventListener('pointerup', onDragEnd);
         });
 
+        // Mission drag — whole window draggable, capture phase
+
+        element.addEventListener('pointerdown', (e) => {
+            if (!missionOverlay) return;
+            if (e.button !== 0) return;
+            if (e.target.closest('.marker-window-close')) return;
+            e.preventDefault();
+            e.stopPropagation();
+            startMissionDrag(e, data, element);
+        }, true);
+
+        // Resize
+
+        resizeHandle.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            resizeHandle.setPointerCapture(e.pointerId);
+            resizeState = {
+                id: data.id,
+                startX: e.clientX,
+                startY: e.clientY,
+                startW: data.width,
+                startH: data.height
+            };
+            element.classList.add('is-resizing');
+        });
+
+        resizeHandle.addEventListener('pointermove', (e) => {
+            if (!resizeState || resizeState.id !== data.id) return;
+            data.width = Math.max(MIN_WINDOW_SIZE.width, resizeState.startW + (e.clientX - resizeState.startX));
+            data.height = Math.max(MIN_WINDOW_SIZE.height, resizeState.startH + (e.clientY - resizeState.startY));
+            updateWindowStyles(element, data);
+        });
+
+        resizeHandle.addEventListener('pointerup', () => {
+            if (!resizeState || resizeState.id !== data.id) return;
+            resizeState = null;
+            element.classList.remove('is-resizing');
+            persist();
+        });
+
+        resizeHandle.addEventListener('pointercancel', () => {
+            if (!resizeState || resizeState.id !== data.id) return;
+            resizeState = null;
+            element.classList.remove('is-resizing');
+        });
+
         return element;
     };
 
+    // Sync & rebuild
+
     const syncWindowElement = (data) => {
-        // keep text/preview in sync with note if possible
         refreshWindowPreview(data);
         let element = windowMap.get(data.id);
         if (!element) {
@@ -455,13 +535,19 @@ export const initMarkerBoard = ({
             windowMap.set(data.id, element);
             layer.appendChild(element);
         } else {
-            const title = element.querySelector('.marker-window-title');
-            const content = element.querySelector('.marker-window-content');
-            if (title && title.value !== data.title) {
-                title.value = data.title || 'Untitled';
-            }
-            if (content && !data.isCurrent) {
-                content.textContent = data.content || '';
+            const titleEl = element.querySelector('.marker-window-title');
+            const contentEl = element.querySelector('.marker-window-content');
+            if (titleEl && titleEl.value !== data.title) titleEl.value = data.title || 'Untitled';
+            if (contentEl) {
+                const isEmpty = !data.content || data.content.trim() === '';
+                if (isEmpty) {
+                    contentEl.textContent = '';
+                    contentEl.classList.add('is-placeholder');
+                } else {
+                    contentEl.textContent = data.content;
+                    contentEl.classList.remove('is-placeholder');
+                }
+                contentEl.style.fontSize = `${getEditorFontSize()}px`;
             }
         }
         updateWindowStyles(element, data);
@@ -473,30 +559,27 @@ export const initMarkerBoard = ({
         layer.innerHTML = '';
         windowMap.clear();
         windows.forEach((win) => {
-            const element = createWindowElement(win);
-            windowMap.set(win.id, element);
-            layer.appendChild(element);
+            const el = createWindowElement(win);
+            windowMap.set(win.id, el);
+            layer.appendChild(el);
         });
         updateSelectionStyles();
+        applyVisibility();
     };
+
+    // Groups
 
     const applyGroupToSelection = (groupId) => {
         if (selectedIds.size === 0) return;
         windows.forEach((win) => {
             if (!selectedIds.has(win.id)) return;
             win.groupId = groupId || null;
-            const element = windowMap.get(win.id);
-            if (element) {
-                updateGroupBadge(element, win.groupId);
-            }
+            const el = windowMap.get(win.id);
+            if (el) updateGroupBadge(el, win.groupId);
         });
         persist();
     };
 
-    /**
-     * Called by groupModal.onConfirm — adds group to state and applies to selection
-     * @param {string} name
-     */
     const addGroup = (name) => {
         const group = {
             id: createId(),
@@ -504,18 +587,11 @@ export const initMarkerBoard = ({
             color: randomColor()
         };
         groups.push(group);
-        updateToolbarGroups();
-
-        const select = toolbar.querySelector('.marker-group-select');
-        if (select) select.value = group.id;
-
         applyGroupToSelection(group.id);
+        setActiveGroup(group.id);
         persist();
     };
 
-    /**
-     * Opens the group modal if available
-     */
     const createNewGroup = () => {
         if (groupModal) {
             groupModal.show();
@@ -524,24 +600,23 @@ export const initMarkerBoard = ({
         }
     };
 
+    // Window data factory
+
     const createWindowData = ({ x, y, width, height } = {}) => {
         const note = createNote({ title: 'New Note' });
         if (!note?.id) {
-            console.error('Failed to create note for window - aborting window creation');
+            console.error('[MarkerBoard] Failed to create note — aborting');
             return null;
         }
-        
-        // Store only the noteId (reference), never the note object
         const data = {
             id: createId(),
             title: note.title || 'New Note',
             content: '',
-            x: x ?? 320,
-            y: y ?? 240,
+            x: x ?? 320, y: y ?? 240,
             width: width ?? DEFAULT_WINDOW_SIZE.width,
             height: height ?? DEFAULT_WINDOW_SIZE.height,
             color: randomColor(),
-            groupId: null,
+            groupId: activeGroupId,
             isCurrent: false,
             noteId: note.id
         };
@@ -549,112 +624,222 @@ export const initMarkerBoard = ({
         return data;
     };
 
-    const createWindowAt = (coords) => {
-        const data = createWindowData({
-            x: coords.x - DEFAULT_WINDOW_SIZE.width / 2,
-            y: coords.y - DEFAULT_WINDOW_SIZE.height / 2
-        });
-        const element = syncWindowElement(data);
-        persist();
-        if (missionOverlay) updateMissionOverlay();
-        selectWindow(data.id);
-        return element;
-    };
+    // Drag (normal canvas)
 
     const onDragMove = (e) => {
         if (!dragState) return;
         const coords = getCanvasCoords(e);
         const data = windows.find((item) => item.id === dragState.id);
         if (!data) return;
-
         data.x = coords.x - dragState.offsetX;
         data.y = coords.y - dragState.offsetY;
-
-        const element = windowMap.get(data.id);
-        if (element) {
-            updateWindowStyles(element, data);
-        }
+        const el = windowMap.get(data.id);
+        if (el) updateWindowStyles(el, data);
     };
 
     const onDragEnd = () => {
         if (!dragState) return;
-        const element = windowMap.get(dragState.id);
-        if (element) {
-            element.classList.remove('is-dragging');
-        }
+        windowMap.get(dragState.id)?.classList.remove('is-dragging');
         dragState = null;
         persist();
         window.removeEventListener('pointermove', onDragMove);
         window.removeEventListener('pointerup', onDragEnd);
     };
 
-    // create* handlers disabled intentionally; window creation now exclusively
-    // triggered via toolbar button. definitions retained for reference but not used.
-    
-    /*
-    const onCreateMove = (e) => {
-        if (!createState) return;
-        const coords = getCanvasCoords(e);
-        const startX = createState.startX;
-        const startY = createState.startY;
-        const width = Math.abs(coords.x - startX);
-        const height = Math.abs(coords.y - startY);
-        const x = Math.min(startX, coords.x);
-        const y = Math.min(startY, coords.y);
-
-        createState.ghost.style.left = `${x}px`;
-        createState.ghost.style.top = `${y}px`;
-        createState.ghost.style.width = `${Math.max(width, 6)}px`;
-        createState.ghost.style.height = `${Math.max(height, 6)}px`;
-    };
-
-    const onCreateEnd = (e) => {
-        if (!createState) return;
-        const coords = getCanvasCoords(e);
-        const startX = createState.startX;
-        const startY = createState.startY;
-        const width = Math.abs(coords.x - startX);
-        const height = Math.abs(coords.y - startY);
-        const x = Math.min(startX, coords.x);
-        const y = Math.min(startY, coords.y);
-
-        createState.ghost.remove();
-        createState = null;
-
-        const finalWidth = Math.max(width, MIN_WINDOW_SIZE.width);
-        const finalHeight = Math.max(height, MIN_WINDOW_SIZE.height);
-        const data = createWindowData({
-            x: width < MIN_WINDOW_SIZE.width ? x - MIN_WINDOW_SIZE.width / 2 : x,
-            y: height < MIN_WINDOW_SIZE.height ? y - MIN_WINDOW_SIZE.height / 2 : y,
-            width: finalWidth,
-            height: finalHeight
-        });
-        syncWindowElement(data);
-        persist();
-        selectWindow(data.id);
-
-        window.removeEventListener('pointermove', onCreateMove);
-        window.removeEventListener('pointerup', onCreateEnd);
-    };
-    */
-
-    // onLayerPointerDown and associated create* handlers are intentionally
-    // disabled in the current design. window creation is triggered exclusively
-    // via the toolbar button, so the functions have been removed to avoid
-    // dead code and potential reference errors.
+    // Refresh current note content
 
     const refreshCurrentNote = (html) => {
-        const current = ensureCurrentWindow(windows);
-        current.noteId = getCurrentNoteId();
+        // Update the window whose noteId matches the current editor note
+        const currentNoteId = getCurrentNoteId();
+        const win = windows.find((w) => w.noteId === currentNoteId);
+        if (!win) return;
+
         const preview = truncateText(htmlToText(html), 260);
-        current.content = preview || 'Current note is empty.';
-        const element = syncWindowElement(current);
-        const content = element?.querySelector('.marker-window-content');
-        if (content) {
-            content.textContent = current.content;
+        win.content = preview || '';
+        const element = syncWindowElement(win);
+        const contentEl = element?.querySelector('.marker-window-content');
+        if (contentEl) {
+            const isEmpty = !win.content || win.content.trim() === '';
+            if (isEmpty) {
+                contentEl.textContent = '';
+                contentEl.classList.add('is-placeholder');
+            } else {
+                contentEl.textContent = win.content;
+                contentEl.classList.remove('is-placeholder');
+            }
         }
         persist();
     };
+
+    // Mission Control
+
+    const enterMissionView = () => {
+        if (missionOverlay) return;
+
+        // Overlay sits BEHIND layer (lower z-index) — just a backdrop for click-to-exit
+        // layer keeps pointer-events so windows remain draggable
+        missionOverlay = document.createElement('div');
+        missionOverlay.className = 'marker-mission-overlay';
+        // insert before layer so layer is on top
+        container.insertBefore(missionOverlay, layer);
+
+        const visible = getVisibleWindows().filter((w) => windowMap.has(w.id));
+        if (visible.length === 0) { cleanupMission(); return; }
+
+        layoutMissionWindows(visible);
+
+        missionOverlay.addEventListener('pointerdown', (e) => {
+            // only dismiss if click landed directly on backdrop (not bubbled from window)
+            if (e.target === missionOverlay) exitMissionView();
+        });
+    };
+
+    const layoutMissionWindows = (visible) => {
+        const count = visible.length;
+        const padding = 20;
+        const containerW = container.offsetWidth;
+        const containerH = container.offsetHeight;
+        const cols = Math.ceil(Math.sqrt(count));
+        const rows = Math.ceil(count / cols);
+        const cellW = (containerW - padding * (cols + 1)) / cols;
+        const cellH = (containerH - padding * (rows + 1)) / rows;
+
+        visible.forEach((win, i) => {
+            const el = windowMap.get(win.id);
+            if (!el) return;
+
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+            const scale = Math.min(cellW / win.width, cellH / win.height, 1);
+            const scaledW = win.width * scale;
+            const scaledH = win.height * scale;
+            const cellLeft = padding + col * (cellW + padding);
+            const cellTop = padding + row * (cellH + padding);
+            const targetX = cellLeft + (cellW - scaledW) / 2;
+            const targetY = cellTop + (cellH - scaledH) / 2;
+
+            const dx = targetX - win.x;
+            const dy = targetY - win.y;
+
+            el._missionTransform = { dx, dy, scale };
+
+            el.style.transition = 'transform 380ms cubic-bezier(0.2, 0, 0, 1)';
+            el.style.transformOrigin = '0 0';
+            el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+            el.classList.add('is-mission');
+        });
+    };
+
+    // Mission drag-to-dismiss
+    // Triggered from pointerdown on ANY part of the window (not just header)
+    // Uses window-level listeners to avoid setPointerCapture conflicts
+
+    const startMissionDrag = (e, data, element) => {
+        const { dx: baseDx = 0, dy: baseDy = 0, scale = 1 } = element._missionTransform || {};
+        const startClientX = e.clientX;
+        const startClientY = e.clientY;
+        const containerRect = container.getBoundingClientRect();
+        let isDragging = false;
+        let isDismissing = false;
+
+        // Remove transition immediately so drag is instant
+        element.style.transition = 'none';
+
+        const onMove = (ev) => {
+            const deltaX = ev.clientX - startClientX;
+            const deltaY = ev.clientY - startClientY;
+
+            // Only start drag after small threshold to avoid interfering with clicks
+            if (!isDragging && Math.abs(deltaX) < 4 && Math.abs(deltaY) < 4) return;
+            isDragging = true;
+
+            // Scale shrinks as window approaches top of container (0 at top, 1 at bottom)
+            const currentY = ev.clientY - containerRect.top;
+            const progress = Math.max(0, Math.min(1, 1 - currentY / containerRect.height));
+            const dismissScale = scale * (1 - progress * 0.4);
+
+            element.style.transform = `translate(${baseDx + deltaX}px, ${baseDy + deltaY}px) scale(${dismissScale})`;
+            // opacity stays 1 as requested
+            element.style.opacity = '1';
+
+            isDismissing = currentY < 0;
+        };
+
+        const onUp = () => {
+            window.removeEventListener('pointermove', onMove);
+            window.removeEventListener('pointerup', onUp);
+            window.removeEventListener('pointercancel', onUp);
+
+            if (!isDragging) {
+                // It was a click — open the note
+                const win = windows.find((w) => w.id === data.id);
+                if (win?.noteId && onOpenNote) {
+                    exitMissionView(() => onOpenNote(win.noteId));
+                }
+                return;
+            }
+
+            if (isDismissing) {
+                element.style.transition = 'transform 200ms ease-in, opacity 200ms ease-in';
+                element.style.opacity = '0';
+                element.style.transform = `translate(${baseDx}px, ${-containerRect.height}px) scale(${scale * 0.5})`;
+                setTimeout(() => {
+                    exitMissionView(() => removeWindowById(data.id));
+                }, 210);
+            } else {
+                // Snap back to grid position with transition
+                element.style.transition = 'transform 320ms cubic-bezier(0.2, 0, 0, 1)';
+                element.style.transform = `translate(${baseDx}px, ${baseDy}px) scale(${scale})`;
+                element.style.opacity = '1';
+            }
+        };
+
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+    };
+
+    // Mission exit
+
+    const exitMissionView = (onDone) => {
+        if (!missionOverlay) { onDone?.(); return; }
+
+        // layer.removeEventListener('pointerup', onMissionWindowClick);
+
+        const visible = getVisibleWindows().filter((w) => windowMap.has(w.id));
+        let pending = visible.length;
+
+        if (pending === 0) { cleanupMission(); onDone?.(); return; }
+
+        visible.forEach((win) => {
+            const el = windowMap.get(win.id);
+            if (!el) { if (--pending === 0) { cleanupMission(); onDone?.(); } return; }
+
+            el.style.transition = 'transform 300ms cubic-bezier(0.4, 0, 1, 1), opacity 300ms ease';
+            el.style.transform = '';
+            el.style.opacity = '';
+
+            const handleEnd = () => {
+                el.removeEventListener('transitionend', handleEnd);
+                el.style.transition = '';
+                el.style.transformOrigin = '';
+                el.classList.remove('is-mission');
+                delete el._missionTransform;
+                if (--pending === 0) { cleanupMission(); onDone?.(); }
+            };
+
+            el.addEventListener('transitionend', handleEnd);
+            setTimeout(() => {
+                if (el.classList.contains('is-mission')) handleEnd();
+            }, 400);
+        });
+    };
+
+    const cleanupMission = () => {
+        if (missionOverlay) { missionOverlay.remove(); missionOverlay = null; }
+    };
+
+    // Toolbar & bottom bar
 
     const toolbarClickHandler = (e) => {
         const button = e.target.closest('.marker-toolbar-btn');
@@ -663,22 +848,20 @@ export const initMarkerBoard = ({
 
         if (action === 'new-note') {
             const rect = container.getBoundingClientRect();
-            const centerEvent = {
+            const coords = getCanvasCoords({
                 clientX: rect.left + rect.width / 2,
                 clientY: rect.top + rect.height / 2
-            };
-            const coords = getCanvasCoords(centerEvent);
+            });
             const data = createWindowData({
                 x: coords.x - DEFAULT_WINDOW_SIZE.width / 2,
                 y: coords.y - DEFAULT_WINDOW_SIZE.height / 2
             });
             if (data) {
-                const el = syncWindowElement(data);
+                syncWindowElement(data);
                 persist();
-                if (missionOverlay) updateMissionOverlay();
+                applyVisibility();
                 selectWindow(data.id);
             }
-            return;
         } else if (action === 'new-group') {
             createNewGroup();
         }
@@ -687,121 +870,50 @@ export const initMarkerBoard = ({
     const toolbarSelectHandler = (e) => {
         const select = e.target.closest('.marker-group-select');
         if (!select) return;
-        applyGroupToSelection(select.value);
+        setActiveGroup(select.value || null);
+    };
+
+    const bottomBarClickHandler = (e) => {
+        const btn = e.target.closest('.marker-bottom-btn');
+        if (!btn) return;
+        const action = btn.dataset.action;
+
+        if (action === 'clear-all') {
+            windows.slice().forEach((w) => removeWindowById(w.id));
+        } else if (action === 'mission-view') {
+            missionOverlay ? exitMissionView() : enterMissionView();
+        }
     };
 
     const handleKeyDown = (e) => {
         if (e.key === 'Escape') {
+            if (missionOverlay) { exitMissionView(); return; }
             clearSelection();
         }
     };
 
+    // Boot
+
     toolbar.addEventListener('click', toolbarClickHandler);
     toolbar.addEventListener('change', toolbarSelectHandler);
     bottomBar.addEventListener('click', bottomBarClickHandler);
-    // drag-to-create windows has been disabled per design requirements
-    // layer.addEventListener('pointerdown', onLayerPointerDown);
     window.addEventListener('keydown', handleKeyDown);
-
-    // mission control overlay state
-    let missionOverlay = null;
-
-    const updateMissionOverlay = () => {
-        if (!missionOverlay) return;
-        missionOverlay.innerHTML = '';
-        windows.forEach((win) => {
-            const card = document.createElement('div');
-            card.className = 'mission-card';
-            card.dataset.id = win.id;
-            card.innerHTML = `
-                <div class="mission-title">${win.title}</div>
-                <button class="mission-close" title="Close window">×</button>
-            `;
-            missionOverlay.appendChild(card);
-
-            // tap card to open
-            card.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (win.id === CURRENT_WINDOW_ID) {
-                    onReturnToEditor && onReturnToEditor();
-                } else if (win.noteId) {
-                    onOpenNote && onOpenNote(win.noteId);
-                }
-                hideMissionView();
-            });
-
-            const closeBtn = card.querySelector('.mission-close');
-            closeBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                removeWindowById(win.id);
-                updateMissionOverlay();
-            });
-
-            // swipe up to close
-            let startY = null;
-            card.addEventListener('pointerdown', (e) => {
-                startY = e.clientY;
-                card.setPointerCapture(e.pointerId);
-            });
-            card.addEventListener('pointermove', (e) => {
-                if (startY !== null) {
-                    const dy = e.clientY - startY;
-                    if (dy < -50) {
-                        removeWindowById(win.id);
-                        updateMissionOverlay();
-                        startY = null;
-                    }
-                }
-            });
-            card.addEventListener('pointerup', (e) => {
-                startY = null;
-                card.releasePointerCapture(e.pointerId);
-            });
-            card.addEventListener('pointercancel', () => {
-                startY = null;
-            });
-        });
-    };
-
-    const showMissionView = () => {
-        if (missionOverlay) return;
-        missionOverlay = document.createElement('div');
-        missionOverlay.className = 'marker-mission-overlay';
-        missionOverlay.addEventListener('click', hideMissionView);
-        document.body.appendChild(missionOverlay);
-        updateMissionOverlay();
-    };
-
-    const hideMissionView = () => {
-        if (!missionOverlay) return;
-        missionOverlay.remove();
-        missionOverlay = null;
-    };
-
-    function bottomBarClickHandler(e) {
-        const btn = e.target.closest('.marker-bottom-btn');
-        if (!btn) return;
-        const action = btn.dataset.action;
-        if (action === 'clear-all') {
-            // delete windows
-            windows.slice()
-                .filter(w => w.id !== CURRENT_WINDOW_ID)
-                .forEach(w => removeWindowById(w.id));
-        } else if (action === 'mission-view') {
-            showMissionView();
-        }
-    }
 
     updateToolbarGroups();
     rebuildWindows();
+
+    // Public API
 
     return {
         layer,
         toolbar,
         refreshCurrentNote,
-        refreshAllNotes: () => {
+        refreshAllNotes() {
             refreshAllPreviews(windows);
             rebuildWindows();
+        },
+        syncFontSize() {
+            syncAllFontSizes();
         },
         addGroup,
         destroy() {
@@ -810,13 +922,11 @@ export const initMarkerBoard = ({
             bottomBar.removeEventListener('click', bottomBarClickHandler);
             window.removeEventListener('pointermove', onDragMove);
             window.removeEventListener('pointerup', onDragEnd);
-
-            // create handlers were never attached
             window.removeEventListener('keydown', handleKeyDown);
+            if (missionOverlay) cleanupMission();
             toolbar.remove();
             bottomBar.remove();
             layer.remove();
-            hideMissionView();
         }
     };
 };

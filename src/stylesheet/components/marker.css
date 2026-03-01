@@ -2,6 +2,7 @@
  * @component MarkerWorkspace
  * @description Canvas-based marker view with draggable windows and iOS-style toolbar
  */
+
 #workspace-container {
     position: fixed;
     inset: 0;
@@ -10,11 +11,13 @@
     overflow: hidden;
 }
 
+/* layer must sit ABOVE overlay so windows receive pointer events */
 .marker-layer {
     position: absolute;
     inset: 0;
     transform-origin: 0 0;
     user-select: none;
+    z-index: 2;
 }
 
 .marker-window {
@@ -26,7 +29,6 @@
     box-shadow: var(--theme-shadow);
     display: flex;
     flex-direction: column;
-    color: var(--theme-fg);
     min-width: 200px;
     min-height: 180px;
 }
@@ -46,6 +48,43 @@
     box-shadow: none;
 }
 
+/* Resize handle */
+
+.marker-window-resize {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 18px;
+    height: 18px;
+    cursor: se-resize;
+    opacity: 0.3;
+    border-bottom-right-radius: 10px;
+}
+
+/* Mission Control */
+
+.marker-mission-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--marker-mission-bg);
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.marker-window.is-mission {
+    cursor: grab;
+}
+
+.marker-window.is-mission:active {
+    cursor: grabbing;
+}
+
+.marker-window.is-mission .marker-window-resize {
+    display: none;
+}
+
+/* Window header */
+
 .marker-window-header {
     display: flex;
     align-items: center;
@@ -55,6 +94,10 @@
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
     cursor: grab;
+}
+
+.marker-window.is-mission .marker-window-header {
+    cursor: inherit;
 }
 
 .marker-window-title {
@@ -68,10 +111,13 @@
     letter-spacing: -0.2px;
     outline: none;
     display: inline-block;
+    opacity: 0.5;
+    transition: opacity 150ms ease;
 }
 
-.marker-window-title:read-only {
-    opacity: 0.8;
+.marker-window.is-active .marker-window-title,
+.marker-window-title:focus {
+    opacity: 1;
 }
 
 .marker-window-group {
@@ -88,40 +134,57 @@
     display: inline-flex;
 }
 
-.marker-window-color {
-    width: 18px;
-    height: 18px;
-    border-radius: 999px;
-    border: 1px solid var(--marker-color-btn-border);
-    background: var(--marker-window-color, var(--image-border-color));
-    padding: 0;
-    cursor: pointer;
-}
-
-.marker-window-color-input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-    width: 0;
-    height: 0;
-}
+/* Window content */
 
 .marker-window-content {
-    padding: 6px 16px 6px;
+    padding: 6px 16px 24px;
     line-height: 1.45;
     color: var(--marker-content-color);
-    overflow: hidden;
+    overflow: auto;
+    flex: 1;
     user-select: text;
-
     font-weight: 450;
-    transition: all 300ms cubic-bezier(0.075, 0.82, 0.165, 1);
     font-family: var(--font-display);
     font-size: 14px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    transition: font-size 300ms cubic-bezier(0.075, 0.82, 0.165, 1);
 }
 
 .marker-window-content[contenteditable="true"] {
     outline: none;
 }
+
+.marker-window-content.is-placeholder::after {
+    content: attr(data-placeholder);
+    color: var(--marker-content-color);
+    opacity: 0.4;
+    font-style: italic;
+    pointer-events: none;
+    display: block;
+    /* removed font-family: var() — invalid, inherits from parent */
+}
+
+/* Close button */
+
+.marker-window-close {
+    background: none;
+    border: none;
+    font-size: 34px;
+    cursor: pointer;
+    color: var(--theme-fg);
+    padding: 0 4px;
+    line-height: 0;
+    font-weight: 100;
+    opacity: 0.5;
+    transition: opacity 120ms ease;
+}
+
+.marker-window-close:hover {
+    opacity: 1;
+}
+
+/* Toolbar */
 
 .marker-toolbar {
     position: absolute;
@@ -138,6 +201,7 @@
     box-shadow: var(--ctx-menu-shadow);
     backdrop-filter: blur(18px) saturate(150%);
     -webkit-backdrop-filter: blur(18px) saturate(150%);
+    z-index: 4;
 }
 
 .marker-bottombar {
@@ -152,6 +216,7 @@
     border-radius: 20px;
     background: var(--marker-toolbar-bg);
     border: 1px solid var(--marker-toolbar-border);
+    z-index: 4;
 }
 
 .marker-bottom-btn {
@@ -162,63 +227,6 @@
     cursor: pointer;
     padding: 4px;
     line-height: 1;
-}
-
-.marker-window-close {
-    background: none;
-    border: none;
-    font-size: 34px;
-    cursor: pointer;
-    color: var(--theme-fg);
-    padding: 0 4px;
-    line-height: 0;
-    font-weight: 100;
-}
-
-.marker-mission-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    overflow: auto;
-    padding: 30px;
-}
-
-.mission-card {
-    position: relative;
-    width: 150px;
-    height: 100px;
-    margin: 8px;
-    background: var(--marker-window-bg);
-    border: 1px solid var(--marker-window-border);
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    user-select: none;
-}
-
-.mission-title {
-    font-size: 14px;
-    color: var(--theme-fg);
-    text-align: center;
-    padding: 0 4px;
-    word-break: break-word;
-}
-
-.mission-close {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: none;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
-    color: var(--theme-fg);
 }
 
 .marker-toolbar-btn {

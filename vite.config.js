@@ -64,6 +64,13 @@ export default defineConfig({
                     copyFolder(srcStylesheet, distStylesheet);
                 }
 
+                // Copy api folder
+                const srcApi = resolve(__dirname, 'src/api');
+                const distApi = resolve(__dirname, 'dist/renderer/api');
+                if (existsSync(srcApi)) {
+                    copyFolder(srcApi, distApi);
+                }
+
             }
         }
     ]

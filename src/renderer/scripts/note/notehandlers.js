@@ -42,9 +42,10 @@ export const createSetStatus = (els) => {
         statusType,
         customText = null
     ) => {
+        const isValidStatus = statusType in noteFeaturesConfig.status;
         const statusConfig = noteFeaturesConfig.status[statusType];
 
-        if (!statusConfig && !customText) {
+        if (!isValidStatus && !customText) {
             console.warn(`Unknown status: ${statusType}`);
             return;
         }
