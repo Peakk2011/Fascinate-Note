@@ -38,20 +38,34 @@ import {
  * and an optional customText to update the UI.
  */
 export const createSetStatus = (els) => {
+    let lastSavedText = '';
     return (
         statusType,
         customText = null
     ) => {
-        const isValidStatus = statusType in noteFeaturesConfig.status;
+        const hasConfig = statusType in noteFeaturesConfig.status;
         const statusConfig = noteFeaturesConfig.status[statusType];
 
-        if (!isValidStatus && !customText) {
+        if (!hasConfig && !customText) {
             console.warn(`Unknown status: ${statusType}`);
             return;
         }
 
-        els.statusText.textContent = customText ?? (statusConfig ?? '');
+        if (statusType === 'idle' && customText == null) {
+            if (lastSavedText) {
+                els.statusText.textContent = lastSavedText;
+            }
+            els.saveIndicator.className = `dot ${statusType}`;
+            return;
+        }
+
+        const text = customText ?? (statusConfig ?? '');
+        els.statusText.textContent = text;
         els.saveIndicator.className = `dot ${statusType}`;
+
+        if (statusType === 'saved' && text) {
+            lastSavedText = text;
+        }
     };
 };
 

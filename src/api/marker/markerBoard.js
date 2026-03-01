@@ -13,7 +13,6 @@ const STORAGE_KEYS = {
     activeGroup: 'markerActiveGroup'
 };
 
-const CURRENT_WINDOW_ID = 'current-note';
 const DEFAULT_WINDOW_SIZE = { width: 300, height: 240 };
 const MIN_WINDOW_SIZE = { width: 220, height: 140 };
 const PLACEHOLDER_TEXT = 'Click to open and edit this note';
@@ -91,7 +90,7 @@ const ensureCurrentWindow = (windows) => {
     if (windows.length > 0) return; // only create if no windows at all
     const note = createNote({ title: 'Current Notes' });
     const current = {
-        id: CURRENT_WINDOW_ID,
+        id: createId(),
         title: 'Current Notes',
         content: '',
         x: 360, y: 260,
@@ -145,7 +144,7 @@ export const initMarkerBoard = ({
     let activeGroupId = loadActiveGroup();
     let missionOverlay = null;
     let activeWindowId = null;
-    let _closingInProgress = false; // race condition guard
+    const closingIds = new Set(); 
 
     migrateWindows(windows);
     refreshAllPreviews(windows);
@@ -296,9 +295,14 @@ export const initMarkerBoard = ({
     // Remove
 
     const removeWindowById = (id) => {
-        if (_closingInProgress) return;
+        if (closingIds.has(id)) return;
+        closingIds.add(id);
+        
         const idx = windows.findIndex((w) => w.id === id);
-        if (idx === -1) return;
+        if (idx === -1) {
+            closingIds.delete(id);
+            return;
+        }
 
         const [removed] = windows.splice(idx, 1);
         const el = windowMap.get(id);
@@ -308,18 +312,21 @@ export const initMarkerBoard = ({
             el.style.transition = 'opacity 180ms ease, transform 180ms ease';
             el.style.opacity = '0';
             el.style.transform = (el.style.transform || '') + ' scale(0.88)';
-            setTimeout(() => el.remove(), 200);
+            setTimeout(() => {
+                el.remove();
+                closingIds.delete(id);
+            }, 200);
+        } else {
+            closingIds.delete(id);
         }
 
         if (removed.noteId) deleteNote(removed.noteId);
 
         // If no windows left — go back to editor and create fresh window on next open
         if (windows.length === 0) {
-            _closingInProgress = true;
             persist();
             // small delay so animation plays
             setTimeout(() => {
-                _closingInProgress = false;
                 onReturnToEditor?.();
             }, 220);
             return;
@@ -346,7 +353,7 @@ export const initMarkerBoard = ({
         title.value = data.title || 'Untitled';
         title.spellcheck = false;
         title.autocomplete = 'off';
-        title.readOnly = false; // all windows are editable
+        title.readOnly = true;
 
         const badge = document.createElement('span');
         badge.className = 'marker-window-group';
@@ -392,17 +399,18 @@ export const initMarkerBoard = ({
 
         // Title events
 
-        title.addEventListener('pointerdown', (e) => {
-            e.stopPropagation();
-            selectWindow(data.id);
-        });
-
-        title.addEventListener('pointerup', (e) => {
-            e.stopPropagation();
+        title.addEventListener('dblclick', () => {
+            title.readOnly = false;
+            title.focus();
+            title.select();
         });
 
         title.addEventListener('focus', () => {
             setActiveWindow(data.id);
+        });
+
+        title.addEventListener('blur', () => {
+            title.readOnly = true;
         });
 
         title.addEventListener('input', () => {
@@ -430,7 +438,6 @@ export const initMarkerBoard = ({
         element.addEventListener('pointerdown', (e) => {
             if (e.button !== 0) return;
             if (e.target.closest('.marker-window-resize')) return;
-            if (e.target.closest('.marker-window-title')) return;
             if (e.target.closest('.marker-window-close')) return;
             clickStart = { x: e.clientX, y: e.clientY };
             const toggle = e.metaKey || e.ctrlKey || e.shiftKey;
@@ -456,10 +463,15 @@ export const initMarkerBoard = ({
         header.addEventListener('pointerdown', (e) => {
             if (e.button !== 0) return;
             if (e.target.closest('.marker-window-close')) return;
-            if (e.target.closest('.marker-window-title')) return;
+            const titleInput = e.target.closest('.marker-window-title');
+            if (titleInput && titleInput.readOnly === false) return; 
             if (missionOverlay) return; // mission drag handled below
 
-            e.preventDefault();
+            if (!titleInput) {
+                e.preventDefault();
+            } else if (titleInput.readOnly) {
+                titleInput.blur();
+            }
             bringToFront(data.id);
             setActiveWindow(data.id);
 
@@ -556,13 +568,18 @@ export const initMarkerBoard = ({
     };
 
     const rebuildWindows = () => {
-        layer.innerHTML = '';
-        windowMap.clear();
-        windows.forEach((win) => {
-            const el = createWindowElement(win);
-            windowMap.set(win.id, el);
-            layer.appendChild(el);
+        // Just remove windows that no longer exist, sync existing ones
+        const currentIds = new Set(windows.map((w) => w.id));
+        
+        windowMap.forEach((el, id) => {
+            if (!currentIds.has(id)) {
+                el.remove();
+                windowMap.delete(id);
+            }
         });
+
+        // Sync remaining windows and add new ones
+        windows.forEach((win) => syncWindowElement(win));
         updateSelectionStyles();
         applyVisibility();
     };
@@ -654,20 +671,18 @@ export const initMarkerBoard = ({
         const win = windows.find((w) => w.noteId === currentNoteId);
         if (!win) return;
 
-        const preview = truncateText(htmlToText(html), 260);
-        win.content = preview || '';
-        const element = syncWindowElement(win);
-        const contentEl = element?.querySelector('.marker-window-content');
-        if (contentEl) {
-            const isEmpty = !win.content || win.content.trim() === '';
-            if (isEmpty) {
-                contentEl.textContent = '';
-                contentEl.classList.add('is-placeholder');
-            } else {
-                contentEl.textContent = win.content;
-                contentEl.classList.remove('is-placeholder');
-            }
-        }
+        win.content = truncateText(htmlToText(html), 260);
+        
+        // Update DOM directly without re-syncing entire element
+        const el = windowMap.get(win.id);
+        if (!el) return;
+        
+        const contentEl = el.querySelector('.marker-window-content');
+        if (!contentEl) return;
+
+        const isEmpty = !win.content.trim();
+        contentEl.textContent = isEmpty ? '' : win.content;
+        contentEl.classList.toggle('is-placeholder', isEmpty);
         persist();
     };
 
@@ -676,8 +691,6 @@ export const initMarkerBoard = ({
     const enterMissionView = () => {
         if (missionOverlay) return;
 
-        // Overlay sits BEHIND layer (lower z-index) — just a backdrop for click-to-exit
-        // layer keeps pointer-events so windows remain draggable
         missionOverlay = document.createElement('div');
         missionOverlay.className = 'marker-mission-overlay';
         // insert before layer so layer is on top
@@ -723,7 +736,7 @@ export const initMarkerBoard = ({
 
             el._missionTransform = { dx, dy, scale };
 
-            el.style.transition = 'transform 380ms cubic-bezier(0.2, 0, 0, 1)';
+            el.style.transition = 'transform 320ms cubic-bezier(0.25, 0.1, 0.25, 1)';
             el.style.transformOrigin = '0 0';
             el.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
             el.classList.add('is-mission');
@@ -735,6 +748,10 @@ export const initMarkerBoard = ({
     // Uses window-level listeners to avoid setPointerCapture conflicts
 
     const startMissionDrag = (e, data, element) => {
+        const ac = new AbortController();
+        const { signal } = ac;
+        const cleanup = () => ac.abort();
+        
         const { dx: baseDx = 0, dy: baseDy = 0, scale = 1 } = element._missionTransform || {};
         const startClientX = e.clientX;
         const startClientY = e.clientY;
@@ -766,9 +783,7 @@ export const initMarkerBoard = ({
         };
 
         const onUp = () => {
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-            window.removeEventListener('pointercancel', onUp);
+            cleanup();
 
             if (!isDragging) {
                 // It was a click — open the note
@@ -794,9 +809,9 @@ export const initMarkerBoard = ({
             }
         };
 
-        window.addEventListener('pointermove', onMove);
-        window.addEventListener('pointerup', onUp);
-        window.addEventListener('pointercancel', onUp);
+        window.addEventListener('pointermove', onMove, { signal });
+        window.addEventListener('pointerup', onUp, { signal });
+        window.addEventListener('pointercancel', cleanup, { signal });
     };
 
     // Mission exit
@@ -819,7 +834,10 @@ export const initMarkerBoard = ({
             el.style.transform = '';
             el.style.opacity = '';
 
+            let handled = false;
             const handleEnd = () => {
+                if (handled) return;
+                handled = true;
                 el.removeEventListener('transitionend', handleEnd);
                 el.style.transition = '';
                 el.style.transformOrigin = '';
@@ -829,9 +847,7 @@ export const initMarkerBoard = ({
             };
 
             el.addEventListener('transitionend', handleEnd);
-            setTimeout(() => {
-                if (el.classList.contains('is-mission')) handleEnd();
-            }, 400);
+            setTimeout(() => handleEnd(), 400);
         });
     };
 
@@ -879,7 +895,21 @@ export const initMarkerBoard = ({
         const action = btn.dataset.action;
 
         if (action === 'clear-all') {
-            windows.slice().forEach((w) => removeWindowById(w.id));
+            const toRemove = windows.slice();
+            const last = toRemove[toRemove.length - 1];
+            toRemove.forEach((w) => {
+                if (w.id === last.id) {
+                    removeWindowById(w.id); // will handle onReturnToEditor
+                } else {
+                    const idx = windows.findIndex(x => x.id === w.id);
+                    if (idx !== -1) windows.splice(idx, 1);
+                    const el = windowMap.get(w.id);
+                    windowMap.delete(w.id);
+                    if (w.noteId) deleteNote(w.noteId);
+                    el?.remove();
+                }
+            });
+            persist();
         } else if (action === 'mission-view') {
             missionOverlay ? exitMissionView() : enterMissionView();
         }

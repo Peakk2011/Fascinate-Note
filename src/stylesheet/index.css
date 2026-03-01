@@ -83,36 +83,3 @@
         caret-color: var(--theme-fg);
     }
 }
-
-
-/* --- Responsive Design --- */
-
-/**
- * @media screen and (max-width: 720px)
- * @description Tablet responsive styles
- */
-@media screen and (max-width: 720px) {
-    .contentTEXT {
-        display: inline-block;
-    }
-}
-
-/**
- * @media (max-width: 340px)
- * @description Mobile responsive styles
- * @note Hides certain UI elements on very small screens
- */
-@media (max-width: 340px) {
-    .contentTEXT {
-        left: 17px;
-        transform: translateX(0);
-    }
-
-    #GotoHomePage {
-        display: none;
-    }
-
-    .zoom-btn {
-        display: none;
-    }
-}

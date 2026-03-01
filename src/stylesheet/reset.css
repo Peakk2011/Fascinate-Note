@@ -567,11 +567,11 @@
 
     /* Selection Menu Variables */
     --selection-menu-border-radius: 6px;
-    --selection-menu-padding: 0.25rem;
+    --selection-menu-padding: 0.3rem 0.35rem;
     --selection-menu-z-index: 1000;
     --selection-menu-offset-y: -8px;
     --selection-menu-transition: 250ms cubic-bezier(0.2, 0.0, 0, 1.0);
-    --selection-btn-padding: 0.3rem 0.65rem;
+    --selection-btn-padding: 0.4rem 0.4rem;
     --selection-btn-font-size: 14px;
     --selection-btn-icon-size: 16px;
     --selection-btn-transition: 100ms cubic-bezier(0.2, 0.0, 0, 1.0);
@@ -580,7 +580,7 @@
     --titlebar-height: 40px;
     --titlebar-z-index: 10;
     --titlebar-font-size: 14px;
-    --titlebar-font-weight: 400;
+    --titlebar-font-weight: 500;
 
     /* Marker */
     --marker-bg: hsl(0, 0%, 9%);

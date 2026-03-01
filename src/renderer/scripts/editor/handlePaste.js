@@ -471,6 +471,10 @@ const insertImageDataUrl = (editor, dataUrl, name = 'Image') => {
 
     const { block } = createImageBlock({ dataUrl, name, editor });
 
+    block.style.transform = 'scale(0.85)';
+    block.style.transformOrigin = 'center top';
+    block.classList.add('fade-in-paste');
+
     const spacer = document.createElement('div');
     spacer.innerHTML = '<br>';
 
@@ -478,8 +482,16 @@ const insertImageDataUrl = (editor, dataUrl, name = 'Image') => {
     fragment.appendChild(block);
     fragment.appendChild(spacer);
 
+    const animateIn = () => {
+        requestAnimationFrame(() => {
+            block.style.transition = 'opacity 400ms cubic-bezier(0.77, 0, 0.175, 1), transform 400ms cubic-bezier(0.77, 0, 0.175, 1), padding 250ms cubic-bezier(0.165, 0.84, 0.44, 1)';
+            block.style.transform = 'scale(1)';
+        });
+    };
+
     if (!selection || selection.rangeCount === 0) {
         editor.appendChild(fragment);
+        animateIn();
         editor.focus();
         return;
     }
@@ -487,6 +499,8 @@ const insertImageDataUrl = (editor, dataUrl, name = 'Image') => {
     const range = selection.getRangeAt(0);
     range.deleteContents();
     range.insertNode(fragment);
+
+    animateIn();
 
     const newRange = document.createRange();
     newRange.setStart(spacer, 0);

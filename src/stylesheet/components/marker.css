@@ -37,10 +37,6 @@
     border-color: var(--image-border-color);
 }
 
-.marker-window.is-dragging {
-    cursor: grabbing;
-}
-
 .marker-window-ghost {
     pointer-events: none;
     background: transparent;
@@ -57,7 +53,6 @@
     width: 18px;
     height: 18px;
     cursor: se-resize;
-    opacity: 0.3;
     border-bottom-right-radius: 10px;
 }
 
@@ -69,14 +64,6 @@
     background: var(--marker-mission-bg);
     z-index: 1;
     pointer-events: auto;
-}
-
-.marker-window.is-mission {
-    cursor: grab;
-}
-
-.marker-window.is-mission:active {
-    cursor: grabbing;
 }
 
 .marker-window.is-mission .marker-window-resize {
@@ -93,7 +80,6 @@
     background: var(--marker-header-bg);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
-    cursor: grab;
 }
 
 .marker-window.is-mission .marker-window-header {
@@ -113,6 +99,7 @@
     display: inline-block;
     opacity: 0.5;
     transition: opacity 150ms ease;
+    cursor: default;
 }
 
 .marker-window.is-active .marker-window-title,

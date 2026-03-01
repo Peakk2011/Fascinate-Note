@@ -78,7 +78,7 @@
 body.win32 .textarea-container,
 body.darwin .textarea-container {
     padding-top: 2.5rem;
-    max-width: 900px;
+    max-width: 768px;
     margin: auto;
     width: 100%;
 }
@@ -143,7 +143,7 @@ body.darwin .editor-placeholder {
     letter-spacing: var(--editor-heading-letter-spacing);
     font-weight: var(--editor-heading-weight);
     margin-bottom: var(--editor-heading-margin);
-    width: var(--editor-heading-width);
+    /* width: var(--editor-heading-width); */
 }
 
 .editable-div h1 div,
@@ -152,6 +152,24 @@ body.darwin .editor-placeholder {
 .editable-div h4 div {
     font-family: var(--font-display);
     letter-spacing: var(--editor-heading-letter-spacing);
+    font-weight: var(--editor-heading-weight);
+}
+
+.editable-div h1 p,
+.editable-div h2 p,
+.editable-div h3 p,
+.editable-div h4 p {
+    font-family: var(--font-display);
+    letter-spacing: var(--editor-heading-letter-spacing);
+    font-weight: var(--editor-heading-weight);
+}
+
+.editable-div h1 span,
+.editable-div h2 span,
+.editable-div h3 span,
+.editable-div h4 span {
+    font-family: var(--font-display);
+    letter-spacing: calc(var(--editor-heading-letter-spacing) - 0.6px);
     font-weight: var(--editor-heading-weight);
 }
 

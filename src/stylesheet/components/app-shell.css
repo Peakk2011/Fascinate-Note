@@ -36,8 +36,10 @@ body.win32 .application-titlebar {
     font-family: var(--font-display);
     font-size: var(--titlebar-font-size);
     font-weight: var(--titlebar-font-weight);
+    letter-spacing: -0.4px;
     color: var(--theme-fg);
-    display: none;
+    opacity: 0;
+    transition: opacity 0.2s;
 }
 
 /**
@@ -55,6 +57,7 @@ body.win32 .application-titlebar {
     right: var(--status-right);
     z-index: var(--status-z-index);
     background-color: var(--theme-bg);
+    width: fit-content;
 }
 
 body.win32 .status {
@@ -215,4 +218,10 @@ body.darwin .status {
     .editor-mask {
         background: linear-gradient(to bottom, hsla(0, 0%, 98%, 0) 0%, hsla(0, 0%, 98%, 0.25) 40%, var(--theme-bg) 100%);
     }
+}
+
+@media screen and (min-width: 550px) {
+    .application-titlebar span {
+        opacity: 1;
+    }   
 }

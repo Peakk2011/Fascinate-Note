@@ -216,6 +216,14 @@
     letter-spacing: 0.3px;
     font-size: var(--selection-btn-font-size);
     transition: background-color var(--selection-btn-transition);
+
+    line-height: 0;
+}
+
+.selection-menu button svg {
+    width: 20.5px;
+    height: 20.5px;
+    line-height: 0;
 }
 
 .selection-menu button:hover {

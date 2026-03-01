@@ -199,6 +199,10 @@ export const noteFeatures = async (
          */
         const setStatus = createSetStatus(els);
         
+        if (els.statusText.textContent) {
+            setStatus('saved', els.statusText.textContent);
+        }
+        
         /**
          * Data loading function with error handling
          * @type {() => Promise<void>}
