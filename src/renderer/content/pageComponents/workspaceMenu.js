@@ -12,7 +12,6 @@ export const createWorkspaceMenuMarkup = (config) => {
         <div id="workspace-menu" class="workspace-menu" aria-hidden="true">
             <div class="workspace-menu-header">Workspace</div>
             <button id="workspace-open-marker" class="workspace-menu-action" type="button">Marker</button>
-            <div class="workspace-menu-divider"></div>
             <div class="workspace-menu-controls">
                 <div class="${config.zoomControlsClass}">
                     ${createZoomControlsMarkup(config)}

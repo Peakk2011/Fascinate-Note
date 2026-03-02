@@ -1,0 +1,88 @@
+import { STORAGE_KEYS } from './constants.js';
+
+/**
+ * Safely parses a JSON string.
+ * @param {string} value - The string to parse.
+ * @param {*} fallback - The fallback value if parsing fails.
+ * @returns {*} The parsed object or the fallback value.
+ */
+export const safeParse = (value, fallback) => {
+    if (!value) return fallback;
+    try { return JSON.parse(value); } catch { return fallback; }
+};
+
+/**
+ * Saves a value to local storage.
+ * @param {string} key - The key to save the value under.
+ * @param {*} value - The value to save.
+ */
+export const saveToStorage = (key, value) => {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch { }
+};
+
+/**
+ * Creates a unique ID for a window.
+ * @returns {string} A unique ID.
+ */
+export const createId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return `win_${crypto.randomUUID()}`;
+    }
+    return `win_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+};
+
+/**
+ * Sanitizes text by removing extra whitespace.
+ * @param {string} text - The text to sanitize.
+ * @returns {string} The sanitized text.
+ */
+export const sanitizeText = (text) => {
+    if (typeof text !== 'string') return '';
+    return text.replace(/\s+/g, ' ').trim();
+};
+
+/**
+ * Converts HTML to plain text.
+ * @param {string} html - The HTML to convert.
+ * @returns {string} The plain text.
+ */
+export const htmlToText = (html) => {
+    const holder = document.createElement('div');
+    holder.innerHTML = html || '';
+    return sanitizeText(holder.textContent || '');
+};
+
+/**
+ * Truncates text to a maximum length.
+ * @param {string} text - The text to truncate.
+ * @param {number} [max=220] - The maximum length.
+ * @returns {string} The truncated text.
+ */
+export const truncateText = (text, max = 220) => {
+    if (text.length <= max) return text;
+    return `${[...text].slice(0, max).join('').trim()}…`;
+};
+
+/**
+ * Gets a group by its ID.
+ * @param {Array<object>} groups - The array of groups.
+ * @param {string} id - The ID of the group to get.
+ * @returns {object|undefined} The group object, or undefined if not found.
+ */
+export const getGroupById = (groups, id) => groups.find(g => g.id === id);
+
+/**
+ * Generates a random HSL color.
+ * @returns {string} A random HSL color string.
+ */
+export const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
+
+/**
+ * Gets the canvas coordinates from a mouse event.
+ * @param {MouseEvent} e - The mouse event.
+ * @returns {{x: number, y: number}} The canvas coordinates.
+ */
+export const getCanvasCoords = (e) => {
+    // This should be implemented based on your canvas coordinate system
+    return { x: e.clientX, y: e.clientY };
+};

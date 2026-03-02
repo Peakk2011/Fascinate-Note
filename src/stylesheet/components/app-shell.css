@@ -89,16 +89,17 @@ body.darwin .status {
     padding: 0;
     margin: 0;
     font-size: 1.45rem;
+    line-height: 0;
     cursor: pointer;
     color: var(--theme-fg);
 
     transition: opacity 0.2s;
-    opacity: 0;
+    /* opacity: 0; */
 }
 
-#app:hover .application-workspace-toggle-button {
+/* #app:hover .application-workspace-toggle-button {
     opacity: 1;
-}
+} */
 
 /**
  * @component WorkspaceMenu
@@ -109,11 +110,11 @@ body.darwin .status {
     right: calc(var(--status-right) - 4px);
     bottom: calc(var(--status-top) + 36px);
     min-width: 220px;
-    background: color-mix(in srgb, var(--theme-bg) 80%, transparent);
-    border: 1px solid color-mix(in srgb, var(--theme-border) 70%, transparent);
-    border-radius: 16px;
-    box-shadow: var(--ctx-menu-shadow);
-    padding: 12px;
+    background: var(--ctx-menu-bg);
+    border: var(--theme-border) 1px solid;
+    border-radius: var(--ctx-menu-radius);
+    box-shadow: var(--theme-shadow);
+    padding: 0.95rem;
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -134,33 +135,32 @@ body.darwin .status {
 
 .workspace-menu-header {
     font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    color: color-mix(in srgb, var(--theme-fg) 85%, transparent);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: -0.2px;
 }
 
 .workspace-menu-action {
     border: none;
-    padding: 8px 10px;
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--PrimaryButtonsColors) 85%, transparent);
-    color: var(--theme-fg);
+    padding: 8px 12px;
     font-family: var(--font-display);
+    font-weight: var(--zoom-btn-weight);
     font-size: 13px;
-    font-weight: 600;
     cursor: pointer;
+
+    border-radius: var(--zoom-btn-border-radius);
+    background-color: var(--PrimaryButtonsColors);
+    box-shadow: var(--theme-shadow);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+    font-family: var(--font-display);
+    color: var(--theme-fg);
+    transition: var(--zoom-btn-transition);
+    margin-bottom: 0.35rem;
 }
 
 .workspace-menu-action:hover {
     background: var(--theme-accent);
     color: var(--theme-accent-text);
-}
-
-.workspace-menu-divider {
-    height: 1px;
-    width: 100%;
-    background: color-mix(in srgb, var(--theme-border) 70%, transparent);
 }
 
 .workspace-menu-controls .zoom-controls {
@@ -223,5 +223,5 @@ body.darwin .status {
 @media screen and (min-width: 550px) {
     .application-titlebar span {
         opacity: 1;
-    }   
+    }
 }

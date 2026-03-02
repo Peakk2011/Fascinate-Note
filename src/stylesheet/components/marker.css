@@ -16,6 +16,7 @@
     position: absolute;
     inset: 0;
     transform-origin: 0 0;
+    -webkit-user-select: none;
     user-select: none;
     z-index: 2;
 }
@@ -24,13 +25,14 @@
     position: absolute;
     border-radius: 10px;
     background-color: var(--theme-model);
+    backdrop-filter: blur(12px) saturate(150%);
     color: var(--theme-fg);
     outline: 1.5px solid var(--theme-model-border);
     box-shadow: var(--theme-shadow);
     display: flex;
     flex-direction: column;
     min-width: 200px;
-    min-height: 180px;
+    min-height: 100px;
 }
 
 .marker-window.is-current {
@@ -70,13 +72,25 @@
     display: none;
 }
 
+.marker-window.is-mission {
+    pointer-events: auto;
+    cursor: grab;
+    transition: all var(--transition);
+}
+
+.marker-window.is-mission:hover {
+    outline-color: var(--marker-ghost-border);
+    outline-width: 2px;
+    outline-style: solid;
+}
+
 /* Window header */
 
 .marker-window-header {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 14px;
+    padding: 14px 16px;
     background: var(--marker-header-bg);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
@@ -93,8 +107,8 @@
     color: var(--theme-fg);
     font-family: var(--font-display);
     font-size: 14.5px;
-    font-weight: 550;
-    letter-spacing: -0.2px;
+    font-weight: 500;
+    letter-spacing: -0.25px;
     outline: none;
     display: inline-block;
     opacity: 0.5;
@@ -129,6 +143,7 @@
     color: var(--marker-content-color);
     overflow: auto;
     flex: 1;
+    -webkit-user-select: text;
     user-select: text;
     font-weight: 450;
     font-family: var(--font-display);

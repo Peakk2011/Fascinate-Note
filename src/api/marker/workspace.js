@@ -20,7 +20,7 @@ import {
     animatePan
 } from './controllers/zoomPan.js';
 
-import { initMarkerBoard } from './markerBoard.js';
+import { MarkerBoard } from './index.js';
 import { createMarkerGroupModal } from './markerGroupModal.js';
 
 /**
@@ -68,7 +68,7 @@ export const createWorkspace = async (container, options = {}) => {
     document.body.insertAdjacentHTML('beforeend', groupModalInstance.markups);
     const groupModal = groupModalInstance.init();
 
-    board = initMarkerBoard({
+    board = new MarkerBoard({
         container,
         getCanvasCoords,
         groupModal,
