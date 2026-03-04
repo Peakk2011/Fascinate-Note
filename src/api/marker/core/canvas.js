@@ -24,12 +24,11 @@ export const setupCanvas = () => {
         const config = getConfig();
 
         const container = state.canvasContainer;
-        const rect = container.getBoundingClientRect();
         const dpr = state.devicePixelRatio;
 
-        // Use bitwise OR for rounding
-        const newWidth = (rect.width + 0.5) | 0;
-        const newHeight = (rect.height + 0.5) | 0;
+        // Keep workspace board size fixed from config (independent from viewport size)
+        const newWidth = config.canvas.DEFAULT_WIDTH | 0;
+        const newHeight = config.canvas.DEFAULT_HEIGHT | 0;
 
         // Check if resize is needed
         if (state.canvasWidth !== newWidth || state.canvasHeight !== newHeight) {
@@ -49,17 +48,25 @@ export const setupCanvas = () => {
             ctx.scale(dpr, dpr);
             ctx.lineCap = LINE_CAP_ROUND;
             ctx.lineJoin = LINE_JOIN_ROUND;
+
+        }
+
+        if (state.markerLayer) {
+            state.markerLayer.style.width = `${newWidth}px`;
+            state.markerLayer.style.height = `${newHeight}px`;
         }
 
         // Initialize pan values on first setup
         if (!state.isInitialized) {
-            state.panX = (newWidth - config.canvas.DEFAULT_WIDTH) / 2;
-            state.panY = (newHeight - config.canvas.DEFAULT_HEIGHT) / 2;
+            const rect = container.getBoundingClientRect();
+            state.panX = (rect.width - config.canvas.DEFAULT_WIDTH) / 2;
+            state.panY = (rect.height - config.canvas.DEFAULT_HEIGHT) / 2;
             state.isInitialized = true;
         }
 
         initSVG();
         requestRedraw();
+        updateViewTransform();
     } catch (err) {
         console.error('Error setting up canvas:', err);
     }
@@ -102,7 +109,9 @@ export const initSVG = () => {
 
         // Create new SVG element
         const svg = document.createElementNS(SVG_NS, 'svg');
-        svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10';
+        svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;z-index:10';
+        svg.style.width = `${state.canvasWidth}px`;
+        svg.style.height = `${state.canvasHeight}px`;
 
         // Create group element
         const g = document.createElementNS(SVG_NS, 'g');
@@ -147,7 +156,6 @@ export const getCanvasCoords = (e) => {
 export const requestRedraw = () => {
     try {
         const state = getState();
-        const config = getConfig();
         const ctx = state.ctx;
         const canvas = state.canvas;
 
@@ -162,8 +170,6 @@ export const requestRedraw = () => {
         // Panning and zooming are handled by CSS transforms.
 
 
-        drawGrid(ctx, state, config, state.scale);
-        
         ctx.restore();
     } catch (err) {
         console.error('Error redrawing canvas:', err);
@@ -177,7 +183,8 @@ export const requestRedraw = () => {
 export const updateViewTransform = () => {
     try {
         const state = getState();
-        const { canvas, svg, markerLayer, scale, panX, panY } = state;
+        const config = getConfig();
+        const { canvas, svg, markerLayer, markerZoomIndicator, scale, panX, panY } = state;
 
         if (!canvas || !svg) return;
 
@@ -193,60 +200,24 @@ export const updateViewTransform = () => {
         if (markerLayer) {
             markerLayer.style.transformOrigin = '0 0';
             markerLayer.style.transform = transform;
+            markerLayer.classList.toggle('is-lod', scale <= 0.4 && !state.isMissionActive);
+        }
+
+        if (markerZoomIndicator) {
+            markerZoomIndicator.textContent = `${Math.round(scale * 100)}%`;
+        }
+
+        if (state.canvasContainer) {
+            const rawStep = config.constants.GRID_SIZE * scale;
+            const step = Math.max(6, rawStep);
+            const offsetX = ((panX % step) + step) % step;
+            const offsetY = ((panY % step) + step) % step;
+            state.canvasContainer.style.setProperty('--marker-grid-step', `${step}px`);
+            state.canvasContainer.style.setProperty('--marker-grid-offset-x', `${offsetX}px`);
+            state.canvasContainer.style.setProperty('--marker-grid-offset-y', `${offsetY}px`);
+            state.canvasContainer.classList.toggle('marker-grid-hidden', scale <= 0.6);
         }
     } catch (error) {
         console.error('Error updating view transform:', error);
-    }
-};
-
-/**
- * Draws the grid pattern on canvas
- * @param {CanvasRenderingContext2D} ctx - Canvas context
- * @param {Object} state - Application state
- * @param {Object} config - Configuration object
- * @param {number} scale - Current zoom scale
- * @returns {void}
- */
-const drawGrid = (ctx, state, config, scale) => {
-    try {
-        const gridSize = config.constants.GRID_SIZE;
-        const canvasWidth = state.canvasWidth;
-        const canvasHeight = state.canvasHeight;
-        const panX = state.panX;
-        const panY = state.panY;
-        
-
-        // opacity ramps from 0 at scale=0.25 to 1 at scale=0.5
-        let opacity = (scale - 0.25) / 0.25;
-        opacity = Math.max(0, Math.min(1, opacity));
-        
-        let alphaValue = opacity * 0.5;
-        if (alphaValue < 0.1) {
-            alphaValue = 0.1;
-        }
-        
-        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const baseColor = darkMode ? 255 : 0;
-        ctx.fillStyle = `rgba(${baseColor},${baseColor},${baseColor},${alphaValue})`;
-        
-        // Calculate dot radius based on zoom
-        const dotRadius = 1 / scale;
-        
-        // Calculate visible grid bounds
-        const startX = (((-panX / scale / gridSize) | 0) * gridSize) | 0;
-        const startY = (((-panY / scale / gridSize) | 0) * gridSize) | 0;
-        const endX = (startX + (canvasWidth / scale) + gridSize) | 0;
-        const endY = (startY + (canvasHeight / scale) + gridSize) | 0;
-
-        // Draw grid dots
-        for (let x = startX; x < endX; x += gridSize) {
-            for (let y = startY; y < endY; y += gridSize) {
-                ctx.beginPath();
-                ctx.arc(x, y, dotRadius, 0, TWO_PI);
-                ctx.fill();
-            }
-        }
-    } catch (err) {
-        console.error('Error drawing grid:', err);
     }
 };

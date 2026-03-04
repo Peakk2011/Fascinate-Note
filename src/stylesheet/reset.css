@@ -594,6 +594,7 @@
     --marker-content-color: hsl(0, 0%, 75%);
     --marker-toolbar-bg: hsl(0, 0%, 10%);
     --marker-toolbar-border: hsl(0, 0%, 20%);
+    --marker-lod-hover-bg: hsl(0, 0%, 9%);
 }
 
 /* Platform-specific styles variables */
@@ -676,11 +677,12 @@ body.darwin {
         --marker-header-bg: var(--theme-model);
         --marker-header-border: hsl(0, 0%, 90%);
         --marker-ghost-border: #b0c6cb;
-        --marker-group-badge-bg: hsl(0, 0%, 92%);
+        --marker-group-badge-bg: hsl(0, 0%, 95.5%);
         --marker-color-btn-border: hsl(0, 0%, 80%);
         --marker-content-color: hsl(0, 0%, 30%);
         --marker-toolbar-bg: hsl(0, 0%, 97%);
         --marker-toolbar-border: hsl(0, 0%, 88%);
+        --marker-lod-hover-bg: hsl(0, 0%, 96.5%);
     }
 }
 

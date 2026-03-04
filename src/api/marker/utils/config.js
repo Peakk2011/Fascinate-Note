@@ -85,6 +85,7 @@ export const loadConfiguration = async () => {
             globalState.panX = 0;
             globalState.panY = 0;
             globalState.isInitialized = false;
+            globalState.isMissionActive = false;
 
             // Cache devicePixelRatio to avoid repeated property access
             Object.defineProperty(globalState, 'dpr', {

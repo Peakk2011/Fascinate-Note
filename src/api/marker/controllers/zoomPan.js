@@ -56,6 +56,7 @@ export const handleWheel = (e) => {
         e.preventDefault();
 
         const state = getState();
+        if (state.isMissionActive) return;
         const config = getConfig().constants;
 
         const rect = state.canvasContainer.getBoundingClientRect();
@@ -105,6 +106,29 @@ export const handleWheel = (e) => {
         }
     } catch (error) {
         console.error('Error handling wheel event:', error);
+    }
+};
+
+/**
+ * Focuses viewport to a specific window using animated zoom/pan.
+ * @param {{x:number,y:number,width:number,height:number}} win - Window data
+ * @param {number} [targetScale=1] - Target zoom scale
+ * @returns {void}
+ */
+export const focusWindowAtScale = (win, targetScale = 1) => {
+    try {
+        if (!win) return;
+        const state = getState();
+        const config = getConfig().constants;
+        const rect = state.canvasContainer.getBoundingClientRect();
+        const clampedScale = Math.max(config.MIN_SCALE, Math.min(config.MAX_SCALE, targetScale));
+        const centerX = win.x + (win.width * HALF);
+        const centerY = win.y + (win.height * HALF);
+        const targetPanX = (rect.width * HALF) - (centerX * clampedScale);
+        const targetPanY = (rect.height * HALF) - (centerY * clampedScale);
+        animateZoom(clampedScale, targetPanX, targetPanY, rect);
+    } catch (error) {
+        console.error('Error focusing window:', error);
     }
 };
 
@@ -178,6 +202,39 @@ export const animatePan = (targetPanX, targetPanY, rect) => {
         }
     } catch (error) {
         console.error('Error animating pan:', error);
+    }
+};
+
+/**
+ * Applies pan immediately without easing (used for middle-mouse dragging).
+ * @param {number} targetPanX - Target pan X position
+ * @param {number} targetPanY - Target pan Y position
+ * @returns {void}
+ */
+export const panImmediately = (targetPanX, targetPanY) => {
+    try {
+        const state = getState();
+        const zs = getZoomState();
+
+        if (zs.animationFrame !== null) {
+            cancelAnimationFrame(zs.animationFrame);
+            zs.animationFrame = null;
+        }
+        zs.isAnimating = false;
+
+        state.panX = targetPanX;
+        state.panY = targetPanY;
+        constrainPan();
+        updateViewTransform();
+
+        zs.currentScale = state.scale;
+        zs.targetScale = state.scale;
+        zs.currentPanX = state.panX;
+        zs.currentPanY = state.panY;
+        zs.targetPanX = state.panX;
+        zs.targetPanY = state.panY;
+    } catch (error) {
+        console.error('Error applying immediate pan:', error);
     }
 };
 

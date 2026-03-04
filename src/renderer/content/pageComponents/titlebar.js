@@ -47,6 +47,81 @@ export const initTitlebar = (threshold = 60) => {
     let workspaceApi = null;
     let isWorkspaceInitialized = false;
     let menuOpen = false;
+    let isViewTransitioning = false;
+
+    const prefersReducedMotion = () =>
+        window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
+    const waitForTransitionEnd = (element, fallbackMs = 560) =>
+        new Promise((resolve) => {
+            if (!element) {
+                resolve();
+                return;
+            }
+
+            let settled = false;
+            const finish = () => {
+                if (settled) return;
+                settled = true;
+                element.removeEventListener('transitionend', onEnd);
+                resolve();
+            };
+            const onEnd = (event) => {
+                if (event.target !== element) return;
+                finish();
+            };
+
+            element.addEventListener('transitionend', onEnd);
+            setTimeout(finish, fallbackMs);
+        });
+
+    const animateWorkspaceSwap = async ({ showWorkspace, workspaceContainer, editorContainer }) => {
+        if (prefersReducedMotion()) {
+            workspaceContainer.style.display = showWorkspace ? 'block' : 'none';
+            editorContainer.style.display = showWorkspace ? 'none' : 'block';
+            workspaceContainer.classList.toggle('is-active', showWorkspace);
+            workspaceContainer.classList.remove('is-entering', 'is-leaving');
+            editorContainer.classList.remove('is-workspace-entering', 'is-workspace-leaving');
+            return;
+        }
+
+        if (showWorkspace) {
+            workspaceContainer.style.display = 'block';
+            void workspaceContainer.offsetWidth;
+
+            workspaceContainer.classList.remove('is-leaving');
+            workspaceContainer.classList.add('is-active', 'is-entering');
+            editorContainer.classList.remove('is-workspace-entering');
+            editorContainer.classList.add('is-workspace-leaving');
+
+            await Promise.all([
+                waitForTransitionEnd(workspaceContainer),
+                waitForTransitionEnd(editorContainer)
+            ]);
+
+            editorContainer.style.display = 'none';
+            workspaceContainer.classList.remove('is-entering');
+            editorContainer.classList.remove('is-workspace-leaving');
+            return;
+        }
+
+        editorContainer.style.display = 'block';
+        void editorContainer.offsetWidth;
+
+        editorContainer.classList.remove('is-workspace-leaving');
+        editorContainer.classList.add('is-workspace-entering');
+        workspaceContainer.classList.remove('is-entering');
+        workspaceContainer.classList.add('is-leaving');
+
+        await Promise.all([
+            waitForTransitionEnd(workspaceContainer),
+            waitForTransitionEnd(editorContainer)
+        ]);
+
+        workspaceContainer.classList.remove('is-active', 'is-leaving');
+        workspaceContainer.style.display = 'none';
+        editorContainer.classList.remove('is-workspace-entering');
+    };
 
     const onScroll = () => {
         /** @type {number} */
@@ -60,27 +135,33 @@ export const initTitlebar = (threshold = 60) => {
     };
 
     const toggleWorkspace = async () => {
+        if (isViewTransitioning) return;
+
         const editorContainer = document.querySelector('.textarea-container');
         if (!workspaceContainer || !editorContainer) return;
 
-        const isWorkspaceVisible = workspaceContainer.style.display === 'block';
-        workspaceContainer.style.display = isWorkspaceVisible ? 'none' : 'block';
-        editorContainer.style.display = isWorkspaceVisible ? 'block' : 'none';
+        const isWorkspaceVisible =
+            workspaceContainer.classList.contains('is-active') ||
+            workspaceContainer.style.display === 'block';
+        const willShowWorkspace = !isWorkspaceVisible;
 
-        if (!isWorkspaceVisible && !isWorkspaceInitialized) {
+        if (willShowWorkspace && !isWorkspaceInitialized) {
             try {
+                workspaceContainer.style.display = 'block';
                 workspaceApi = await createWorkspace(workspaceContainer, {
                     onOpenNote: async (noteId) => {
                         if (window.noteAPI && typeof window.noteAPI.openNote === 'function') {
                             await window.noteAPI.openNote(noteId);
                             // close workspace after opening
-                            toggleWorkspace();
+                            await toggleWorkspace();
                         }
                     },
                     onReturnToEditor: () => {
                         toggleWorkspace();
                     }
                 });
+
+                window.__workspaceApi = workspaceApi;
                 isWorkspaceInitialized = true;
                 console.log('Workspace initialized.');
             } catch (error) {
@@ -88,14 +169,27 @@ export const initTitlebar = (threshold = 60) => {
                 // Revert UI changes on failure
                 workspaceContainer.style.display = 'none';
                 editorContainer.style.display = 'block';
+
+                return;
             }
         }
 
-        if (!isWorkspaceVisible) {
+        if (willShowWorkspace) {
             // workspace just became visible and update preview
             const editor = document.querySelector('.editable-div');
             workspaceApi?.refreshCurrentNote && workspaceApi.refreshCurrentNote(editor?.innerHTML || '');
             workspaceApi?.refreshAllNotes && workspaceApi.refreshAllNotes();
+        }
+
+        isViewTransitioning = true;
+        try {
+            await animateWorkspaceSwap({
+                showWorkspace: willShowWorkspace,
+                workspaceContainer,
+                editorContainer
+            });
+        } finally {
+            isViewTransitioning = false;
         }
     };
 
@@ -140,6 +234,18 @@ export const initTitlebar = (threshold = 60) => {
         }
     };
 
+    const handleWorkspaceToggleShortcut = async (e) => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+        if (e.altKey || e.shiftKey) return;
+
+        const key = typeof e.key === 'string' ? e.key.toLowerCase() : '';
+        if (key !== 'd') return;
+
+        e.preventDefault();
+        await toggleWorkspace();
+        closeMenu();
+    };
+
     const listenerOptions = { passive: true };
     window.addEventListener('scroll', onScroll, listenerOptions);
     const handleMarkerClick = async () => {
@@ -151,6 +257,7 @@ export const initTitlebar = (threshold = 60) => {
     workspaceMarkerBtn?.addEventListener('click', handleMarkerClick);
     document.addEventListener('mousedown', handleMenuClick);
     document.addEventListener('keydown', handleMenuEscape);
+    document.addEventListener('keydown', handleWorkspaceToggleShortcut);
 
     onScroll();
 
@@ -161,9 +268,14 @@ export const initTitlebar = (threshold = 60) => {
             workspaceMarkerBtn?.removeEventListener('click', handleMarkerClick);
             document.removeEventListener('mousedown', handleMenuClick);
             document.removeEventListener('keydown', handleMenuEscape);
+            document.removeEventListener('keydown', handleWorkspaceToggleShortcut);
             el.classList.remove('scrolled');
             if (workspaceApi) {
                 workspaceApi.destroy();
+                
+                if (window.__workspaceApi === workspaceApi) {
+                    window.__workspaceApi = null;
+                }
             }
         }
     };

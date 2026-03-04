@@ -72,10 +72,29 @@ export const truncateText = (text, max = 220) => {
 export const getGroupById = (groups, id) => groups.find(g => g.id === id);
 
 /**
- * Generates a random HSL color.
+ * Generates a random HSL color tuned for current theme mode.
+ * - Dark mode: brighter accent colors for strong contrast
+ * - Light mode: deeper colors to avoid washed-out labels
  * @returns {string} A random HSL color string.
  */
-export const randomColor = () => `hsl(${Math.floor(Math.random() * 360)}, 70%, 60%)`;
+export const randomColor = () => {
+    const hue = Math.floor(Math.random() * 360);
+    const darkMode = typeof window !== 'undefined'
+        && typeof window.matchMedia === 'function'
+        && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+    if (darkMode) {
+        // brighter, high-visibility accents on dark surfaces
+        const saturation = 82 + Math.floor(Math.random() * 12); // 82-93
+        const lightness = 66 + Math.floor(Math.random() * 10);  // 66-75
+        return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+    }
+
+    // deeper accents for better contrast on light surfaces
+    const saturation = 72 + Math.floor(Math.random() * 12); // 72-83
+    const lightness = 34 + Math.floor(Math.random() * 10);  // 34-43
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+};
 
 /**
  * Gets the canvas coordinates from a mouse event.

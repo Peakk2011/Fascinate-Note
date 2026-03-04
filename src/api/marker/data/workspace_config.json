@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "constants": {
     "GRID_SIZE": 40,
-    "MIN_SCALE": 1,
+    "MIN_SCALE": 0.39,
     "MAX_SCALE": 16,
-    "ZOOM_SENSITIVITY": 0.005,
-    "PAN_SENSITIVITY": 2.5,
+    "ZOOM_SENSITIVITY": 0.0035,
+    "PAN_SENSITIVITY": 2,
+    "MIDDLE_PAN_SENSITIVITY": 1.15,
     "ZOOM_STEP": 1.1
   },
   "canvas": {

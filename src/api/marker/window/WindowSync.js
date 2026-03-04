@@ -1,5 +1,5 @@
 import { refreshWindowPreview } from '../board/preview.js';
-import { getFontSize } from '../../noteStore.js';
+import { getFontSize } from '../sharedNoteStore.js';
 // import { PLACEHOLDER_TEXT } from '../board/constants.js';
 
 export class WindowSync {
@@ -32,6 +32,11 @@ export class WindowSync {
         
         if (titleEl && titleEl.value !== data.title) {
             titleEl.value = data.title || 'Untitled';
+        }
+
+        const lodTitleEl = element.querySelector('.marker-window-lod-title');
+        if (lodTitleEl) {
+            lodTitleEl.textContent = data.title || 'Untitled';
         }
         
         if (contentEl) {

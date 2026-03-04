@@ -8,8 +8,7 @@ import {
 import {
     setupCanvas,
     getCanvasCoords,
-    requestRedraw,
-    updateViewTransform
+    requestRedraw
 } from './core/canvas.js';
 
 import {
@@ -17,7 +16,7 @@ import {
     zoomIn,
     zoomOut,
     resetZoom,
-    animatePan
+    panImmediately
 } from './controllers/zoomPan.js';
 
 import { MarkerBoard } from './index.js';
@@ -43,6 +42,7 @@ export const createWorkspace = async (container, options = {}) => {
     await loadConfiguration();
     const state = getState();
     const config = getConfig();
+    const middlePanSensitivity = Number(config?.constants?.MIDDLE_PAN_SENSITIVITY ?? 1.15);
 
     // 2. Create and set up canvas
     const canvas = document.createElement('canvas');
@@ -77,7 +77,11 @@ export const createWorkspace = async (container, options = {}) => {
     });
 
     if (board?.layer) {
-        updateState({ markerLayer: board.layer });
+        updateState({
+            markerLayer: board.layer,
+            markerZoomIndicator: board.zoomIndicator || null
+        });
+        setupCanvas();
     }
 
     // helper to update last mouse coords for zoom centering
@@ -103,13 +107,16 @@ export const createWorkspace = async (container, options = {}) => {
 
     const onMiddleMove = (e) => {
         if (!middleDrag) return;
-        const dx = e.clientX - middleDrag.x;
-        const dy = e.clientY - middleDrag.y;
         const state = getState();
-        const rect = container.getBoundingClientRect();
+        if (state.isMissionActive) return;
+        const dx = (e.clientX - middleDrag.x) * middlePanSensitivity;
+        const dy = (e.clientY - middleDrag.y) * middlePanSensitivity;
+
         const newPanX = state.panX + dx;
+        
         const newPanY = state.panY + dy;
-        animatePan(newPanX, newPanY, rect);
+        panImmediately(newPanX, newPanY);
+        
         middleDrag.x = e.clientX;
         middleDrag.y = e.clientY;
     };

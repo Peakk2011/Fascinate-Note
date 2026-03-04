@@ -7,7 +7,7 @@ import { WindowSync } from './WindowSync.js';
 import { WindowData } from './WindowData.js';
 import { persist } from '../board/persistence.js';
 import { MIN_WINDOW_SIZE } from '../board/constants.js';
-import { deleteNote } from '../../noteStore.js';
+import { deleteNote } from '../sharedNoteStore.js';
 
 export class WindowManager {
     constructor({ board, container, windows, getCanvasCoords, onOpenNote }) {

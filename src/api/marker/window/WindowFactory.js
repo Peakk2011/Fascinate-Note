@@ -1,5 +1,8 @@
-import { getFontSize } from '../../noteStore.js';
+import { getFontSize, updateNote } from '../sharedNoteStore.js';
 import { MIN_WINDOW_SIZE, PLACEHOLDER_TEXT } from '../board/constants.js';
+import { persist } from '../board/persistence.js';
+import { getState } from '../utils/config.js';
+import { focusWindowAtScale } from '../controllers/zoomPan.js';
 
 export class WindowFactory {
     constructor(windowManager) {
@@ -21,10 +24,12 @@ export class WindowFactory {
         
         // Resize handle
         const resizeHandle = this.createResizeHandle();
+        const lodPreview = this.createLodPreview(data);
         
         element.appendChild(header);
         element.appendChild(content);
         element.appendChild(resizeHandle);
+        element.appendChild(lodPreview);
         
         this.updateGroupBadge(element, data.groupId);
         this.attachEvents(element, data);
@@ -86,6 +91,16 @@ export class WindowFactory {
         const handle = document.createElement('div');
         handle.className = 'marker-window-resize';
         return handle;
+    }
+
+    createLodPreview(data) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'marker-window-lod';
+        wrapper.innerHTML = `
+            <img class="marker-window-lod-icon" src="/marker/starindcl.svg" alt="" />
+            <div class="marker-window-lod-title">${data.title || 'Untitled'}</div>
+        `;
+        return wrapper;
     }
     
     updateStyles(element, data) {
@@ -168,6 +183,13 @@ export class WindowFactory {
             clickStart = null;
             
             if (dx < 5 && dy < 5 && !this.windowManager.drag.state && !this.board.missionView?.isActive()) {
+                const state = getState();
+                if ((state?.scale || 1) <= 0.4) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    focusWindowAtScale(data, 1);
+                    return;
+                }
                 if (data.noteId && this.windowManager.onOpenNote) {
                     this.windowManager.onOpenNote(data.noteId);
                 }

@@ -7,14 +7,57 @@
     position: fixed;
     inset: 0;
     background: var(--marker-bg);
-    z-index: 6;
+    /* Grid Dot */
+    background-image: radial-gradient(circle,
+            color-mix(in srgb, var(--theme-fg) 28%, transparent) 1px,
+            transparent 1.6px);
+    background-size: var(--marker-grid-step, 24px) var(--marker-grid-step, 24px);
+    background-position: var(--marker-grid-offset-x, 0px) var(--marker-grid-offset-y, 0px);
+
+    z-index: 11;
     overflow: hidden;
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(1.15);
+    filter: blur(20px);
+    pointer-events: none;
+    transition:
+        opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
+        transform 650ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 500ms cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform, filter;
 }
 
-/* layer must sit ABOVE overlay so windows receive pointer events */
+#workspace-container.is-active,
+#workspace-container.is-entering {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+    pointer-events: auto;
+}
+
+#workspace-container.is-leaving {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(1.15);
+    filter: blur(16px);
+    pointer-events: none;
+}
+
+#workspace-container.marker-grid-hidden {
+    background-image: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #workspace-container {
+        transition: none;
+        transform: none;
+        filter: none;
+    }
+}
+
 .marker-layer {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
     transform-origin: 0 0;
     -webkit-user-select: none;
     user-select: none;
@@ -33,6 +76,7 @@
     flex-direction: column;
     min-width: 200px;
     min-height: 100px;
+    transition: background-color 180ms ease, box-shadow 180ms ease, outline-color 180ms ease;
 }
 
 .marker-window.is-current {
@@ -56,6 +100,79 @@
     height: 18px;
     cursor: se-resize;
     border-bottom-right-radius: 10px;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.marker-window-lod {
+    display: flex;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    width: 260px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    padding: 2rem;
+    transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 180ms;
+    border-radius: 16px;
+    outline: 1.5px solid transparent;
+}
+
+.marker-window-lod:hover {
+    background: var(--marker-lod-hover-bg);
+    box-shadow: var(--theme-shadow);
+    outline: 1.5px solid var(--theme-model-border);
+}
+
+.marker-window-lod-icon {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    margin-top: 1rem;
+}
+
+.marker-window-lod-title {
+    max-width: 180px;
+    text-align: center;
+    color: var(--theme-fg);
+    font-family: var(--font-editor);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    margin-top: 1rem;
+}
+
+.marker-layer.is-lod .marker-window {
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+}
+
+.marker-layer.is-lod .marker-window-header,
+.marker-layer.is-lod .marker-window-content,
+.marker-layer.is-lod .marker-window-resize {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.marker-layer.is-lod .marker-window-lod {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 0s;
+    pointer-events: auto;
 }
 
 /* Mission Control */
@@ -94,6 +211,9 @@
     background: var(--marker-header-bg);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .marker-window.is-mission .marker-window-header {
@@ -114,6 +234,7 @@
     opacity: 0.5;
     transition: opacity 150ms ease;
     cursor: default;
+    width: 0;
 }
 
 .marker-window.is-active .marker-window-title,
@@ -122,13 +243,25 @@
 }
 
 .marker-window-group {
-    font-size: 11px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1.2;
     padding: 4px 8px;
-    border-radius: 999px;
+    border-radius: 100vmax;
     background: var(--marker-group-badge-bg);
-    color: var(--marker-group-color, var(--image-border-color));
+    outline: var(--marker-toolbar-border) solid 1px;
+    color: color-mix(in srgb, var(--marker-group-color, var(--image-border-color)) 40%, #000);
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .marker-window-group {
+        color: color-mix(in srgb, var(--marker-group-color, var(--image-border-color)) 88%, #fff);
+    }
 }
 
 .marker-window-group.show {
@@ -150,7 +283,9 @@
     font-size: 14px;
     white-space: pre-wrap;
     word-break: break-word;
-    transition: font-size 300ms cubic-bezier(0.075, 0.82, 0.165, 1);
+    opacity: 1;
+    transform: scale(1);
+    transition: font-size 300ms cubic-bezier(0.075, 0.82, 0.165, 1), opacity 180ms ease, transform 180ms ease;
 }
 
 .marker-window-content[contenteditable="true"] {
@@ -209,55 +344,200 @@
 .marker-bottombar {
     position: absolute;
     left: 50%;
-    bottom: 4px;
+    bottom: var(--status-top);
     transform: translateX(-50%);
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    border-radius: 20px;
-    background: var(--marker-toolbar-bg);
+    /* gap: 8px; */
+    padding: 4.5px 6px;
+    border-radius: 100vmax;
+    background: var(--ctx-menu-bg);
     border: 1px solid var(--marker-toolbar-border);
+    box-shadow: var(--theme-shadow);
+    backdrop-filter: blur(4px) saturate(150%);
     z-index: 4;
 }
 
-.marker-bottom-btn {
-    background: none;
-    border: none;
+.marker-zoom-indicator {
+    position: absolute;
+    top: 48px;
+    right: 14px;
+    z-index: 5;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--marker-toolbar-bg);
+    border: 1px solid var(--marker-toolbar-border);
     color: var(--theme-fg);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
+    font-family: var(--font-editor);
+    font-size: 12px;
+    font-weight: 550;
+    letter-spacing: -0.3px;
     line-height: 1;
+    box-shadow: var(--ctx-menu-shadow);
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+}
+
+.marker-mission-info {
+    position: absolute;
+    top: 48px;
+    left: 50%;
+    z-index: 5;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--marker-toolbar-bg);
+    border: 1px solid var(--marker-toolbar-border);
+    color: var(--theme-fg);
+    font-family: var(--font-editor);
+    font-size: 12px;
+    font-weight: 550;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    box-shadow: var(--ctx-menu-shadow);
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -40px);
+    transition: opacity 100ms ease, transform 300ms cubic-bezier(0.2, 0, 0, 1), visibility 0s linear 220ms;
+}
+
+.marker-mission-info.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition: opacity 100ms ease, transform 300ms cubic-bezier(0.2, 0, 0, 1), visibility 0s linear 0s;
 }
 
 .marker-toolbar-btn {
-    border: none;
-    padding: 8px 14px;
-    border-radius: 16px;
-    background: var(--PrimaryButtonsColors);
     color: var(--theme-fg);
-    font-family: var(--font-display);
-    font-size: 12px;
-    font-weight: 600;
+    background: none;
+    border: none;
+    border-radius: 100vmax;
+    outline: none;
+    line-height: 0;
     cursor: pointer;
-    box-shadow: var(--ctx-menu-shadow);
+    padding: 4px;
+    transition: background-color 140ms ease, color 140ms ease;
 }
 
 .marker-toolbar-btn:hover {
     background: var(--theme-accent);
     color: var(--theme-accent-text);
+    box-shadow: var(--theme-shadow);
 }
 
-.marker-group-select {
+.marker-group-control {
+    position: relative;
+}
+
+.marker-group-trigger {
+    display: inline-block;
     border: none;
-    padding: 7px 12px;
-    border-radius: 14px;
-    background: var(--marker-toolbar-bg);
+    border-radius: 100vmax;
+    background: none;
     color: var(--theme-fg);
-    font-family: var(--font-text);
-    font-size: 12px;
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 550;
+    padding: 8px 12px;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     cursor: pointer;
+    transition: background-color 140ms ease, color 140ms ease;
+    outline: solid var(--zoom-btn-border-width) transparent;
+}
+
+.marker-group-trigger:hover,
+.marker-group-control.is-open .marker-group-trigger {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+    box-shadow: var(--theme-shadow);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+}
+
+.marker-group-menu {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 14px);
+    transform: translateX(-50%) translateY(4px);
+    min-width: 180px;
+    padding: 6px;
+    border-radius: var(--ctx-menu-radius);
+    background: var(--ctx-menu-bg);
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--theme-shadow);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms ease, visibility 0s linear 140ms;
+    z-index: 8;
+}
+
+.marker-group-control.is-open .marker-group-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity 140ms ease, transform 140ms ease, visibility 0s linear 0s;
+}
+
+.marker-group-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    border: none;
+    border-radius: var(--export-btn-border-radius);
+    background: transparent;
+    color: var(--theme-fg);
+    text-align: left;
+    font-family: var(--font-text);
+    font-size: var(--export-btn-font-size);
+    padding: 7px 10px;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.marker-group-option-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-weight: var(--export-btn-weight);
+    letter-spacing: var(--export-btn-letter-spacing);
+}
+
+.marker-group-delete {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 0;
+    transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.marker-group-delete:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--theme-border) 65%, transparent);
+}
+
+.marker-group-option:hover,
+.marker-group-option.is-active {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
 }
 
 .marker-group-name-input {
@@ -270,4 +550,25 @@
     font-size: 12px;
     outline: none;
     width: 120px;
+}
+
+@media (max-width: 550px) {
+    .marker-mission-info {
+        left: 14px;
+        transform: translate(0, -80px);
+    }
+
+    .marker-mission-info.is-visible {
+        transform: translate(0, 0);
+    }
+}
+
+@media (max-width: 410px) {
+    .marker-mission-info {
+        width: calc(100vw - 28px);
+        text-align: center;
+        padding: 10px 14px;
+        font-size: fit-content;
+        border-radius: 100vmax;
+    }
 }

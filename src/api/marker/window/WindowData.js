@@ -1,4 +1,4 @@
-import { createNote } from '../../noteStore.js';
+import { createNote } from '../sharedNoteStore.js';
 import { createId, randomColor } from '../board/utils.js';
 import { DEFAULT_WINDOW_SIZE } from '../board/constants.js';
 

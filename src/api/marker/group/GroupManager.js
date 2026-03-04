@@ -48,6 +48,30 @@ export class GroupManager {
             console.warn('[MarkerBoard] groupModal not provided');
         }
     }
+
+    removeGroup(groupId) {
+        if (!groupId) return;
+
+        const idx = this.groups.findIndex(g => g.id === groupId);
+        if (idx === -1) return;
+
+        this.groups.splice(idx, 1);
+
+        this.windows.forEach(win => {
+            if (win.groupId !== groupId) return;
+            win.groupId = null;
+            const el = this.windowManager.windowMap.get(win.id);
+            if (el) this.windowManager.factory.updateGroupBadge(el, null);
+        });
+
+        if (this.board.activeGroupId === groupId) {
+            this.board.activeGroupId = null;
+        }
+
+        persist(this.windows, this.groups, this.board.activeGroupId);
+        this.board.applyVisibility();
+        this.updateToolbarGroups();
+    }
     
     updateToolbarGroups() {
         this.ui.updateToolbarGroups();

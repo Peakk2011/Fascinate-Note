@@ -1,3 +1,5 @@
+import { getState } from '../utils/config.js';
+
 export class MissionLayout {
     constructor(missionView) {
         this.missionView = missionView;
@@ -9,6 +11,10 @@ export class MissionLayout {
         const count = visible.length;
         const containerW = this.board.container.offsetWidth;
         const containerH = this.board.container.offsetHeight;
+        const state = getState();
+        const viewScale = state?.scale || 1;
+        const viewPanX = state?.panX || 0;
+        const viewPanY = state?.panY || 0;
         
         const cols = Math.ceil(Math.sqrt(count));
         const rows = Math.ceil(count / cols);
@@ -31,8 +37,9 @@ export class MissionLayout {
             const col = index % cols;
             const row = Math.floor(index / cols);
             
-            const scaleW = cellWidth / win.width;
-            const scaleH = cellHeight / win.height;
+            // Mission layout targets viewport space; compensate current board zoom.
+            const scaleW = cellWidth / (win.width * viewScale);
+            const scaleH = cellHeight / (win.height * viewScale);
             const scale = Math.min(scaleW, scaleH, 0.95);
             
             const scaledW = win.width * scale;
@@ -43,8 +50,8 @@ export class MissionLayout {
             const targetX = cellX + (cellWidth - scaledW) / 2;
             const targetY = cellY + (cellHeight - scaledH) / 2;
             
-            const dx = targetX - win.x;
-            const dy = targetY - win.y;
+            const dx = ((targetX - viewPanX) / viewScale) - win.x;
+            const dy = ((targetY - viewPanY) / viewScale) - win.y;
             
             el._missionTransform = { dx, dy, scale };
             

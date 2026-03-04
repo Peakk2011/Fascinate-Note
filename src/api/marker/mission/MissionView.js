@@ -1,5 +1,7 @@
 import { MissionLayout } from './MissionLayout.js';
 import { MissionDrag } from './MissionDrag.js';
+import { getState, updateState } from '../utils/config.js';
+import { updateViewTransform } from '../core/canvas.js';
 
 export class MissionView {
     constructor({ board, container, layer, windows, windowManager, onOpenNote }) {
@@ -25,6 +27,40 @@ export class MissionView {
     
     enter() {
         if (this.overlay) return;
+
+        const state = getState();
+        if (state) {
+            if (state.zoomState && state.zoomState.animationFrame !== null) {
+                cancelAnimationFrame(state.zoomState.animationFrame);
+                state.zoomState.animationFrame = null;
+                state.zoomState.isAnimating = false;
+            }
+
+            const rect = this.container.getBoundingClientRect();
+            const centerWorldX = ((rect.width * 0.5) - state.panX) / state.scale;
+            const centerWorldY = ((rect.height * 0.5) - state.panY) / state.scale;
+            state.scale = 1;
+            state.panX = (rect.width * 0.5) - centerWorldX;
+            state.panY = (rect.height * 0.5) - centerWorldY;
+
+            const minPanX = rect.width - state.canvasWidth;
+            const minPanY = rect.height - state.canvasHeight;
+            state.panX = Math.min(0, Math.max(minPanX, state.panX));
+            state.panY = Math.min(0, Math.max(minPanY, state.panY));
+
+            if (state.zoomState) {
+                state.zoomState.currentScale = 1;
+                state.zoomState.targetScale = 1;
+                state.zoomState.currentPanX = state.panX;
+                state.zoomState.currentPanY = state.panY;
+                state.zoomState.targetPanX = state.panX;
+                state.zoomState.targetPanY = state.panY;
+            }
+
+            updateViewTransform();
+        }
+        updateState({ isMissionActive: true });
+        this.board.missionInfo?.classList.add('is-visible');
         
         this.overlay = document.createElement('div');
         this.overlay.className = 'marker-mission-overlay';
@@ -109,6 +145,8 @@ export class MissionView {
             this.overlay.remove();
             this.overlay = null;
         }
+        updateState({ isMissionActive: false });
+        this.board.missionInfo?.classList.remove('is-visible');
     }
     
     destroy() {

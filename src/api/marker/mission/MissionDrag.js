@@ -1,4 +1,5 @@
 import { persist } from '../board/persistence.js';
+import { getState } from '../utils/config.js';
 
 export class MissionDrag {
     constructor(missionView) {
@@ -100,12 +101,22 @@ export class MissionDrag {
     
     centerWindow(data, element) {
         const containerRect = this.container.getBoundingClientRect();
-        
-        const targetX = (containerRect.width - data.width) / 2;
-        const targetY = (containerRect.height - data.height) / 2;
-        
-        data.x = Math.max(0, targetX);
-        data.y = Math.max(0, targetY);
+        const state = getState();
+        const scale = state?.scale || 1;
+        const panX = state?.panX || 0;
+        const panY = state?.panY || 0;
+        const boardW = state?.canvasWidth || containerRect.width;
+        const boardH = state?.canvasHeight || containerRect.height;
+
+        // Convert viewport center into board coordinates under current pan/zoom.
+        const targetX = ((containerRect.width * 0.5) - panX) / scale - (data.width * 0.5);
+        const targetY = ((containerRect.height * 0.5) - panY) / scale - (data.height * 0.5);
+
+        const maxX = Math.max(0, boardW - data.width);
+        const maxY = Math.max(0, boardH - data.height);
+
+        data.x = Math.max(0, Math.min(maxX, targetX));
+        data.y = Math.max(0, Math.min(maxY, targetY));
         
         const el = this.windowManager.windowMap.get(data.id);
         if (el) {

@@ -5,6 +5,43 @@ const MENU_HIDE_DELAY = 0;
 const SELECTION_THROTTLE_MS = 80;
 const LARGE_DOC_THRESHOLD = 50000;
 
+const unwrapMark = (markEl) => {
+    if (!markEl || !markEl.parentNode) return;
+    const parent = markEl.parentNode;
+
+    while (markEl.firstChild) {
+        parent.insertBefore(markEl.firstChild, markEl);
+    }
+
+    parent.removeChild(markEl);
+    parent.normalize?.();
+};
+
+const applyHighlight = (range, selection) => {
+    if (!range || range.collapsed) return;
+
+    // Protect nested <mark>
+    const ancestor = range.commonAncestorContainer;
+    const ancestorEl = ancestor?.nodeType === Node.TEXT_NODE
+        ? ancestor.parentElement
+        : ancestor;
+    if (ancestorEl?.closest?.('mark')) return;
+
+    const mark = document.createElement('mark');
+    mark.className = 'selection-highlight';
+
+    const fragment = range.extractContents();
+    if (!fragment || !fragment.textContent?.trim()) return;
+
+    mark.appendChild(fragment);
+    range.insertNode(mark);
+
+    const nextRange = document.createRange();
+    nextRange.selectNodeContents(mark);
+    selection.removeAllRanges();
+    selection.addRange(nextRange);
+};
+
 /**
  * Returns viewport padding based on the root font size.
  * @returns {number} - Padding in pixels.
@@ -377,45 +414,48 @@ export const initSelectionMenu = (editor) => {
             imageInput.click();
         } else if (command === 'cropAndHighlight') {
             const selection = window.getSelection();
-            if (selection.isCollapsed || selection.rangeCount === 0) return;
+
+            if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
 
             const range = selection.getRangeAt(0);
-
-            // Expand selection to whole words
             const originalRange = range.cloneRange();
-            const ancecstor = originalRange.commonAncestorContainer;
-            const isMark = ancecstor.nodeName === 'MARK' || ancecstor.parentElement.nodeName === 'MARK';
+
+            const anchorMark = selection.anchorNode?.parentElement?.closest?.('mark');
+            const focusMark = selection.focusNode?.parentElement?.closest?.('mark');
+            const isMark = anchorMark && anchorMark === focusMark;
 
             if (!isMark) {
-                // Move focus to start and extend to select the whole start word
-                selection.collapse(originalRange.startContainer, originalRange.startOffset);
-                selection.modify('move', 'backward', 'word');
-                selection.modify('extend', 'forward', 'word');
-                const startWordRange = selection.getRangeAt(0);
+                const startContainer = originalRange.startContainer;
+                const endContainer = originalRange.endContainer;
 
-                // Move focus to end and extend to select the whole end word
-                selection.extend(originalRange.endContainer, originalRange.endOffset);
-                selection.modify('extend', 'forward', 'word');
-                const endWordRange = selection.getRangeAt(0);
+                const startText = startContainer.textContent ?? '';
+                let startOffset = originalRange.startOffset;
+                while (startOffset > 0 && /\S/.test(startText[startOffset - 1])) {
+                    startOffset--;
+                }
 
-                // Combine the ranges
+                const endText = endContainer.textContent ?? '';
+                let endOffset = originalRange.endOffset;
+                while (endOffset < endText.length && /\S/.test(endText[endOffset])) {
+                    endOffset++;
+                }
+
                 const finalRange = document.createRange();
-                finalRange.setStart(startWordRange.startContainer, startWordRange.startOffset);
-                finalRange.setEnd(endWordRange.endContainer, endWordRange.endOffset);
+                finalRange.setStart(startContainer, startOffset);
+                finalRange.setEnd(endContainer, endOffset);
 
                 selection.removeAllRanges();
                 selection.addRange(finalRange);
             }
 
-            // if already highlighted, remove highlight
             if (isMark) {
-                document.execCommand('removeFormat', false, 'mark');
-                document.execCommand('hiliteColor', false, 'transparent');
+                // Using anchorMark
+                unwrapMark(anchorMark);
+            } else {
+                // Check the rangeCount again and modify (Maybe selection will chenged)
+                if (selection.rangeCount === 0) return;
+                applyHighlight(selection.getRangeAt(0), selection);
             }
-            else {
-                document.execCommand('hiliteColor', false, 'yellow');
-            }
-
         } else if (command === 'formatBlock') {
             try {
                 const currentValue = document.queryCommandValue('formatBlock').toUpperCase();

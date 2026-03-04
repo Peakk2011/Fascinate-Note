@@ -1,5 +1,19 @@
-import { createNote, getNoteById, getCurrentNoteId } from '../../noteStore.js';
+import { createNote, getNoteById, getCurrentNoteId } from '../sharedNoteStore.js';
 import { htmlToText, truncateText } from './utils.js';
+import { getState } from '../utils/config.js';
+
+const getLegacyMarkerNoteById = (id) => {
+    if (!id) return null;
+    try {
+        const raw = localStorage.getItem('markerNotes');
+        if (!raw) return null;
+        const notes = JSON.parse(raw);
+        if (!Array.isArray(notes)) return null;
+        return notes.find((note) => note && note.id === id) || null;
+    } catch {
+        return null;
+    }
+};
 
 /**
  * Refreshes the preview content of a window.
@@ -11,8 +25,19 @@ export const refreshWindowPreview = (win) => {
         win.noteId = note?.id ?? null;
     }
     if (!win.noteId) return;
-    
-    const note = getNoteById(win.noteId);
+
+    let note = getNoteById(win.noteId);
+    if (!note) {
+        const legacy = getLegacyMarkerNoteById(win.noteId);
+        const fallback = createNote({
+            title: legacy?.title || win.title || 'New Note',
+            html: legacy?.html || ''
+        });
+        if (!fallback?.id) return;
+        win.noteId = fallback.id;
+        note = fallback;
+    }
+
     if (note) {
         win.title = note.title || win.title;
         win.content = truncateText(htmlToText(note.html), 260);
@@ -34,14 +59,28 @@ export const refreshAllPreviews = (windows) => {
 export const ensureCurrentWindow = (windows) => {
     if (windows.length > 0) return;
     
-    const note = createNote({ title: 'Current Notes' });
+    const note = createNote({
+        title: 'Current Notes'
+    });
+    
+    const state = getState();
+
+    // CURRENT NOTES SIZES *
+    const width = 300;
+    const height = 280;
+    const canvasWidth = state?.canvasWidth || 7680;
+    const canvasHeight = state?.canvasHeight || 4320;
+
+    const centeredX = Math.max(0, Math.floor((canvasWidth - width) / 2));
+    const centeredY = Math.max(0, Math.floor((canvasHeight - height) / 2));
+
     const current = {
         id: `win_${crypto.randomUUID?.() || Date.now().toString(36)}`,
         title: 'Current Notes',
         content: '',
-        x: 360, y: 260,
-        width: 360, height: 220,
-        color: '#7aa5ff',
+        x: centeredX, y: centeredY,
+        width, height,
+        // color: '#7aa5ff',
         groupId: null,
         isCurrent: false,
         noteId: note?.id ?? getCurrentNoteId()

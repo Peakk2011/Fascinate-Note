@@ -12,27 +12,41 @@ export class GroupUI {
     }
     
     /**
-     * Updates the group selection dropdown in the toolbar.
+     * Updates the custom group menu in the marker controls bar.
      */
     updateToolbarGroups() {
-        const select = this.board.toolbar.querySelector('.marker-group-select');
-        if (!select) return;
-        
-        select.innerHTML = '';
-        
-        const noneOpt = document.createElement('option');
-        noneOpt.value = '';
-        noneOpt.textContent = 'All Notes';
-        select.appendChild(noneOpt);
-        
+        const controlsRoot = this.board.bottomBar || this.board.toolbar;
+        const trigger = controlsRoot?.querySelector('.marker-group-trigger');
+        const menu = controlsRoot?.querySelector('.marker-group-menu');
+        if (!trigger || !menu) return;
+
+        menu.innerHTML = '';
+
+        const makeOption = (label, value, isActive, deletable = false) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'marker-group-option';
+            if (isActive) button.classList.add('is-active');
+            button.dataset.groupId = value || '';
+            button.innerHTML = `
+                <span class="marker-group-option-label">${label}</span>
+                ${deletable ? '<span class="marker-group-delete" title="Delete group" aria-label="Delete group">✕</span>' : ''}
+            `;
+            return button;
+        };
+
+        menu.appendChild(
+            makeOption('All Notes', '', !this.board.activeGroupId)
+        );
+
         this.groupManager.groups.forEach(group => {
-            const opt = document.createElement('option');
-            opt.value = group.id;
-            opt.textContent = group.name;
-            select.appendChild(opt);
+            menu.appendChild(
+                makeOption(group.name, group.id, this.board.activeGroupId === group.id, true)
+            );
         });
-        
-        select.value = this.board.activeGroupId || '';
+
+        const active = this.groupManager.groups.find(g => g.id === this.board.activeGroupId);
+        trigger.textContent = active?.name || 'All Notes';
     }
     
     /**
