@@ -107,9 +107,10 @@ body.darwin .status {
  */
 .workspace-menu {
     position: fixed;
-    right: calc(var(--status-right) - 4px);
-    bottom: calc(var(--status-top) + 36px);
+    right: calc(var(--status-right) - 16px);
+    bottom: calc(var(--status-top) + 18px);
     min-width: 220px;
+    width: 310px;
     background: var(--ctx-menu-bg);
     border: var(--theme-border) 1px solid;
     border-radius: var(--ctx-menu-radius);
@@ -125,6 +126,18 @@ body.darwin .status {
     z-index: calc(var(--titlebar-z-index) + 2);
     backdrop-filter: blur(14px) saturate(150%);
     -webkit-backdrop-filter: blur(14px) saturate(150%);
+
+    scale: 0.9;
+}
+
+.workspace-menu-showcase img {
+    width: 100%;
+    height: auto;
+    border-radius: var(--ctx-menu-radius);
+    background-color: var(--theme-bg);
+    border: var(--theme-border) 1px solid;
+    box-shadow: var(--theme-shadow);
+    user-select: none;
 }
 
 .workspace-menu.is-open {

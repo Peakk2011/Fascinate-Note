@@ -27,6 +27,7 @@ const copyFolder = (source, target) => {
 
 export default defineConfig({
     root: resolve(__dirname, 'src'),
+    publicDir: resolve(__dirname, 'assets'),
     base: './',
 
     optimizeDeps: {
