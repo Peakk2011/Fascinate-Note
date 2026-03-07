@@ -97,7 +97,11 @@ export class WindowFactory {
         const wrapper = document.createElement('div');
         wrapper.className = 'marker-window-lod';
         wrapper.innerHTML = `
-            <img class="marker-window-lod-icon" src="/marker/starindcl.svg" alt="" />
+            <!-- <img class="marker-window-lod-icon" src="/marker/starindcl.svg" alt="" /> -->
+            <picture class="marker-window-lod-icon">
+                <source srcset="/marker/starindcl-dark.svg" media="(prefers-color-scheme: dark)" />
+                <img src="/marker/starindcl.svg" alt="" />
+            </picture>
             <div class="marker-window-lod-title">${data.title || 'Untitled'}</div>
         `;
         return wrapper;
