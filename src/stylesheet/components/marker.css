@@ -131,7 +131,8 @@
     outline: 1.5px solid var(--theme-model-border);
 }
 
-.marker-window-lod-icon {
+.marker-window-lod-icon picture,
+.marker-window-lod-icon img {
     width: 120px;
     height: 120px;
     object-fit: contain;
