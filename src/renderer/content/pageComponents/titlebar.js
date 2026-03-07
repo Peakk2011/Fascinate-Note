@@ -193,7 +193,8 @@ export const initTitlebar = (threshold = 60) => {
         }
     };
 
-    const closeMenu = () => {
+    const closeMenu = async ({ waitForAnimation = false } = {}) => {
+        const wasOpen = menuOpen;
         menuOpen = false;
         if (workspaceMenu) {
             if (workspaceMenu.contains(document.activeElement)) {
@@ -202,6 +203,10 @@ export const initTitlebar = (threshold = 60) => {
             workspaceMenu.classList.remove('is-open');
             workspaceMenu.setAttribute('aria-hidden', 'true');
             workspaceMenu.setAttribute('inert', '');
+
+            if (waitForAnimation && wasOpen && !prefersReducedMotion()) {
+                await waitForTransitionEnd(workspaceMenu, 220);
+            }
         }
     };
 
@@ -249,8 +254,8 @@ export const initTitlebar = (threshold = 60) => {
     const listenerOptions = { passive: true };
     window.addEventListener('scroll', onScroll, listenerOptions);
     const handleMarkerClick = async () => {
+        await closeMenu({ waitForAnimation: true });
         await toggleWorkspace();
-        closeMenu();
     };
 
     workspaceToggleBtn?.addEventListener('click', toggleMenu);

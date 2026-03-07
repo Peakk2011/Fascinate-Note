@@ -105,14 +105,7 @@ export class MarkerBoard {
         this.bottomBar.innerHTML = `
             <button class="marker-toolbar-btn" data-action="new-note">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clip-path="url(#clip0_1621_23)">
-                    <path d="M20 13.1429H13.1429V20H10.8571V13.1429H4V10.8571H10.8571V4H13.1429V10.8571H20V13.1429Z" fill="black"/>
-                    </g>
-                    <defs>
-                    <clipPath id="clip0_1621_23">
-                    <rect width="24" height="24" fill="white"/>
-                    </clipPath>
-                    </defs>
+                    <path d="M12 5V19M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
             <div class="marker-group-control">
@@ -121,34 +114,23 @@ export class MarkerBoard {
             </div>
             <button class="marker-toolbar-btn" data-action="new-group">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clip-path="url(#clip0_1621_17)">
-                    <path d="M3 3H11V11H3V3ZM13 3H21V11H13V3ZM3 13H11V21H3V13ZM18 13H16V16H13V18H16V21H18V18H21V16H18V13Z" fill="black"/>
-                    </g>
-                    <defs>
-                    <clipPath id="clip0_1621_17">
-                    <rect width="24" height="24" fill="white"/>
-                    </clipPath>
-                    </defs>
+                    <path d="M9.31818 4H4.68182C4.30526 4 4 4.30526 4 4.68182V9.31818C4 9.69474 4.30526 10 4.68182 10H9.31818C9.69474 10 10 9.69474 10 9.31818V4.68182C10 4.30526 9.69474 4 9.31818 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18.3182 4H13.6818C13.3053 4 13 4.30526 13 4.68182V9.31818C13 9.69474 13.3053 10 13.6818 10H18.3182C18.6947 10 19 9.69474 19 9.31818V4.68182C19 4.30526 18.6947 4 18.3182 4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M9.31818 14H4.68182C4.30526 14 4 14.3053 4 14.6818V19.3182C4 19.6947 4.30526 20 4.68182 20H9.31818C9.69474 20 10 19.6947 10 19.3182V14.6818C10 14.3053 9.69474 14 9.31818 14Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 13H15V16H12V18H15V21H17V18H20V16H17V13Z" fill="currentColor"/>
                 </svg>
             </button>
             <button class="marker-toolbar-btn marker-bottom-btn" data-action="clear-all" title="Clear all windows">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clip-path="url(#clip0_1621_13)">
-                    <path d="M8 21H16L18 6H6L8 21ZM8.5 8H15.5L14.2703 18.8571H9.72033L8.5 8Z" fill="black"/>
-                    <path d="M4 3V5H20V3H4Z" fill="black"/>
-                    </g>
-                    <defs>
-                    <clipPath id="clip0_1621_13">
-                    <rect width="24" height="24" fill="white"/>
-                    </clipPath>
-                    </defs>
+                    <path d="M8.1813 18.2945C8.32719 19.2745 9.16866 20 10.1595 20H13.8405C14.8313 20 15.6728 19.2745 15.8187 18.2945L17.1584 9.29448C17.3383 8.08596 16.4021 7 15.1802 7H8.81976C7.59792 7 6.66166 8.08596 6.84156 9.29448L8.1813 18.2945ZM8.11036 10.3288C7.90718 9.10973 8.84726 8 10.0831 8H13.9139C15.1508 8 16.0911 9.11144 15.8863 10.3312L14.7199 17.2765C14.5602 18.2271 13.7453 18.9286 12.7816 18.945L11.279 18.9706C10.2886 18.9875 9.43503 18.2768 9.27217 17.2997L8.11036 10.3288Z" fill="currentColor" stroke="currentColor" stroke-width="0.5"/>
+                    <path d="M6.35 3.69922C5.88056 3.69922 5.5 4.07978 5.5 4.54922C5.5 5.01866 5.88056 5.39922 6.35 5.39922H17.65C18.1194 5.39922 18.5 5.01866 18.5 4.54922C18.5 4.07978 18.1194 3.69922 17.65 3.69922H6.35Z" fill="currentColor"/>
                 </svg>
             </button>
             <button class="marker-toolbar-btn marker-bottom-btn" data-action="mission-view" title="Mission Control">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="5" y="5" width="14" height="2" fill="black"/>
-                    <rect x="5" y="11" width="14" height="2" fill="black"/>
-                    <rect x="5" y="17" width="14" height="2" fill="black"/>
+                    <path d="M18 5H6C5.44772 5 5 5.44772 5 6C5 6.55228 5.44772 7 6 7H18C18.5523 7 19 6.55228 19 6C19 5.44772 18.5523 5 18 5Z" fill="currentColor"/>
+                    <path d="M18 11H6C5.44772 11 5 11.4477 5 12C5 12.5523 5.44772 13 6 13H18C18.5523 13 19 12.5523 19 12C19 11.4477 18.5523 11 18 11Z" fill="currentColor"/>
+                    <path d="M18 17H6C5.44772 17 5 17.4477 5 18C5 18.5523 5.44772 19 6 19H18C18.5523 19 19 18.5523 19 18C19 17.4477 18.5523 17 18 17Z" fill="currentColor"/>
                 </svg>
             </button>
         `;
@@ -169,14 +151,17 @@ export class MarkerBoard {
      * Sets up event listeners for the marker board.
      */
     setupEventListeners() {
-        this.bottomBar.addEventListener('click', (e) => this.handleBottomBarClick(e));
+        this.handleBottomBarClickBound = (e) => this.handleBottomBarClick(e);
+        this.handleKeyDownBound = (e) => this.handleKeyDown(e);
+
+        this.bottomBar.addEventListener('click', this.handleBottomBarClickBound);
         this.handleOutsidePointerDown = (e) => {
             if (!this.bottomBar?.contains(e.target)) {
                 this.closeGroupMenu();
             }
         };
         window.addEventListener('pointerdown', this.handleOutsidePointerDown);
-        window.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        window.addEventListener('keydown', this.handleKeyDownBound);
     }
 
     /**
@@ -252,6 +237,14 @@ export class MarkerBoard {
         const menu = control.querySelector('.marker-group-menu');
         trigger?.setAttribute('aria-expanded', 'false');
         menu?.setAttribute('aria-hidden', 'true');
+    }
+
+    setBottomBarHidden(hidden) {
+        if (!this.bottomBar) return;
+        if (hidden) {
+            this.closeGroupMenu();
+        }
+        this.bottomBar.classList.toggle('is-hidden', hidden);
     }
 
     /**
@@ -435,11 +428,12 @@ export class MarkerBoard {
      */
     destroy() {
         window.removeEventListener('pointerdown', this.handleOutsidePointerDown);
+        this.bottomBar.removeEventListener('click', this.handleBottomBarClickBound);
         this.bottomBar.remove();
         this.zoomIndicator?.remove();
         this.missionInfo?.remove();
         this.layer.remove();
         this.missionView.destroy();
-        window.removeEventListener('keydown', this.handleKeyDown);
+        window.removeEventListener('keydown', this.handleKeyDownBound);
     }
 }

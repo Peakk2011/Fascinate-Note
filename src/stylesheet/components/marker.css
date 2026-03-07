@@ -345,17 +345,37 @@
     position: absolute;
     left: 50%;
     bottom: var(--status-top);
-    transform: translateX(-50%);
+    transform: translate(-50%, 0);
     display: flex;
     align-items: center;
     /* gap: 8px; */
-    padding: 4.5px 6px;
+    padding: 4px 6px;
     border-radius: 100vmax;
     background: var(--ctx-menu-bg);
     border: 1px solid var(--marker-toolbar-border);
-    box-shadow: var(--theme-shadow);
+    box-shadow:
+        var(--theme-shadow),
+        0 4px 200px rgba(0, 0, 0, 0.08),
+        0 10px 100px rgba(0, 0, 0, 0.06),
+        0 18px 120px rgba(0, 0, 0, 0.04);
     backdrop-filter: blur(4px) saturate(150%);
     z-index: 4;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 140ms ease,
+        transform 280ms cubic-bezier(0.2, 0, 0, 1),
+        visibility 0s linear 0s;
+}
+
+.marker-bottombar.is-hidden {
+    --marker-bottombar-offset-y: calc(100% + 24px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        transform 280ms cubic-bezier(0.4, 0, 1, 1),
+        opacity 180ms ease,
+        visibility 0s linear 280ms;
 }
 
 .marker-zoom-indicator {

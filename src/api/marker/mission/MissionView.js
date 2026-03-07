@@ -13,6 +13,9 @@ export class MissionView {
         this.onOpenNote = onOpenNote;
         
         this.overlay = null;
+        this.handleOverlayPointerDown = null;
+        this.handleLayerPointerDown = null;
+        this.isExiting = false;
         this.layout = new MissionLayout(this);
         this.drag = new MissionDrag(this);
     }
@@ -26,7 +29,7 @@ export class MissionView {
     }
     
     enter() {
-        if (this.overlay) return;
+        if (this.overlay || this.isExiting) return;
 
         const state = getState();
         if (state) {
@@ -72,14 +75,24 @@ export class MissionView {
             this.cleanup();
             return;
         }
+
+        this.board.setBottomBarHidden?.(true);
         
         this.layout.layoutWindows(visible);
         
-        this.overlay.addEventListener('pointerdown', (e) => {
+        this.handleOverlayPointerDown = (e) => {
             if (e.target === this.overlay) {
                 this.exit();
             }
-        });
+        };
+        this.overlay.addEventListener('pointerdown', this.handleOverlayPointerDown);
+
+        this.handleLayerPointerDown = (e) => {
+            if (e.target === this.layer) {
+                this.exit();
+            }
+        };
+        this.layer.addEventListener('pointerdown', this.handleLayerPointerDown);
         
         // Attach drag handlers to windows
         visible.forEach(win => {
@@ -91,10 +104,15 @@ export class MissionView {
     }
     
     exit(onDone) {
+        if (this.isExiting) return;
+
         if (!this.overlay) {
+            this.cleanup();
             onDone?.();
             return;
         }
+
+        this.isExiting = true;
         
         const visible = this.board.getVisibleWindows().filter(w => this.windowManager.windowMap.has(w.id));
         let pending = visible.length;
@@ -141,12 +159,22 @@ export class MissionView {
     }
     
     cleanup() {
+        if (this.handleLayerPointerDown) {
+            this.layer.removeEventListener('pointerdown', this.handleLayerPointerDown);
+            this.handleLayerPointerDown = null;
+        }
         if (this.overlay) {
+            if (this.handleOverlayPointerDown) {
+                this.overlay.removeEventListener('pointerdown', this.handleOverlayPointerDown);
+                this.handleOverlayPointerDown = null;
+            }
             this.overlay.remove();
             this.overlay = null;
         }
         updateState({ isMissionActive: false });
         this.board.missionInfo?.classList.remove('is-visible');
+        this.board.setBottomBarHidden?.(false);
+        this.isExiting = false;
     }
     
     destroy() {
