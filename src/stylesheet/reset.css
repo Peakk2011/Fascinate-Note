@@ -595,6 +595,11 @@
     --marker-toolbar-bg: hsl(0, 0%, 10%);
     --marker-toolbar-border: hsl(0, 0%, 20%);
     --marker-lod-hover-bg: hsl(0, 0%, 9%);
+
+    /* Grid Dot */
+    --marker-grid-step: 40px;
+    --marker-grid-offset-x: 0px;
+    --marker-grid-offset-y: 0px;
 }
 
 /* Platform-specific styles variables */

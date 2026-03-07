@@ -22,7 +22,13 @@ export class MarkerBoard {
      * @param {function} [options.onOpenNote=null] - Callback for when a note is opened.
      * @param {function} [options.onReturnToEditor=null] - Callback for returning to the editor.
      */
-    constructor({ container, getCanvasCoords, groupModal = null, onOpenNote = null, onReturnToEditor = null }) {
+    constructor({
+        container,
+        getCanvasCoords,
+        groupModal = null, 
+        onOpenNote = null,
+        onReturnToEditor = null,
+    }) {
         this.container = container;
         this.getCanvasCoords = getCanvasCoords;
         this.groupModal = groupModal;
@@ -99,6 +105,8 @@ export class MarkerBoard {
         this.layer = document.createElement('div');
         this.layer.className = 'marker-layer';
         this.container.appendChild(this.layer);
+        const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+        const modKey = isMac ? '⌘' : 'Ctrl';
 
         this.bottomBar = document.createElement('div');
         this.bottomBar.className = 'marker-bottombar';
@@ -126,12 +134,14 @@ export class MarkerBoard {
                     <path d="M6.35 3.69922C5.88056 3.69922 5.5 4.07978 5.5 4.54922C5.5 5.01866 5.88056 5.39922 6.35 5.39922H17.65C18.1194 5.39922 18.5 5.01866 18.5 4.54922C18.5 4.07978 18.1194 3.69922 17.65 3.69922H6.35Z" fill="currentColor"/>
                 </svg>
             </button>
-            <button class="marker-toolbar-btn marker-bottom-btn" data-action="mission-view" title="Mission Control">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 5H6C5.44772 5 5 5.44772 5 6C5 6.55228 5.44772 7 6 7H18C18.5523 7 19 6.55228 19 6C19 5.44772 18.5523 5 18 5Z" fill="currentColor"/>
-                    <path d="M18 11H6C5.44772 11 5 11.4477 5 12C5 12.5523 5.44772 13 6 13H18C18.5523 13 19 12.5523 19 12C19 11.4477 18.5523 11 18 11Z" fill="currentColor"/>
-                    <path d="M18 17H6C5.44772 17 5 17.4477 5 18C5 18.5523 5.44772 19 6 19H18C18.5523 19 19 18.5523 19 18C19 17.4477 18.5523 17 18 17Z" fill="currentColor"/>
-                </svg>
+            <button class="marker-toolbar-btn marker-bottom-btn marker-bottom-btn--with-key" data-action="mission-view" title="Mission Control">
+                <div>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 5H6C5.44772 5 5 5.44772 5 6C5 6.55228 5.44772 7 6 7H18C18.5523 7 19 6.55228 19 6C19 5.44772 18.5523 5 18 5Z" fill="currentColor"/>
+                        <path d="M18 11H6C5.44772 11 5 11.4477 5 12C5 12.5523 5.44772 13 6 13H18C18.5523 13 19 12.5523 19 12C19 11.4477 18.5523 11 18 11Z" fill="currentColor"/>
+                        <path d="M18 17H6C5.44772 17 5 17.4477 5 18C5 18.5523 5.44772 19 6 19H18C18.5523 19 19 18.5523 19 18C19 17.4477 18.5523 17 18 17Z" fill="currentColor"/>
+                    </svg>
+                </div>
             </button>
         `;
         this.container.appendChild(this.bottomBar);
@@ -252,6 +262,37 @@ export class MarkerBoard {
      * @param {KeyboardEvent} e - The keydown event.
      */
     handleKeyDown(e) {
+        const isModKey = e.ctrlKey || e.metaKey;
+
+        if (isModKey) {
+            if (e.code === 'KeyT' || e.code === 'KeyN') {
+                e.preventDefault();
+                this.createNewWindow();
+                return;
+            }
+
+            if (e.code === 'KeyW') {
+                e.preventDefault();
+                const activeId = this.windowManager.selection.activeWindowId;
+                if (activeId) {
+                    this.windowManager.removeWindowById(activeId);
+                }
+                return;
+            }
+
+            // Command Palatte
+            if (isModKey && e.code === 'keyK') {
+                e.preventDefault();
+                this.onOpenCommandPalette();
+                return;
+            }
+
+            if (e.code === 'Digit3' || e.code === 'Digit4' || e.code === 'Digit5') {
+                e.preventDefault();
+                this.missionView.toggle();
+                return;
+            }
+        }
         if (e.key === 'Escape') {
             if (this.missionView.isActive()) {
                 this.missionView.exit();

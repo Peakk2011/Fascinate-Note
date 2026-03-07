@@ -23,20 +23,20 @@ export class CommandPaletteResults {
     setActive(index) {
         const items = this.getItems();
         if (!items.length) return;
-        
+
         if (index < 0) index = items.length - 1;
         if (index >= items.length) index = 0;
-        
+
         this.clearActive();
-        
+
         const el = items[index];
         if (el) {
             el.classList.add('active');
-            
+
             try {
                 el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-            } catch (e) {}
-            
+            } catch (e) { }
+
             this.activeIndex = index;
         }
     }
@@ -65,13 +65,17 @@ export class CommandPaletteResults {
         const frag = document.createDocumentFragment();
 
         // Clear old click handlers
+        this.clickHandlers.forEach((handler, div) => {
+            div.removeEventListener('click', handler);
+        });
+
         this.clickHandlers.clear();
 
         if (!commands || commands.length === 0) {
             frag.appendChild(CommandItem.createEmptyState());
         } else {
             commands.forEach((command, idx) => {
-                const div = isMarkdownMode 
+                const div = isMarkdownMode
                     ? CommandItem.createMarkdownItem(command, idx, this.itemClass)
                     : CommandItem.createSystemItem(command, idx, this.itemClass);
 
@@ -83,7 +87,7 @@ export class CommandPaletteResults {
                         onSystemClick(command);
                     }
                 };
-                
+
                 div.addEventListener('click', clickHandler);
                 this.clickHandlers.set(div, clickHandler);
 
@@ -169,11 +173,14 @@ export class CommandPaletteResults {
     preventBlurOnClick(input) {
         this.results.addEventListener('mousedown', (e) => {
             e.preventDefault();
-            try { input.focus(); } catch (err) {}
+            try { input.focus(); } catch (err) { }
         });
     }
 
     clear() {
+        this.clickHandlers.forEach((handler, div) => {
+            div.removeEventListener('click', handler);
+        });
         this.results.innerHTML = '';
         this.clickHandlers.clear();
         this.clearActive();

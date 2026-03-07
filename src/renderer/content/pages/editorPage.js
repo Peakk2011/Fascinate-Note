@@ -105,7 +105,10 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
 
     // Initialize other components first
     modelFind.init({ pageConfig: config, noteAPI });
-    const commandPaletteAPI = commandPalette.init({ noteAPI });
+
+    const commandPaletteAPI = commandPalette.init({ noteAPI, markerAPI: window.__markerAPI });
+    window.__commandPaletteAPI = commandPaletteAPI;
+
     noteAPI.showCommandPalette = commandPaletteAPI.toggle;
     const contextMenuAPI = contextMenu.init({ pageConfig: config, noteAPI });
 
@@ -126,8 +129,8 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
         cleanupFunctions.push(
             zoomControls.cleanup,
             exportMenu.cleanup,
-                selectionMenu.cleanup,
-                editorMask.destroy
+            selectionMenu.cleanup,
+            editorMask.destroy
         );
 
         // Initialize Keyboard Shortcuts with Command Palette support
@@ -187,8 +190,16 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
             if (!(e.ctrlKey || e.metaKey)) return;
 
             const keyIsK = e.code === 'KeyK' || (typeof e.key === 'string' && e.key.toLowerCase() === 'k');
+
             if (keyIsK) {
                 e.preventDefault();
+                const isInMarker = document.getElementById('workspace-container')
+                    ?.classList.contains('is-active');
+                console.log('[shortcut] isInMarker:', isInMarker); // เพิ่ม
+                if (isInMarker) {
+                    window.__commandPaletteAPI?.toggle('marker');
+                    return;
+                }
                 commandPaletteAPI.toggle();
             }
         };
@@ -196,6 +207,8 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
         document.addEventListener('keydown', handleCommandPaletteShortcut);
         cleanupFunctions.push(() => {
             document.removeEventListener('keydown', handleCommandPaletteShortcut);
+            window.__commandPaletteAPI = null;
+            window.__markerAPI = null;
         });
     });
 

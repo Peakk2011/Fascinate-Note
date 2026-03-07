@@ -138,5 +138,32 @@
             "description": "Ordered List (Numbered)",
             "example": "1. First item"
         }
+    ],
+
+    "markerCommands": [
+        {
+            "id": "new-note",
+            "label": "New Note",
+            "action": "createNewWindow",
+            "description": "Create a new note window"
+        },
+        {
+            "id": "clear-all",
+            "label": "Clear All Windows",
+            "action": "clearAllWindows",
+            "description": "Remove all note windows"
+        },
+        {
+            "id": "mission-view",
+            "label": "Mission Control",
+            "action": "toggleMissionView",
+            "description": "Toggle mission control view"
+        },
+        {
+            "id": "new-group",
+            "label": "New Group",
+            "action": "createNewGroup",
+            "description": "Create a new group for notes"
+        }
     ]
 }

@@ -11,13 +11,21 @@ import { CommandPaletteController } from './controller/CommandPaletteController.
  * @property {Function} [resetZoom]
  */
 
+/**
+ * @typedef {Object} MarkerAPI
+ * @property {Function} [createNewWindow]
+ * @property {Function} [clearAllWindows]
+ * @property {Function} [toggleMissionView]
+ * @property {Function} [createNewGroup]
+ */
+
 Mint.include('stylesheet/style-components/command-palette.css');
 
 /**
  * Create a command palette component factory.
  * @returns {Promise<{
  *   markups: string,
- *   init: function({noteAPI: NoteAPI}): {
+ *   init: function({noteAPI: NoteAPI, markerAPI: MarkerAPI}): {
  *     show: function(string=): Promise<void>,
  *     hide: function(): Promise<void>,
  *     toggle: function(string=): Promise<void>,
@@ -30,6 +38,7 @@ export const createCommandPalette = async () => {
     let config;
     let systemCommands = [];
     let markdownCommands = [];
+    let markerCommands = [];
 
     // Load configuration
     try {
@@ -49,6 +58,7 @@ export const createCommandPalette = async () => {
 
         systemCommands = commands.systemCommands || [];
         markdownCommands = commands.markdownCommands || [];
+        markerCommands = commands.markerCommands || [];
     } catch (error) {
         console.warn('[CommandPalette] Failed to load commands.json', error);
     }
@@ -63,7 +73,7 @@ export const createCommandPalette = async () => {
 
         /**
          * Initialize the command palette DOM and wire up behavior.
-         * @param {{noteAPI: NoteAPI}} opts
+         * @param {{noteAPI: NoteAPI, markerAPI: MarkerAPI}} opts
          * @returns {{
          *      show: function(string=): Promise<void>,
          *      hide: function(): Promise<void>,
@@ -72,13 +82,14 @@ export const createCommandPalette = async () => {
          *      destroy: function(): void
          * }}
          */
-        init({ noteAPI }) {
+        init({ noteAPI, markerAPI }) {
             // Create controller
             const controller = new CommandPaletteController(
                 config,
                 systemCommands,
                 markdownCommands,
-                noteAPI
+                markerCommands,
+                { noteAPI, markerAPI }
             );
 
             // Initialize controller

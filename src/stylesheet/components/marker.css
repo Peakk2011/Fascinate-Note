@@ -9,9 +9,9 @@
     background: var(--marker-bg);
     /* Grid Dot */
     background-image: radial-gradient(circle,
-            color-mix(in srgb, var(--theme-fg) 28%, transparent) 1px,
+            color-mix(in srgb, var(--theme-fg) 20%, transparent) 1px,
             transparent 1.6px);
-    background-size: var(--marker-grid-step, 24px) var(--marker-grid-step, 24px);
+    background-size: var(--marker-grid-step, 40px) var(--marker-grid-step, 40px);
     background-position: var(--marker-grid-offset-x, 0px) var(--marker-grid-offset-y, 0px);
 
     z-index: 11;

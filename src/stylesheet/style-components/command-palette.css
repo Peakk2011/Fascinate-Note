@@ -58,6 +58,10 @@
     will-change: transform, opacity;
 }
 
+.command-palette-content table {
+    display: none;
+}
+
 .command-palette-content.opening {
     animation: fadeIn 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

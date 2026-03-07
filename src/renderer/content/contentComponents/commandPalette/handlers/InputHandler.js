@@ -5,10 +5,12 @@ export class InputHandler {
     /**
      * @param {Array} systemCommands
      * @param {Array} markdownCommands
+     * @param {Array} markerCommands
      */
-    constructor(systemCommands, markdownCommands) {
+    constructor(systemCommands, markdownCommands, markerCommands) {
         this.systemCommands = systemCommands;
         this.markdownCommands = markdownCommands;
+        this.markerCommands = markerCommands;
     }
 
     /**
@@ -35,6 +37,17 @@ export class InputHandler {
     }
 
     /**
+     * Filter marker commands via search value
+     * @param {string} value
+     * @returns {Array}
+     */
+    filterMarkerCommands(value) {
+        return this.markerCommands.filter(c =>
+            c.label.toLowerCase().includes(value.toLowerCase())
+        );
+    }
+
+    /**
      * Get all system commands
      * @returns {Array}
      */
@@ -48,5 +61,13 @@ export class InputHandler {
      */
     getAllMarkdownCommands() {
         return this.markdownCommands;
+    }
+
+    /**
+     * Get all marker commands
+     * @returns {Array}
+     */
+    getAllMarkerCommands() {
+        return this.markerCommands;
     }
 }

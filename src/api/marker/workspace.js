@@ -73,7 +73,7 @@ export const createWorkspace = async (container, options = {}) => {
         getCanvasCoords,
         groupModal,
         onOpenNote: options.onOpenNote,
-        onReturnToEditor: options.onReturnToEditor
+        onReturnToEditor: options.onReturnToEditor,
     });
 
     if (board?.layer) {
@@ -113,10 +113,10 @@ export const createWorkspace = async (container, options = {}) => {
         const dy = (e.clientY - middleDrag.y) * middlePanSensitivity;
 
         const newPanX = state.panX + dx;
-        
+
         const newPanY = state.panY + dy;
         panImmediately(newPanX, newPanY);
-        
+
         middleDrag.x = e.clientX;
         middleDrag.y = e.clientY;
     };
@@ -153,7 +153,12 @@ export const createWorkspace = async (container, options = {}) => {
         destroy: () => {
             container.removeEventListener('wheel', handleWheel);
             container.removeEventListener('pointermove', updateMousePos);
+            
             resizeObserver.disconnect();
+            
+            window.removeEventListener('mousemove', onMiddleMove);
+            window.removeEventListener('mouseup', onMiddleUp);
+            
             container.innerHTML = '';
             board?.destroy();
         }

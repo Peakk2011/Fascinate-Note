@@ -135,7 +135,11 @@ export const initTitlebar = (threshold = 60) => {
     };
 
     const toggleWorkspace = async () => {
-        if (isViewTransitioning) return;
+        // If already transitioning, wait for it to finish first
+        if (isViewTransitioning) {
+            await waitForTransitionEnd(workspaceContainer, 560);
+            if (isViewTransitioning) return;
+        }
 
         const editorContainer = document.querySelector('.textarea-container');
         if (!workspaceContainer || !editorContainer) return;
@@ -158,6 +162,9 @@ export const initTitlebar = (threshold = 60) => {
                     },
                     onReturnToEditor: () => {
                         toggleWorkspace();
+                    },
+                    onOpenCommandPalette: () => {
+                        window.__commandPaletteAPI?.toggle('marker');
                     }
                 });
 
@@ -239,20 +246,27 @@ export const initTitlebar = (threshold = 60) => {
         }
     };
 
+    /**
+     * Ctrl/Cmd + D — always animate, never instant
+     * @param {KeyboardEvent} e
+     */
     const handleWorkspaceToggleShortcut = async (e) => {
         if (!(e.ctrlKey || e.metaKey)) return;
         if (e.altKey || e.shiftKey) return;
-
-        const key = typeof e.key === 'string' ? e.key.toLowerCase() : '';
-        if (key !== 'd') return;
+        if (e.code !== 'KeyD') return;
 
         e.preventDefault();
+
+        // Close menu first if open, wait for its animation
+        await closeMenu({ waitForAnimation: true });
+
+        // Then toggle workspace with full animation
         await toggleWorkspace();
-        closeMenu();
     };
 
     const listenerOptions = { passive: true };
     window.addEventListener('scroll', onScroll, listenerOptions);
+
     const handleMarkerClick = async () => {
         await closeMenu({ waitForAnimation: true });
         await toggleWorkspace();
@@ -277,7 +291,7 @@ export const initTitlebar = (threshold = 60) => {
             el.classList.remove('scrolled');
             if (workspaceApi) {
                 workspaceApi.destroy();
-                
+
                 if (window.__workspaceApi === workspaceApi) {
                     window.__workspaceApi = null;
                 }

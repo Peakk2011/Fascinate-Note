@@ -7,7 +7,7 @@ import { CommandExecutor } from '../handlers/CommandExecutor.js';
 import { EventManager } from '../handlers/EventManager.js';
 
 export class CommandPaletteController {
-    constructor(config, systemCommands, markdownCommands, noteAPI) {
+    constructor(config, systemCommands, markdownCommands, markerCommands, apis) {
         this.config = config;
 
         // State
@@ -22,8 +22,8 @@ export class CommandPaletteController {
         this.resultsComponent = null;
 
         // Handlers
-        this.inputHandler = new InputHandler(systemCommands, markdownCommands);
-        this.commandExecutor = new CommandExecutor(noteAPI);
+        this.inputHandler = new InputHandler(systemCommands, markdownCommands, markerCommands);
+        this.commandExecutor = new CommandExecutor(apis.noteAPI, apis.markerAPI);
         this.eventManager = new EventManager();
     }
 
@@ -55,7 +55,9 @@ export class CommandPaletteController {
     }
 
     #handleInputChange(value, isMarkdownMode) {
-        if (isMarkdownMode) {
+        if (this.currentMode === 'marker') {
+            this.#switchToMarkerMode(value);
+        } else if (isMarkdownMode) {
             this.#switchToMarkdownMode(value);
         } else {
             this.#switchToSystemMode(value);
@@ -80,6 +82,16 @@ export class CommandPaletteController {
 
         const filtered = this.inputHandler.filterSystemCommands(searchValue);
         this.#renderSystemCommands(filtered);
+    }
+
+    #switchToMarkerMode(searchValue) {
+        if (this.currentMode !== 'marker') {
+            this.currentMode = 'marker';
+            this.modal.setModeIndicator('Marker Commands', true);
+        }
+
+        const filtered = this.inputHandler.filterMarkerCommands(searchValue);
+        this.#renderMarkerCommands(filtered);
     }
 
     #renderSystemCommands(commands) {
@@ -111,10 +123,23 @@ export class CommandPaletteController {
         );
     }
 
+    #renderMarkerCommands(commands) {
+        this.resultsComponent.render(
+            commands,
+            false,
+            (command) => {
+                this.commandExecutor.executeMarkerCommand(command);
+                this.hide();
+            },
+            null
+        );
+    }
+
     /**
      * Show palette
      */
     show(mode = 'system') {
+        console.log('[Show] mode received:', mode)
         if (this.isVisible || this.isAnimating) return;
 
         this.isAnimating = true;
@@ -124,14 +149,21 @@ export class CommandPaletteController {
 
         // Set display first
         this.modal.setDisplay();
+        console.log('[Show] after ClearInput');
 
         // Clear input
         this.modal.clearInput();
+        console.log('[Show] after ClearInput');
 
         // Render results before animation
         if (mode === 'markdown') {
             this.modal.setModeIndicator('Markdown Commands', true);
+            console.log('[Show] after setModeIndicator Markdown');
             this.#renderMarkdownCommands(this.inputHandler.getAllMarkdownCommands());
+        } else if (mode === 'marker') {
+            this.modal.setModeIndicator('Marker Commands', true);
+            console.log('[Show] after setModeIndicator Fascinate Notes Marker');
+            this.#renderMarkerCommands(this.inputHandler.getAllMarkerCommands());
         } else {
             this.modal.setModeIndicator('', false);
             this.#renderSystemCommands(this.inputHandler.getAllSystemCommands());
@@ -187,6 +219,9 @@ export class CommandPaletteController {
         if (mode === 'markdown') {
             this.modal.setModeIndicator('Markdown Commands', true);
             this.#renderMarkdownCommands(this.inputHandler.getAllMarkdownCommands());
+        } else if (mode === 'marker') {
+            this.modal.setModeIndicator('Marker Commands', true);
+            this.#renderMarkerCommands(this.inputHandler.getAllMarkerCommands());
         } else {
             this.modal.setModeIndicator('', false);
             this.#renderSystemCommands(this.inputHandler.getAllSystemCommands());

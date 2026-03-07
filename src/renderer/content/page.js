@@ -29,7 +29,7 @@ export const Page = {
         if (!this._contextMenuCache) {
             this._contextMenuCache = await createContextMenu();
         }
-        return this._contextMenuCache;  
+        return this._contextMenuCache;
     },
 
     async _getTitlebar() {
@@ -72,7 +72,7 @@ export const Page = {
                 this._getContextMenu(),
                 this._getCommandPalette()
             ]);
-            
+
             // make available for workspace callbacks
             window.noteAPI = noteAPI;
 
@@ -104,12 +104,19 @@ export const Page = {
 
             // Initialize titlebar behavior
             try {
-                const tb = initTitlebar(60);
+                const tb = initTitlebar(60, {
+                    onOpenMarkerCommandPalette: () => {
+                        commandPalette.init({
+                            noteAPI: window.noteAPI,
+                            markerAPI: window.__markerAPI
+                        })?.toggle('marker');
+                    }
+                });
                 // ensure titlebar listener is cleaned when page cleanup runs
                 if (result && typeof result.cleanup === 'function') {
                     const origCleanup = result.cleanup.bind(result);
                     result.cleanup = () => {
-                        try { tb.destroy(); } catch (e) {}
+                        try { tb.destroy(); } catch (e) { }
                         origCleanup();
                     };
                 }

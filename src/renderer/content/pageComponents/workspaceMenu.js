@@ -8,6 +8,9 @@ import { createExportMenuMarkup } from './exportMenu.js';
  * @returns {string}
  */
 export const createWorkspaceMenuMarkup = (config) => {
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const modKey = isMac ? '⌘' : 'Ctrl';
+
     return `
         <div id="workspace-menu" class="workspace-menu" aria-hidden="true">
             <div class="workspace-menu-header">Workspace</div>
@@ -17,7 +20,12 @@ export const createWorkspaceMenuMarkup = (config) => {
                     <img src="/showcase/marker-preview.svg" alt="Workspace Showcase" />
                 </picture>
             </div>
-            <button id="workspace-open-marker" class="workspace-menu-action" type="button">Marker</button>
+            <button id="workspace-open-marker" class="workspace-menu-action" type="button">
+                <span>Marker</span>
+                <span class="hotkey">
+                    <kbd class="modKey">${modKey}</kbd>+<kbd>D</kbd>
+                </span>
+            </button>
             <div class="workspace-menu-controls">
                 <div class="${config.zoomControlsClass}">
                     ${createZoomControlsMarkup(config)}

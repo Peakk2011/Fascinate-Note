@@ -42,9 +42,9 @@ export class CommandPaletteModal {
             this.modal.classList.add('visible');
             this.content.classList.remove('closing');
             this.content.classList.add('opening');
-            
+
             if (onAnimationStart) onAnimationStart();
-            
+
             setTimeout(() => {
                 this.input.focus();
                 if (onAnimationEnd) onAnimationEnd();
@@ -58,7 +58,7 @@ export class CommandPaletteModal {
     hide(onComplete) {
         this.content.classList.remove('opening');
         this.content.classList.add('closing');
-        
+
         setTimeout(() => {
             this.modal.classList.remove('visible');
             this.modal.style.display = 'none';
@@ -74,8 +74,11 @@ export class CommandPaletteModal {
     }
 
     setModeIndicator(text, visible) {
+        // console.log('[Modal] setModeIndicator:', text, visible, this.modeIndicator);
+        // console.trace();
         this.modeIndicator.textContent = text;
         this.modeIndicator.style.display = visible ? 'block' : 'none';
+        // console.log('[Modal] after set, display is:', this.modeIndicator.style.display);
     }
 
     clearInput() {

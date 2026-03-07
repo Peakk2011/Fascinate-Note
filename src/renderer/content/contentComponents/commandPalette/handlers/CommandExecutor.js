@@ -8,9 +8,11 @@ import { processMarkdownInLine } from '../../../../scripts/editor/markdown/comma
 export class CommandExecutor {
     /**
      * @param {Object} noteAPI
+     * @param {Object} markerAPI
      */
-    constructor(noteAPI) {
+    constructor(noteAPI, markerAPI) {
         this.noteAPI = noteAPI;
+        this.markerAPI = markerAPI;
     }
 
     /**
@@ -21,6 +23,19 @@ export class CommandExecutor {
     executeSystemCommand(command) {
         if (this.noteAPI && typeof this.noteAPI[command.action] === 'function') {
             this.noteAPI[command.action]();
+        }
+    }
+
+    /**
+     * Execute marker command
+     * @param {Object} command
+     * @returns {void}
+     */
+    executeMarkerCommand(command) {
+        const api = this.markerAPI || window.__markerAPI;
+        
+        if (this.markerAPI && typeof this.markerAPI[command.action] === 'function') {
+            this.markerAPI[command.action]();
         }
     }
 

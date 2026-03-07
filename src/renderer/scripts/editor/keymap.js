@@ -1,5 +1,7 @@
 import { handleSpaceInBlockquote } from './markdown/handleEnterInBlockquote.js';
 import { processInlineMarkdown, processMarkdownInLine, handleCodeBlockExit } from './markdown/commands.js';
+import { noteFeaturesConfig } from '../note/noteConfig.js';
+import { setCurrentFontSize } from '../note/state.js';
 
 /**
  * Handles keyboard shortcuts for the editor.
@@ -145,6 +147,15 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
         }
 
         if (isModKey) {
+            if (e.code === 'Digit1') {
+                e.preventDefault();
+                setCurrentFontSize(noteFeaturesConfig.defaultFontSize);
+                const editor = document.querySelector('.editable-div');
+                if (editor) {
+                    editor.style.fontSize = `${noteFeaturesConfig.defaultFontSize}px`;
+                }
+                return;
+            }
             // 2. Clipboard operations
             if (e.code === 'KeyC' || e.code === 'KeyX' || e.code === 'KeyV') {
                 return;

@@ -156,9 +156,6 @@ body.darwin .status {
 .workspace-menu-action {
     border: none;
     padding: 8px 12px;
-    font-family: var(--font-display);
-    font-weight: var(--zoom-btn-weight);
-    font-size: 13px;
     cursor: pointer;
 
     border-radius: var(--zoom-btn-border-radius);
@@ -169,6 +166,16 @@ body.darwin .status {
     color: var(--theme-fg);
     transition: var(--zoom-btn-transition);
     margin-bottom: 0.35rem;
+
+    display: flex;
+    justify-content: space-between;
+}
+
+.workspace-menu-action span,
+.workspace-menu-action kbd {
+    font-size: 13px;
+    font-family: var(--font-display);
+    font-weight: var(--zoom-btn-weight);
 }
 
 .workspace-menu-action:hover {
