@@ -226,6 +226,10 @@
     line-height: 0;
 }
 
+.selection-menu button.active svg {
+    fill: var(--theme-accent-text) !important;
+}
+
 .selection-menu button:hover {
     background-color: var(--hover-color);
 }
