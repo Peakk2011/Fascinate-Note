@@ -11,7 +11,7 @@ const copyFolder = (source, target) => {
 
     if (existsSync(source) && statSync(source).isDirectory()) {
         const files = readdirSync(source);
-        
+
         files.forEach(file => {
             const sourcePath = join(source, file);
             const targetPath = join(target, file);
@@ -34,6 +34,82 @@ export default defineConfig({
         include: ['dom-to-image', 'yjs', 'y-websocket']
     },
     resolve: {
+        alias: {
+            '@': resolve(__dirname, 'src'),
+            '@renderer': resolve(__dirname, 'src/renderer'),
+            '@scripts': resolve(__dirname, 'src/renderer/scripts'),
+            '@components': resolve(__dirname, 'src/renderer/content/contentComponents'),
+            '@page-components': resolve(__dirname, './src/renderer/content/pageComponents'),
+            '@pages': resolve(__dirname, 'src/renderer/content/pages'),
+            '@services': resolve(__dirname, 'src/renderer/content/pageServices'),
+            '@api': resolve(__dirname, 'src/api'),
+
+            '@framework': resolve(__dirname, 'src/framework'),
+            '@content': resolve(__dirname, 'src/renderer/content'),
+
+            '@model': resolve(
+                __dirname,
+                './src/renderer/content/contentComponents/model'
+            ),
+
+            '@contextmenu': resolve(
+                __dirname,
+                './src/renderer/content/contentComponents/contextmenu'
+            ),
+
+            '@command': resolve(
+                __dirname,
+                './src/renderer/content/contentComponents/commandPalette'
+            ),
+
+            '@cursor': resolve(
+                'src/api/cursor-behavior.js'
+            ),
+
+            '@editor': resolve(
+                __dirname,
+                './src/renderer/scripts/editor'
+            ),
+
+            '@collab': resolve(
+                __dirname,
+                './src/renderer/scripts/collab'
+            ),
+
+            '@collab-impl': resolve(
+                __dirname,
+                './src/renderer/scripts/collab/impl'
+            ),
+
+            '@rich': resolve(
+                __dirname,
+                './src/renderer/content/rich.js'
+            ),
+
+            // Mintkit
+            '@mintkit': resolve(
+                __dirname,
+                './src/framework/mint.js'
+            ),
+
+            // Fetch JSON
+            '@fJson': resolve(
+                __dirname,
+                './src/utils/fetch.js'
+            ),
+
+            // Utils Paths (Main process)
+            '@utils-paths': resolve(
+                __dirname,
+                './src/utils/paths.js'
+            ),
+
+            // Safe Logger
+            '@utils-logger': resolve(
+                __dirname,
+                './src/utils/safeLogger.js'
+            )
+        },
         dedupe: ['yjs', 'y-protocols', 'lib0']
     },
 
@@ -52,7 +128,7 @@ export default defineConfig({
                 // Copy renderer folder
                 const srcRenderer = resolve(__dirname, 'src/renderer');
                 const distRenderer = resolve(__dirname, 'dist/renderer/renderer');
-                
+
                 if (existsSync(srcRenderer)) {
                     copyFolder(srcRenderer, distRenderer);
                 }
@@ -60,7 +136,7 @@ export default defineConfig({
                 // Copy stylesheet folder
                 const srcStylesheet = resolve(__dirname, 'src/stylesheet');
                 const distStylesheet = resolve(__dirname, 'dist/renderer/stylesheet');
-                
+
                 if (existsSync(srcStylesheet)) {
                     copyFolder(srcStylesheet, distStylesheet);
                 }

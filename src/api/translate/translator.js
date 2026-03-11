@@ -1,4 +1,4 @@
-import { fetchJSON, fetchWithTimeout } from '../../utils/fetch.js';
+import { fetchJSON, fetchWithTimeout } from '@fJson';
 
 let configCache = null;
 

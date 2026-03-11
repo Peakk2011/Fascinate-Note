@@ -1,8 +1,7 @@
-import { createStatusIndicatorMarkup } from '../pageComponents/statusIndicator.js';
-import { createSelectionMenuMarkup } from '../pageComponents/selectionMenu.js';
-import { createTitlebarMarkup } from '../pageComponents/titlebar.js';
-import { createWorkspaceMenuMarkup } from '../pageComponents/workspaceMenu.js';
-import { createFileDropOverlayMarkup } from '../pageComponents/fileDropOverlay.js';
+import { createStatusIndicatorMarkup } from '@page-components/statusIndicator.js';
+import { createSelectionMenuMarkup } from '@page-components/selectionMenu.js';
+import { createWorkspaceMenuMarkup } from '@page-components/workspaceMenu.js';
+import { createFileDropOverlayMarkup } from '@page-components/fileDropOverlay.js';
 
 /**
  * Generates the complete HTML markup for the page editor.

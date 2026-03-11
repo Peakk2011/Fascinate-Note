@@ -1,5 +1,5 @@
-import { Mint } from '../../../../framework/mint.js';
-import { fetchJSON } from '../../../../utils/fetch.js';
+import { Mint } from '@mintkit';
+import { fetchJSON } from '@fJson';
 import { CommandPaletteController } from './controller/CommandPaletteController.js';
 
 /**

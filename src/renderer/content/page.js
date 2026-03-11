@@ -1,15 +1,15 @@
 // `page.js` This file is part of Fascinate-Note (Renderer Side)
 
-import { noteFeatures } from '../scripts/note.js';
-import { createModelFind } from './contentComponents/model/modelFind.js';
-import { createContextMenu } from './contentComponents/contextmenu/contextMenu.js';
-import { getConfig } from './pageServices/configService.js';
-import { createCommandPalette } from './contentComponents/commandPalette/commandPalette.js';
-import { createPageMarkup } from './pages/pageMarkup.js';
-import { createTitlebar, initTitlebar } from './pageComponents/titlebar.js';
-import { initFileDropOverlay } from './pageComponents/fileDropOverlay.js';
-import { initEditorPage } from './pages/editorPage.js';
-import '../../api/cursor-behavior.js';
+import { noteFeatures } from '@scripts/note.js';
+import { createModelFind } from '@model/modelFind.js';
+import { createContextMenu } from '@contextmenu/contextMenu.js';
+import { getConfig } from '@services/configService.js';
+import { createCommandPalette } from '@command/commandPalette.js';
+import { createPageMarkup } from '@pages/pageMarkup.js';
+import { createTitlebar, initTitlebar } from '@page-components/titlebar.js';
+import { initFileDropOverlay } from '@page-components/fileDropOverlay.js';
+import { initEditorPage } from '@pages/editorPage.js';
+import '@cursor';
 
 export const Page = {
     // Cache instances

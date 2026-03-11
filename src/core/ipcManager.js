@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { OS } from '../config/osConfig.js';
-import { safeLog, safeError } from '../utils/safeLogger.js';
+import { safeLog, safeError } from '@utils-logger';
 
 export class IpcManager {
     static osHandlerRegistered = false;

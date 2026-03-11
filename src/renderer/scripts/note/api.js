@@ -2,7 +2,7 @@
  * Note features configuration and settings
  * @type {import('./noteConfig.js').NoteFeaturesConfig}
  */
-import { noteFeaturesConfig } from './noteConfig.js';
+// import { noteFeaturesConfig } from './noteConfig.js'; // Not used anymore
 
 /**
  * State management utilities and trackers for note features

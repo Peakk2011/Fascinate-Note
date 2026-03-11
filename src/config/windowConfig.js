@@ -1,6 +1,6 @@
 import { osConfig, OS } from './osConfig.js';
 import { nativeTheme } from 'electron';
-import { resolvePath } from '../utils/paths.js';
+import { resolvePath } from '@utils-paths';
 
 /**
  * @constant

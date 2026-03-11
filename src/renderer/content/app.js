@@ -1,8 +1,8 @@
 // This file is part of Fascinate-Note
 // Use for index.html renderer (frontend)
 
-import { Mint } from '../../framework/mint.js';
-import { Page } from './page.js';
+import { Mint } from '@mintkit';
+import { Page } from '@renderer/content/page.js';
 
 const rootPath = '#app';
 

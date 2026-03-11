@@ -1,8 +1,8 @@
 // This file type is from Fascin Notes (Frontend side)
 // Find and Replace Modal
 
-import { Mint } from '../../../../framework/mint.js';
-import { fetchJSON } from '../../../../utils/fetch.js';
+import { Mint } from '@mintkit';
+import { fetchJSON } from '@fJson';
 Mint.include('stylesheet/style-components/find.css');
 
 /**

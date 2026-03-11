@@ -4,7 +4,7 @@
  * to be applied to the main window.
  */
 
-import { resolvePath } from '../utils/paths.js';
+import { resolvePath } from '@utils-paths';
 
 /**
  * The current operating system identifier, derived from `process.platform`.

@@ -1,11 +1,11 @@
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
-import { ensureConfig } from './impl/config/index.js';
-import { getOrCreateUserIdentity } from './impl/identity/index.js';
-import { createOverlay } from './impl/overlay/index.js';
-import { createCursorRenderer } from './impl/cursors/index.js';
-import { createAwarenessScheduler } from './impl/awareness/index.js';
-import { createHtmlSync } from './impl/sync/index.js';
+import { ensureConfig } from '@collab-impl/config';
+import { getOrCreateUserIdentity } from '@collab-impl/identity';
+import { createOverlay } from '@collab-impl/overlay';
+import { createCursorRenderer } from '@collab-impl/cursors';
+import { createAwarenessScheduler } from '@collab-impl/awareness';
+import { createHtmlSync } from '@collab-impl/sync';
 
 /**
  * Initialize realtime collaboration for a contenteditable element.

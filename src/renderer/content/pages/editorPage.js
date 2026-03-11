@@ -1,11 +1,11 @@
-import { initRichEditor } from '../rich.js';
-import { keyMap } from '../../scripts/editor/keymap.js';
-import { initStatusIndicator } from '../pageComponents/statusIndicator.js';
-import { initZoomControls } from '../pageComponents/zoomControls.js';
-import { initExportMenu } from '../pageComponents/exportMenu.js';
-import { initSelectionMenu } from '../pageComponents/selectionMenu.js';
-import { initEditorMask } from '../pageComponents/editorMask.js';
-import { initRealtimeCollab } from '../../scripts/collab/realtimeCollab.js';
+import { initRichEditor } from '@rich';
+import { keyMap } from '@editor/keymap.js';
+import { initStatusIndicator } from '@page-components/statusIndicator.js';
+import { initZoomControls } from '@page-components/zoomControls.js';
+import { initExportMenu } from '@page-components/exportMenu.js';
+import { initSelectionMenu } from '@page-components/selectionMenu.js';
+import { initEditorMask } from '@page-components/editorMask.js';
+import { initRealtimeCollab } from '@collab/realtimeCollab.js';
 
 /**
  * @typedef {Object} EditorConfig

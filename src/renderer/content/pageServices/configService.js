@@ -1,4 +1,4 @@
-import { fetchJSON } from '../../../utils/fetch.js';
+import { fetchJSON } from '@fJson';
 
 let _configCache = null;
 

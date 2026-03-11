@@ -1,4 +1,4 @@
-import { Mint } from '../../framework/mint.js';
+import { Mint } from '@mintkit';
 Mint.include('stylesheet/style-components/find.css');
 
 /**

@@ -1,11 +1,11 @@
-import { createPlaceholder } from '../scripts/editor/placeholder.js';
-import { handleMarkdown } from '../scripts/editor/markdown.js';
-import { handlePaste, insertImagesFromFiles } from '../scripts/editor/handlePaste.js';
-import { initImageInteractions } from '../scripts/editor/features/images/imageInteractions.js';
-import { initRendering } from '../scripts/editor/rendering.js';
-import { sanitizeInlineArtifacts } from '../scripts/editor/sanitizeInlineArtifacts.js';
-import { exportHTML, downloadHTML, downloadTXT, downloadImage } from '../scripts/editor/download.js';
-import { handleKeydown } from '../scripts/editor/keymap.js';
+import { createPlaceholder } from '@editor/placeholder.js';
+import { handleMarkdown } from '@editor/markdown.js';
+import { handlePaste, insertImagesFromFiles } from '@editor/handlePaste.js';
+import { initImageInteractions } from '@editor/features/images/imageInteractions.js';
+import { initRendering } from '@editor/rendering.js';
+import { sanitizeInlineArtifacts } from '@editor/sanitizeInlineArtifacts.js';
+import { exportHTML, downloadHTML, downloadTXT, downloadImage } from '@editor/download.js';
+// import { handleKeydown } from '../scripts/editor/keymap.js';
 
 /**
  * Component to manage rich editor with Markdown support and HTML export

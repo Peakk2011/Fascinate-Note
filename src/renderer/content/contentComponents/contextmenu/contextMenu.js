@@ -1,5 +1,5 @@
-import { Mint } from '../../../../framework/mint.js';
-import { fetchJSON } from '../../../../utils/fetch.js';
+import { Mint } from '@mintkit';
+import { fetchJSON } from '@fJson';
 import { renderMenu } from './menu/menuRenderer.js';
 import { createMenuState, updateMenuState } from './menu/menuState.js';
 import { showMenu, hideMenu } from './menu/menuPosition.js';

@@ -1,4 +1,4 @@
-import { fetchJSON } from './fetch.js';
+import { fetchJSON } from '@fJson';
 
 /**
  * @typedef {Object} WorkspaceConfig
