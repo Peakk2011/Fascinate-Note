@@ -96,18 +96,6 @@ export default defineConfig({
             '@fJson': resolve(
                 __dirname,
                 './src/utils/fetch.js'
-            ),
-
-            // Utils Paths (Main process)
-            '@utils-paths': resolve(
-                __dirname,
-                './src/utils/paths.js'
-            ),
-
-            // Safe Logger
-            '@utils-logger': resolve(
-                __dirname,
-                './src/utils/safeLogger.js'
             )
         },
         dedupe: ['yjs', 'y-protocols', 'lib0']

@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { safeLog } from '@utils-logger';
+import { safeLog } from '#utils-logger';
 import { app } from 'electron';
 
 const isDev = !app.isPackaged;

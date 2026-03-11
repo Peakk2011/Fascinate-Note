@@ -1,6 +1,6 @@
 import { promises as fs } from 'fs';
-import { safeLog } from '@utils-logger';
-import { resolvePath } from '@utils-paths';
+import { safeLog } from '#utils-logger';
+import { resolvePath } from '#utils-paths';
 
 let cachedTabbarHtml = null;
 let cachedEncodedHtml = null;

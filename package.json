@@ -21,6 +21,10 @@
     "email": "peakk3984@gmail.com"
   },
   "license": "MIT",
+  "imports": {
+    "#utils-logger": "./src/utils/safeLogger.js",
+    "#utils-paths": "./src/utils/paths.js"
+  },
   "build": {
     "appId": "com.peakk.fascinatenote",
     "productName": "Fascinate Note",
