@@ -48,6 +48,12 @@ try {
          * @returns {Promise<boolean>}
          */
         newWindow: () => ipcRenderer.invoke('new-window'),
+
+        /**
+         * Toggles the main window's always-on-top status.
+         * @returns {Promise<boolean>} A promise that resolves to the new always-on-top state.
+         */
+        toggleAlwaysOnTop: () => ipcRenderer.invoke('app:toggle-always-on-top'),
     });
 } catch (error) {
     /**

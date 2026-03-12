@@ -72,6 +72,16 @@ const registerIpcHandlers = () => {
 		}
 	});
 
+	ipcMain.handle('app:toggle-always-on-top', (event) => {
+        const win = BrowserWindow.fromWebContents(event.sender);
+        if (win) {
+            const isAlwaysOnTop = win.isAlwaysOnTop();
+            win.setAlwaysOnTop(!isAlwaysOnTop);
+            return !isAlwaysOnTop;
+        }
+        return false;
+    });
+
 	app.on('will-quit', () => {
 		ipcMain.removeHandler('new-window');
 	});

@@ -20,6 +20,7 @@ const getLegacyMarkerNoteById = (id) => {
  * @param {object} win - The window object to refresh.
  */
 export const refreshWindowPreview = (win) => {
+    if (win.type === 'comment') return;
     if (!win.noteId) {
         const note = createNote({ title: win.title || 'New Note' });
         win.noteId = note?.id ?? null;

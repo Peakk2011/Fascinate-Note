@@ -53,7 +53,23 @@ export class WindowManager {
         const el = this.windowMap.get(id);
         if (el?.parentNode) el.parentNode.appendChild(el);
         
+        this.reorderForPinning();
         persist(this.windows, this.board.groups, this.board.activeGroupId);
+    }
+
+    reorderForPinning() {
+        const normal = this.windows.filter(w => !w.isPinned);
+        const pinned = this.windows.filter(w => w.isPinned);
+        const ordered = normal.concat(pinned);
+
+        // Preserve array identity used by the board.
+        this.windows.splice(0, this.windows.length, ...ordered);
+
+        // Re-append DOM nodes to reflect z-order.
+        ordered.forEach(w => {
+            const el = this.windowMap.get(w.id);
+            if (el?.parentNode) el.parentNode.appendChild(el);
+        });
     }
     
     removeWindowById(id) {

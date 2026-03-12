@@ -8,6 +8,7 @@ import { GroupManager } from '../group/GroupManager.js';
 import { MissionView } from '../mission/MissionView.js';
 import { getFontSize, getCurrentNoteId } from '../sharedNoteStore.js';
 import { getState } from '../utils/config.js';
+import { createMarkerContextMenu } from '../window/contextMenu.js';
 
 /**
  * Manages the marker board, including windows, groups, and interactions.
@@ -68,6 +69,10 @@ export class MarkerBoard {
             windows: this.windows,
             getCanvasCoords: this.getCanvasCoords,
             onOpenNote: this.onOpenNote
+        });
+
+        createMarkerContextMenu({
+            onItemClick: (command, windowId) => this.handleContextMenuClick(command, windowId)
         });
 
         this.groupManager = new GroupManager({
@@ -221,6 +226,77 @@ export class MarkerBoard {
             this.clearAllWindows();
         } else if (btn.dataset.action === 'mission-view') {
             this.missionView.toggle();
+        }
+    }
+
+    /**
+     * Handles context menu item clicks.
+     * @param {string} command - The command from the context menu.
+     * @param {string} windowId - The ID of the window.
+     */
+    handleContextMenuClick(command, windowId) {
+        console.log(`Context menu command: ${command}, windowId: ${windowId}`);
+        switch (command) {
+            case 'pin-window':
+                this.toggleWindowPin(windowId);
+                break;
+            case 'add-comment':
+                // To be implemented in Phase 3
+                this.createComment(windowId);
+                break;
+        }
+    }
+
+    /**
+     * Toggles the pinned state of a window.
+     * @param {string} windowId - The ID of the window to pin/unpin.
+     */
+    toggleWindowPin(windowId) {
+        const win = this.windows.find(w => w.id === windowId);
+        if (!win) return;
+
+        win.isPinned = !win.isPinned;
+        this.windowManager.reorderForPinning();
+        persist(this.windows, this.groups, this.activeGroupId);
+    }
+
+    /**
+     * Creates a new comment window.
+     * @param {string} forWindowId - The ID of the window the comment is for.
+     */
+    createComment(forWindowId) {
+        const sourceWindow = this.windows.find(w => w.id === forWindowId);
+        if (!sourceWindow) {
+            console.warn(`Source window not found for comment creation: ${forWindowId}`);
+            return;
+        }
+
+        const gap = 20;
+        const newX = sourceWindow.x + sourceWindow.width + gap;
+        const newY = sourceWindow.y;
+
+        const data = this.windowManager.data.createCommentData({
+            x: newX,
+            y: newY,
+            groupId: sourceWindow.groupId
+        });
+
+        if (data) {
+            const el = this.windowManager.sync.syncWindowElement(data);
+            persist(this.windows, this.groups, this.activeGroupId);
+            this.applyVisibility();
+            this.windowManager.selectWindow(data.id);
+
+            const contentEl = el?.querySelector('.marker-window-content');
+            if (contentEl) {
+                contentEl.focus({ preventScroll: true });
+                const range = document.createRange();
+                range.selectNodeContents(contentEl);
+                range.collapse(false);
+                const selection = window.getSelection();
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+            }
         }
     }
 

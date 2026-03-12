@@ -21,6 +21,7 @@ export class WindowSync {
         }
         
         this.updateElementStyles(element, data);
+        element.classList.toggle('is-pinned', !!data.isPinned);
         this.windowManager.factory.updateGroupBadge(element, data.groupId);
         
         return element;

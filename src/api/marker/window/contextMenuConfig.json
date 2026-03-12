@@ -1,0 +1,15 @@
+{
+    "menuId": "marker-context-menu",
+    "items": [
+        {
+            "id": "marker-context-menu-pin",
+            "label": "Pin Window",
+            "command": "pin-window"
+        },
+        {
+            "id": "marker-context-menu-comment",
+            "label": "Add Comment",
+            "command": "add-comment"
+        }
+    ]
+}
