@@ -250,7 +250,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 14px 16px;
+    padding: 2px 12px;
     background: var(--marker-header-bg);
     border-top-left-radius: 10px;
     border-top-right-radius: 10px;
@@ -356,12 +356,17 @@
     padding: 0 4px;
     line-height: 0;
     font-weight: 100;
-    opacity: 0.5;
+    opacity: 1;
     transition: opacity 120ms ease;
+    padding: 1.5rem 1rem;
+    transform: translate(13px, -2px);
+    border-top-right-radius: 10px;
+    transition: all 0.2s ease;
 }
 
 .marker-window-close:hover {
-    opacity: 1;
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
 }
 
 /* Toolbar */
