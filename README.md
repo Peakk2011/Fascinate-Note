@@ -1,4 +1,4 @@
-<img src="./assets/icons/icon.png" width="100" alt='Fascinate Notes'>
+<img src="./assets/icons/preview/fascinate-notes-icons.png" width="100" alt='Fascinate Notes'>
 
 # Fascinate Notes
 
