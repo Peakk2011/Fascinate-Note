@@ -23,6 +23,7 @@ export class MissionDrag {
         if (!this.missionView.isActive()) return;
         if (e.button !== 0) return;
         if (e.target.closest('.marker-window-close')) return;
+        if (e.target.closest('.marker-window-minimize')) return;
         
         e.preventDefault();
         e.stopPropagation();

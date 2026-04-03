@@ -58,15 +58,27 @@ export class WindowFactory {
         const badge = document.createElement('span');
         badge.className = 'marker-window-group';
 
+        const actions = document.createElement('div');
+        actions.className = 'marker-window-actions';
+
         const closeButton = document.createElement('button');
         closeButton.className = 'marker-window-close';
         closeButton.type = 'button';
         closeButton.setAttribute('title', 'Delete window');
         closeButton.textContent = '×';
 
+        if (data.type !== 'comment') {
+            const minimizeButton = document.createElement('button');
+            minimizeButton.className = 'marker-window-minimize';
+            minimizeButton.type = 'button';
+            minimizeButton.setAttribute('title', 'Minimize window');
+            minimizeButton.textContent = '−';
+            actions.appendChild(minimizeButton);
+        }
+        actions.appendChild(closeButton);
         header.appendChild(title);
         header.appendChild(badge);
-        header.appendChild(closeButton);
+        header.appendChild(actions);
 
         return header;
     }
@@ -144,9 +156,32 @@ export class WindowFactory {
 
     attachEvents(element, data) {
         const title = element.querySelector('.marker-window-title');
+        const minimizeButton = element.querySelector('.marker-window-minimize');
         const closeButton = element.querySelector('.marker-window-close');
         const content = element.querySelector('.marker-window-content');
         const resizeHandle = element.querySelector('.marker-window-resize');
+        const startWindowDrag = (e) => {
+            if (e.button !== 0) return;
+            if (e.target.closest('.marker-window-close')) return;
+            if (e.target.closest('.marker-window-minimize')) return;
+            if (e.target.closest('.marker-window-resize')) return;
+            if (this.board.missionView?.isActive()) return;
+
+            const titleInput = e.target.closest('.marker-window-title');
+            if (titleInput && titleInput.readOnly === false) return;
+
+            if (!titleInput) {
+                e.preventDefault();
+            } else if (titleInput.readOnly) {
+                titleInput.blur();
+            }
+
+            this.windowManager.bringToFront(data.id);
+            this.windowManager.setActiveWindow(data.id);
+
+            const coords = this.windowManager.getCanvasCoords(e);
+            this.windowManager.drag.start(data.id, coords, element);
+        };
 
         // Title events
         title.addEventListener('dblclick', () => {
@@ -167,6 +202,14 @@ export class WindowFactory {
             data.title = title.value.trim() || 'Untitled';
             if (data.noteId) updateNote(data.noteId, { title: data.title });
             persist(this.windowManager.windows, this.board.groups, this.board.activeGroupId);
+        });
+
+        minimizeButton?.addEventListener('pointerdown', e => e.stopPropagation());
+
+        minimizeButton?.addEventListener('click', e => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.windowManager.minimizeWindowById(data.id);
         });
 
         // Close button
@@ -198,12 +241,20 @@ export class WindowFactory {
             if (e.button !== 0) return;
             if (e.target.closest('.marker-window-resize')) return;
             if (e.target.closest('.marker-window-close')) return;
+            if (e.target.closest('.marker-window-minimize')) return;
 
             clickStart = { x: e.clientX, y: e.clientY };
             
             const toggle = e.metaKey || e.ctrlKey || e.shiftKey;
             this.windowManager.selectWindow(data.id, { toggle });
         });
+
+        if (data.type === 'comment') {
+            element.addEventListener('pointerdown', (e) => {
+                if (e.target.closest('.marker-window-content')) return;
+                startWindowDrag(e);
+            });
+        }
 
         element.addEventListener('pointerup', e => {
             if (!clickStart) return;
@@ -232,35 +283,7 @@ export class WindowFactory {
         // Header drag
         const header = element.querySelector('.marker-window-header');
 
-        header.addEventListener('pointerdown', (e) => {
-            if (e.button !== 0) return;
-            if (e.target.closest('.marker-window-close')) return;
-
-            const titleInput = e.target.closest('.marker-window-title');
-
-            if (titleInput && titleInput.readOnly === false) return;
-            if (this.board.missionView?.isActive()) return;
-
-            if (!titleInput) {
-                e.preventDefault();
-            }
-        
-            else if (titleInput.readOnly) {
-                titleInput.blur();
-            }
-
-            this.windowManager.bringToFront(data.id);
-            this.windowManager.setActiveWindow(data.id);
-
-            const coords = this.windowManager.getCanvasCoords(e);
-
-            this.windowManager.drag.start(
-                data.id,
-                coords,
-                element
-            );
-
-        });
+        header.addEventListener('pointerdown', startWindowDrag);
 
         header.addEventListener('contextmenu', (e) => {
             if (data.type === 'comment') return;

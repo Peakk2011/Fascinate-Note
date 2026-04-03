@@ -13,9 +13,14 @@ export class MissionView {
         this.onOpenNote = onOpenNote;
         
         this.overlay = null;
+        this.mask = null;
         this.handleOverlayPointerDown = null;
         this.handleLayerPointerDown = null;
         this.isExiting = false;
+        this.minimizedPanel = null;
+        this.minimizedPanelAbort = null;
+        this.minimizedSelectionIds = new Set();
+        this.isShiftSelecting = false;
         this.layout = new MissionLayout(this);
         this.drag = new MissionDrag(this);
     }
@@ -63,22 +68,32 @@ export class MissionView {
             updateViewTransform();
         }
         updateState({ isMissionActive: true });
+        this.board.updateMissionInfoText?.();
         this.board.missionInfo?.classList.add('is-visible');
         
         this.overlay = document.createElement('div');
         this.overlay.className = 'marker-mission-overlay';
         this.container.insertBefore(this.overlay, this.layer);
-        
+
         const visible = this.board.getVisibleWindows().filter(w => this.windowManager.windowMap.has(w.id));
-        
-        if (visible.length === 0) {
+        const minimized = this.board.getMinimizedWindows();
+
+        this.mask = document.createElement('div');
+        this.mask.className = 'marker-mission-mask';
+        this.mask.classList.toggle('is-hidden', minimized.length <= 1);
+        this.container.insertBefore(this.mask, this.layer);
+
+        if (visible.length === 0 && minimized.length === 0) {
             this.cleanup();
             return;
         }
 
         this.board.setBottomBarHidden?.(true);
         
-        this.layout.layoutWindows(visible);
+        if (visible.length > 0) {
+            this.layout.layoutWindows(visible);
+        }
+        this.renderMinimizedPanel(minimized);
         
         this.handleOverlayPointerDown = (e) => {
             if (e.target === this.overlay) {
@@ -116,6 +131,17 @@ export class MissionView {
         
         const visible = this.board.getVisibleWindows().filter(w => this.windowManager.windowMap.has(w.id));
         let pending = visible.length;
+
+        if (this.minimizedPanel) {
+            pending += 1;
+            this.minimizedPanel.classList.add('is-leaving');
+            setTimeout(() => {
+                if (--pending === 0) {
+                    this.cleanup();
+                    onDone?.();
+                }
+            }, 280);
+        }
         
         if (pending === 0) {
             this.cleanup();
@@ -171,10 +197,141 @@ export class MissionView {
             this.overlay.remove();
             this.overlay = null;
         }
+        this.mask?.remove();
+        this.mask = null;
+        this.minimizedPanelAbort?.abort();
+        this.minimizedPanelAbort = null;
+        this.minimizedSelectionIds.clear();
+        this.isShiftSelecting = false;
+        this.minimizedPanel?.remove();
+        this.minimizedPanel = null;
         updateState({ isMissionActive: false });
         this.board.missionInfo?.classList.remove('is-visible');
         this.board.setBottomBarHidden?.(false);
         this.isExiting = false;
+    }
+
+    renderMinimizedPanel(minimized) {
+        this.minimizedPanel?.remove();
+        this.minimizedPanel = null;
+
+        if (!minimized.length) return;
+
+        const panel = document.createElement('div');
+        panel.className = 'marker-minimized-panel';
+        panel.innerHTML = `
+            <div class="marker-minimized-title">Minimized</div>
+            <div class="marker-minimized-list"></div>
+        `;
+
+        const list = panel.querySelector('.marker-minimized-list');
+        panel.classList.toggle('is-single-item', minimized.length <= 1);
+        this.minimizedPanelAbort?.abort();
+        this.minimizedPanelAbort = new AbortController();
+        const { signal } = this.minimizedPanelAbort;
+
+        panel.addEventListener('wheel', (e) => {
+            e.stopPropagation();
+        }, { passive: false, signal });
+
+        list?.addEventListener('wheel', (e) => {
+            if (!this.isShiftSelecting && !e.shiftKey) return;
+
+            const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+            if (delta === 0) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+            list.scrollTop += delta;
+        }, { passive: false, signal });
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key !== 'Shift') return;
+            this.isShiftSelecting = true;
+            panel.classList.add('is-multi-selecting');
+        }, { signal });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key !== 'Shift') return;
+            const restoreIds = [...this.minimizedSelectionIds];
+            this.isShiftSelecting = false;
+            panel.classList.remove('is-multi-selecting');
+
+            if (!restoreIds.length) return;
+
+            this.minimizedSelectionIds.clear();
+            panel.querySelectorAll('.marker-minimized-item.is-selected').forEach(item => {
+                item.classList.remove('is-selected');
+            });
+            this.windowManager.restoreWindowsByIds(restoreIds);
+        }, { signal });
+
+        minimized.forEach(win => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'marker-minimized-item';
+            item.dataset.windowId = win.id;
+            item.innerHTML = `
+                <span class="marker-minimized-item-title">${win.title || 'Untitled'}</span>
+                <span class="marker-minimized-item-state">minimized</span>
+            `;
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (e.shiftKey || this.isShiftSelecting) {
+                    if (this.minimizedSelectionIds.has(win.id)) {
+                        this.minimizedSelectionIds.delete(win.id);
+                        item.classList.remove('is-selected');
+                    } else {
+                        this.minimizedSelectionIds.add(win.id);
+                        item.classList.add('is-selected');
+                    }
+                    return;
+                }
+                this.windowManager.restoreWindowById(win.id);
+            });
+            list?.appendChild(item);
+        });
+
+        this.container.appendChild(panel);
+        this.minimizedPanel = panel;
+        this.setupMinimizedPanelPerspective(panel, list, signal);
+    }
+
+    setupMinimizedPanelPerspective(panel, list, signal) {
+        if (!panel || !list) return;
+
+        let frame = null;
+        const update = () => {
+            frame = null;
+            const panelRect = panel.getBoundingClientRect();
+            const panelCenterY = panelRect.top + (panelRect.height * 0.5);
+            const range = Math.max(panelRect.height * 0.5, 1);
+            const items = list.querySelectorAll('.marker-minimized-item');
+
+            items.forEach((item, index) => {
+                if (index === 0) {
+                    item.style.setProperty('--marker-minimized-item-scale', '1');
+                    return;
+                }
+
+                const rect = item.getBoundingClientRect();
+                const itemCenterY = rect.top + (rect.height * 0.5);
+                const distance = Math.abs(itemCenterY - panelCenterY);
+                const ratio = Math.min(distance / range, 1);
+                const scale = 1 - (ratio * 0.1);
+                item.style.setProperty('--marker-minimized-item-scale', scale.toFixed(3));
+            });
+        };
+
+        const scheduleUpdate = () => {
+            if (frame !== null) return;
+            frame = requestAnimationFrame(update);
+        };
+
+        list.addEventListener('scroll', scheduleUpdate, { passive: true, signal });
+        window.addEventListener('resize', scheduleUpdate, { passive: true, signal });
+        requestAnimationFrame(update);
     }
     
     destroy() {

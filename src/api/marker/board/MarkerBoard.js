@@ -98,6 +98,7 @@ export class MarkerBoard {
         this.windowManager.rebuildWindows();
         this.groupManager.updateToolbarGroups();
         this.applyVisibility();
+        this.updateMissionControlStatus();
 
         // Save initial state
         persist(this.windows, this.groups, this.activeGroupId);
@@ -147,6 +148,7 @@ export class MarkerBoard {
                         <path d="M18 17H6C5.44772 17 5 17.4477 5 18C5 18.5523 5.44772 19 6 19H18C18.5523 19 19 18.5523 19 18C19 17.4477 18.5523 17 18 17Z" fill="currentColor"/>
                     </svg>
                 </div>
+                <span class="marker-toolbar-status" aria-hidden="true"></span>
             </button>
         `;
         this.container.appendChild(this.bottomBar);
@@ -158,7 +160,7 @@ export class MarkerBoard {
 
         this.missionInfo = document.createElement('div');
         this.missionInfo.className = 'marker-mission-info';
-        this.missionInfo.textContent = 'Drag the windows to top to close and press ESC to exit';
+        this.missionInfo.textContent = 'Drag ↑ to close';
         this.container.appendChild(this.missionInfo);
     }
 
@@ -225,6 +227,10 @@ export class MarkerBoard {
         if (btn.dataset.action === 'clear-all') {
             this.clearAllWindows();
         } else if (btn.dataset.action === 'mission-view') {
+            if (!this.hasMissionContent()) {
+                this.shakeBottomBar();
+                return;
+            }
             this.missionView.toggle();
         }
     }
@@ -333,6 +339,149 @@ export class MarkerBoard {
         this.bottomBar.classList.toggle('is-hidden', hidden);
     }
 
+    getMissionControlButton() {
+        return this.bottomBar?.querySelector('[data-action="mission-view"]') || null;
+    }
+
+    getMinimizedWindows() {
+        const scoped = this.activeGroupId === null
+            ? this.windows
+            : this.windows.filter(w => w.groupId === this.activeGroupId);
+        return scoped.filter(w => w.isMinimized);
+    }
+
+    updateMissionControlStatus() {
+        const status = this.getMissionControlButton()?.querySelector('.marker-toolbar-status');
+        if (!status) return;
+        const count = this.getMinimizedWindows().length;
+        status.textContent = count > 0 ? `${count}` : '';
+        status.classList.toggle('is-visible', count > 0);
+    }
+
+    hasMissionContent() {
+        return this.getVisibleWindows().length > 0 || this.getMinimizedWindows().length > 0;
+    }
+
+    updateMissionInfoText() {
+        if (!this.missionInfo) return;
+        const visibleCount = this.getVisibleWindows().length;
+        const minimizedCount = this.getMinimizedWindows().length;
+
+        if (visibleCount === 0 && minimizedCount > 0) {
+            this.missionInfo.textContent = 'Click below to restore';
+            return;
+        }
+
+        this.missionInfo.textContent = 'Drag ↑ to close';
+    }
+
+    pulseBottomBar(mode = 'minimize') {
+        if (!this.bottomBar) return;
+        this.bottomBar.classList.remove('is-minimize-reacting', 'is-restore-reacting', 'is-denied');
+        
+        void this.bottomBar.offsetWidth;
+        this.bottomBar.classList.add(mode === 'restore' ? 'is-restore-reacting' : 'is-minimize-reacting');
+        
+        clearTimeout(this.bottomBarPulseTimeout);
+        
+        this.bottomBarPulseTimeout = setTimeout(() => {
+            this.bottomBar?.classList.remove('is-minimize-reacting', 'is-restore-reacting');
+        }, 745);
+    }
+
+    shakeBottomBar() {
+        if (!this.bottomBar) return;
+        this.bottomBar.classList.remove('is-minimize-reacting', 'is-restore-reacting', 'is-denied');
+        void this.bottomBar.offsetWidth;
+        this.bottomBar.classList.add('is-denied');
+        clearTimeout(this.bottomBarShakeTimeout);
+        this.bottomBarShakeTimeout = setTimeout(() => {
+            this.bottomBar?.classList.remove('is-denied');
+        }, 420);
+    }
+
+    animateWindowMinimize(win, element) {
+        const target = this.getMissionControlButton();
+        if (!target || !element) {
+            this.pulseBottomBar('minimize');
+            return Promise.resolve();
+        }
+
+        const sourceRect = element.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const animationMs = 520;
+        const actions = element.querySelector('.marker-window-actions');
+        const ghost = element.cloneNode(true);
+        ghost.classList.add('marker-window-transition-ghost', 'is-minimizing');
+
+        ghost.style.left = `${sourceRect.left}px`;
+        ghost.style.top = `${sourceRect.top}px`;
+        ghost.style.width = `${sourceRect.width}px`;
+        ghost.style.height = `${sourceRect.height}px`;
+        ghost.style.transition = `
+            left ${animationMs}ms cubic-bezier(0.18, 0.88, 0.24, 1),
+            top ${animationMs}ms cubic-bezier(0.18, 0.88, 0.24, 1),
+            scale ${animationMs}ms cubic-bezier(0.18, 0.88, 0.24, 1),
+            opacity 150ms ease ${Math.round(animationMs * 0.68)}ms,
+            filter ${Math.round(animationMs * 0.88)}ms ease
+        `;
+        
+        document.body.appendChild(ghost);
+        actions?.classList.add('is-minimizing');
+        element.style.visibility = 'hidden';
+
+        this.pulseBottomBar('minimize');
+
+        return new Promise(resolve => {
+            requestAnimationFrame(() => {
+                ghost.style.left = `${targetRect.left + ((targetRect.width - sourceRect.width) * 0.5)}px`;
+                ghost.style.top = `${targetRect.top + ((targetRect.height - sourceRect.height) * 0.5) + 1}px`;
+                ghost.style.scale = '0.12';
+                ghost.style.opacity = '0';
+                ghost.style.filter = 'blur(18px)';
+            });
+
+            window.setTimeout(() => {
+                actions?.classList.remove('is-minimizing');
+                ghost.remove();
+                resolve();
+            }, animationMs + 40);
+        });
+    }
+
+    animateWindowRestore(win, element) {
+        if (!element) return;
+
+        const animationMs = 340;
+
+        element.classList.add('is-restoring');
+        element.style.removeProperty('visibility');
+        element.style.opacity = '0';
+        element.style.filter = 'blur(24px)';
+        element.style.scale = '0.72';
+        element.style.willChange = 'opacity, filter, scale';
+
+        this.pulseBottomBar('restore');
+
+        void element.offsetWidth;
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                element.style.opacity = '1';
+                element.style.filter = 'blur(0)';
+                element.style.scale = '1';
+            });
+        });
+
+        window.setTimeout(() => {
+            element.classList.remove('is-restoring');
+            element.style.removeProperty('opacity');
+            element.style.removeProperty('filter');
+            element.style.removeProperty('scale');
+            element.style.removeProperty('will-change');
+        }, animationMs);
+    }
+
     /**
      * Handles keydown events.
      * @param {KeyboardEvent} e - The keydown event.
@@ -365,6 +514,10 @@ export class MarkerBoard {
 
             if (e.code === 'Digit3' || e.code === 'Digit4' || e.code === 'Digit5') {
                 e.preventDefault();
+                if (!this.hasMissionContent()) {
+                    this.shakeBottomBar();
+                    return;
+                }
                 this.missionView.toggle();
                 return;
             }
@@ -487,6 +640,7 @@ export class MarkerBoard {
         this.windowManager.windowMap.forEach((el, id) => {
             el.style.display = visible.has(id) ? '' : 'none';
         });
+        this.updateMissionControlStatus();
     }
 
     /**
@@ -494,8 +648,10 @@ export class MarkerBoard {
      * @returns {Array<object>} The visible windows.
      */
     getVisibleWindows() {
-        if (this.activeGroupId === null) return this.windows;
-        return this.windows.filter(w => w.groupId === this.activeGroupId);
+        const scoped = this.activeGroupId === null
+            ? this.windows
+            : this.windows.filter(w => w.groupId === this.activeGroupId);
+        return scoped.filter(w => !w.isMinimized);
     }
 
     /**
@@ -546,6 +702,8 @@ export class MarkerBoard {
     destroy() {
         window.removeEventListener('pointerdown', this.handleOutsidePointerDown);
         this.bottomBar.removeEventListener('click', this.handleBottomBarClickBound);
+        clearTimeout(this.bottomBarPulseTimeout);
+        clearTimeout(this.bottomBarShakeTimeout);
         this.bottomBar.remove();
         this.zoomIndicator?.remove();
         this.missionInfo?.remove();

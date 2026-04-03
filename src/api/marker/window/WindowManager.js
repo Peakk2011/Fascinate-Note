@@ -19,6 +19,7 @@ export class WindowManager {
         
         this.windowMap = new Map();
         this.closingIds = new Set();
+        this.minimizingIds = new Set();
         
         this.drag = new WindowDrag(this);
         this.resize = new WindowResize(this);
@@ -41,6 +42,7 @@ export class WindowManager {
         this.windows.forEach(win => this.sync.syncWindowElement(win));
         this.selection.updateSelectionStyles();
         this.board.applyVisibility();
+        this.board.updateMissionControlStatus?.();
     }
     
     bringToFront(id) {
@@ -102,11 +104,13 @@ export class WindowManager {
         
         if (this.windows.length === 0) {
             persist(this.windows, this.board.groups, this.board.activeGroupId);
+            this.board.updateMissionControlStatus?.();
             setTimeout(() => this.board.onReturnToEditor?.(), 220);
             return;
         }
         
         persist(this.windows, this.board.groups, this.board.activeGroupId);
+        this.board.updateMissionControlStatus?.();
     }
     
     removeWindowImmediate(id) {
@@ -122,6 +126,7 @@ export class WindowManager {
         this.windowMap.delete(id);
         
         if (el) el.remove();
+        this.board.updateMissionControlStatus?.();
     }
     
     setActiveWindow(id) {
@@ -144,6 +149,95 @@ export class WindowManager {
     
     clearSelection() {
         this.selection.clearSelection();
+    }
+
+    async minimizeWindowById(id) {
+        if (this.minimizingIds.has(id) || this.closingIds.has(id)) return;
+
+        const win = this.windows.find(w => w.id === id);
+        const el = this.windowMap.get(id);
+        if (!win || !el || win.isMinimized) return;
+
+        this.minimizingIds.add(id);
+        this.selection.selectedIds.delete(id);
+
+        if (this.selection.activeWindowId === id) {
+            this.setActiveWindow(null);
+        }
+
+        this.selection.updateSelectionStyles();
+
+        await this.board.animateWindowMinimize?.(win, el);
+
+        win.isMinimized = true;
+        this.board.applyVisibility();
+        this.board.updateMissionControlStatus?.();
+        persist(this.windows, this.board.groups, this.board.activeGroupId);
+        this.minimizingIds.delete(id);
+    }
+
+    restoreWindowById(id) {
+        const win = this.windows.find(w => w.id === id);
+        if (!win || !win.isMinimized) return;
+
+        const finalizeRestore = () => {
+            win.isMinimized = false;
+            const el = this.sync.syncWindowElement(win);
+            this.board.applyVisibility();
+            this.bringToFront(id);
+            this.selectWindow(id);
+            this.board.updateMissionControlStatus?.();
+            persist(this.windows, this.board.groups, this.board.activeGroupId);
+            this.board.animateWindowRestore?.(win, el);
+        };
+
+        if (this.board.missionView?.isActive()) {
+            this.board.missionView.exit(finalizeRestore);
+            return;
+        }
+
+        finalizeRestore();
+    }
+
+    restoreWindowsByIds(ids = []) {
+        const restoreIds = ids.filter(id => {
+            const win = this.windows.find(w => w.id === id);
+            return !!win?.isMinimized;
+        });
+        if (!restoreIds.length) return;
+
+        const finalizeRestore = () => {
+            let lastEl = null;
+
+            restoreIds.forEach(id => {
+                const win = this.windows.find(w => w.id === id);
+                if (!win) return;
+
+                win.isMinimized = false;
+                const el = this.sync.syncWindowElement(win);
+                this.bringToFront(id);
+                this.board.animateWindowRestore?.(win, el);
+                lastEl = el;
+            });
+
+            this.board.applyVisibility();
+
+            const lastId = restoreIds[restoreIds.length - 1];
+            if (lastId) {
+                this.selectWindow(lastId);
+            }
+
+            this.board.updateMissionControlStatus?.();
+            persist(this.windows, this.board.groups, this.board.activeGroupId);
+            return lastEl;
+        };
+
+        if (this.board.missionView?.isActive()) {
+            this.board.missionView.exit(finalizeRestore);
+            return;
+        }
+
+        finalizeRestore();
     }
     
     createWindowData(options) {
