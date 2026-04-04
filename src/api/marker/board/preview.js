@@ -2,6 +2,10 @@ import { createNote, getNoteById, getCurrentNoteId } from '../sharedNoteStore.js
 import { htmlToText, truncateText } from './utils.js';
 import { getState } from '../utils/config.js';
 
+const logPreviewDebug = (message, details = {}) => {
+    // console.log('[MarkerPreview]', message, details);
+};
+
 const getLegacyMarkerNoteById = (id) => {
     if (!id) return null;
     try {
@@ -20,10 +24,19 @@ const getLegacyMarkerNoteById = (id) => {
  * @param {object} win - The window object to refresh.
  */
 export const refreshWindowPreview = (win) => {
-    if (win.type === 'comment') return;
+    if (win.type === 'comment') {
+        logPreviewDebug('Skipped preview refresh for comment window', {
+            windowId: win.id
+        });
+        return;
+    }
     if (!win.noteId) {
         const note = createNote({ title: win.title || 'New Note' });
         win.noteId = note?.id ?? null;
+        logPreviewDebug('Created missing note for preview window', {
+            windowId: win.id,
+            noteId: win.noteId
+        });
     }
     if (!win.noteId) return;
 
@@ -37,11 +50,21 @@ export const refreshWindowPreview = (win) => {
         if (!fallback?.id) return;
         win.noteId = fallback.id;
         note = fallback;
+        logPreviewDebug('Recovered preview note from legacy/fallback data', {
+            windowId: win.id,
+            noteId: win.noteId
+        });
     }
 
     if (note) {
         win.title = note.title || win.title;
         win.content = truncateText(htmlToText(note.html), 260);
+        logPreviewDebug('Preview refreshed', {
+            windowId: win.id,
+            noteId: win.noteId,
+            title: win.title,
+            contentLength: win.content.length
+        });
     }
 };
 

@@ -20,6 +20,13 @@ import { updateViewTransform } from '../core/canvas.js';
 const ANIMATION_EASING = 0.15;              // Smoothing factor (0-1, higher = faster)
 const EPSILON = 0.001;                      // Threshold for stopping animation
 const HALF = 0.5;
+const LOD_DIRECT_SCALE_THRESHOLD = 0.45;
+const LOD_DIRECT_TARGET_SCALE = 1;
+
+const logZoomDebug = () => {
+    //ไม่ได้ใช้งาน
+    // console.log('[MarkerZoom]', message, details);
+};
 
 /**
  * Retrieve or initialize per-workspace zoom state.
@@ -44,6 +51,94 @@ const getZoomState = () => {
         };
     }
     return state.zoomState;
+};
+
+const tryAutoDirectWindowZoom = (centerX, centerY) => {
+    const state = getState();
+    if (!state) {
+        logZoomDebug('Auto-direct skipped: missing state');
+        return false;
+    }
+    if (state.isMissionActive) {
+        logZoomDebug('Auto-direct skipped: mission active', { scale: state.scale });
+        return false;
+    }
+    if (state.scale > LOD_DIRECT_SCALE_THRESHOLD) {
+        logZoomDebug('Auto-direct skipped: scale already above LOD threshold', {
+            scale: state.scale,
+            threshold: LOD_DIRECT_SCALE_THRESHOLD
+        });
+        return false;
+    }
+    if (!state.markerLayer?.classList.contains('is-lod')) {
+        logZoomDebug('Auto-direct skipped: markerLayer is not in LOD mode', {
+            scale: state.scale
+        });
+        return false;
+    }
+
+    const boardX = (centerX - state.panX) / state.scale;
+    const boardY = (centerY - state.panY) / state.scale;
+    const windowEls = [...state.markerLayer.querySelectorAll('.marker-window')];
+
+    logZoomDebug('Auto-direct inspecting zoom point', {
+        centerX,
+        centerY,
+        boardX,
+        boardY,
+        totalWindows: windowEls.length,
+        scale: state.scale
+    });
+    
+    const hitWindows = windowEls.filter((windowEl) => {
+        if (windowEl.style.display === 'none') return false;
+        if (windowEl.classList.contains('is-comment-stickie')) return false;
+
+        const x = parseFloat(windowEl.style.left) || 0;
+        const y = parseFloat(windowEl.style.top) || 0;
+        const width = parseFloat(windowEl.style.width) || 0;
+        const height = parseFloat(windowEl.style.height) || 0;
+
+        return (
+            boardX >= x &&
+            boardX <= (x + width) &&
+            boardY >= y &&
+            boardY <= (y + height)
+        );
+    });
+    const windowEl = hitWindows.at(-1);
+
+    if (!windowEl) {
+        logZoomDebug('Auto-direct found no window at zoom point', {
+            boardX,
+            boardY,
+            hitCount: hitWindows.length
+        });
+        return false;
+    }
+
+    const win = {
+        x: parseFloat(windowEl.style.left) || 0,
+        y: parseFloat(windowEl.style.top) || 0,
+        width: parseFloat(windowEl.style.width) || windowEl.offsetWidth || 0,
+        height: parseFloat(windowEl.style.height) || windowEl.offsetHeight || 0
+    };
+
+    if (win.width <= 0 || win.height <= 0) {
+        logZoomDebug('Auto-direct rejected invalid window bounds', {
+            windowId: windowEl.dataset.id || null,
+            ...win
+        });
+        return false;
+    }
+
+    logZoomDebug('Auto-direct focusing window', {
+        windowId: windowEl.dataset.id || null,
+        targetScale: LOD_DIRECT_TARGET_SCALE,
+        ...win
+    });
+    focusWindowAtScale(win, LOD_DIRECT_TARGET_SCALE);
+    return true;
 };
 
 /**
@@ -74,8 +169,23 @@ export const handleWheel = (e) => {
                 config.MIN_SCALE,
                 Math.min(config.MAX_SCALE, state.scale * delta)
             );
+            logZoomDebug('Wheel zoom requested', {
+                fromScale: state.scale,
+                toScale: newScale,
+                deltaY: e.deltaY,
+                mouseX,
+                mouseY
+            });
 
             if (newScale !== state.scale) {
+                if (newScale > state.scale && tryAutoDirectWindowZoom(mouseX, mouseY)) {
+                    logZoomDebug('Wheel zoom replaced by auto-direct focus', {
+                        fromScale: state.scale,
+                        attemptedScale: newScale
+                    });
+                    return;
+                }
+
                 const scaleDiff = newScale - state.scale;
                 const panXDelta = (mouseX - state.panX) * scaleDiff / state.scale;
                 const panYDelta = (mouseY - state.panY) * scaleDiff / state.scale;
@@ -126,6 +236,15 @@ export const focusWindowAtScale = (win, targetScale = 1) => {
         const centerY = win.y + (win.height * HALF);
         const targetPanX = (rect.width * HALF) - (centerX * clampedScale);
         const targetPanY = (rect.height * HALF) - (centerY * clampedScale);
+        logZoomDebug('focusWindowAtScale called', {
+            windowX: win.x,
+            windowY: win.y,
+            windowWidth: win.width,
+            windowHeight: win.height,
+            targetScale: clampedScale,
+            targetPanX,
+            targetPanY
+        });
         animateZoom(clampedScale, targetPanX, targetPanY, rect);
     } catch (error) {
         console.error('Error focusing window:', error);
@@ -150,6 +269,14 @@ const animateZoom = (targetScale, targetPanX, targetPanY, rect) => {
     try {
         const state = getState();
         const zs = getZoomState();
+        logZoomDebug('animateZoom scheduled', {
+            currentScale: state.scale,
+            currentPanX: state.panX,
+            currentPanY: state.panY,
+            targetScale,
+            targetPanX,
+            targetPanY
+        });
 
         // always sync current values from state so that if another
         // animation was in progress we restart the easing from the
@@ -269,6 +396,12 @@ const startAnimation = () => {
                     state.scale = zs.targetScale;
                     state.panX = zs.targetPanX;
                     state.panY = zs.targetPanY;
+
+                    logZoomDebug('animateZoom completed', {
+                        finalScale: state.scale,
+                        finalPanX: state.panX,
+                        finalPanY: state.panY
+                    });
 
                     constrainPan();
                     updateViewTransform();
@@ -430,6 +563,22 @@ const zoom = (delta, centerX, centerY) => {
         );
 
         if (newScale === state.scale) return;
+
+        // logZoomDebug('Button zoom requested', {
+        //     fromScale: state.scale,
+        //     toScale: newScale,
+        //     delta,
+        //     centerX,
+        //     centerY
+        // });
+
+        if (newScale > state.scale && tryAutoDirectWindowZoom(centerX, centerY)) {
+            // logZoomDebug('Button zoom replaced by auto-direct focus', {
+            //     fromScale: state.scale,
+            //     attemptedScale: newScale
+            // });
+            return;
+        }
 
         const scaleDiff = newScale - state.scale;
         const panXDelta = (centerX - state.panX) * scaleDiff / state.scale;

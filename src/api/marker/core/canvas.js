@@ -13,6 +13,69 @@ const POSITION_ABSOLUTE = 'absolute';
 const POINTER_EVENTS_NONE = 'none';
 const LINE_CAP_ROUND = 'round';
 const LINE_JOIN_ROUND = 'round';
+const MARKER_RENDER_SCALE_STEPS = Object.freeze([1, 1.25, 1.85, 2.2, 2.5, 3.37, 4.55, 6.14, 11.18]);
+
+const formatRenderTierLabel = (tier) => `${Math.round(tier * 100)}%`;
+
+const getMarkerRenderTier = (scale) => {
+    let tier = MARKER_RENDER_SCALE_STEPS[0];
+    for (const step of MARKER_RENDER_SCALE_STEPS) {
+        if (scale >= step) {
+            tier = step;
+            continue;
+        }
+        break;
+    }
+    return tier;
+};
+
+const refreshMarkerRenderTier = (markerLayer, tier, scale) => {
+    const windowEls = [...markerLayer.querySelectorAll('.marker-window')];
+    if (!windowEls.length) {
+        console.log('[MarkerRenderTier]', 'Render tier refresh skipped: no windows', {
+            scale,
+            tier,
+            tierLabel: formatRenderTierLabel(tier)
+        });
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+    let visibleCount = 0;
+
+    windowEls.forEach((windowEl, index) => {
+        const isVisible = windowEl.style.display !== 'none';
+        if (isVisible) {
+            visibleCount += 1;
+        }
+
+        windowEl.dataset.renderTier = tier.toFixed(2);
+        windowEl.style.setProperty('--marker-render-tier', `${tier}`);
+        fragment.appendChild(windowEl);
+
+        if (isVisible) {
+            console.log('[MarkerRenderTier]', 'Window refreshed for zoom tier', {
+                index,
+                windowId: windowEl.dataset.id || null,
+                scale,
+                tier,
+                tierLabel: formatRenderTierLabel(tier),
+                action: 're-appended window to force Chromium to repaint the sharper DOM at this tier'
+            });
+        }
+    });
+
+    markerLayer.dataset.renderTier = tier.toFixed(2);
+    markerLayer.appendChild(fragment);
+
+    console.log('[MarkerRenderTier]', 'Render tier changed', {
+        scale,
+        tier,
+        tierLabel: formatRenderTierLabel(tier),
+        visibleWindows: visibleCount,
+        action: 're-appended all marker windows in DOM order after crossing a zoom clarity threshold'
+    });
+};
 
 /**
  * Sets up and configures all canvas elements
@@ -198,9 +261,25 @@ export const updateViewTransform = () => {
         svg.style.transform = transform;
 
         if (markerLayer) {
+            const isLod = scale <= 0.4 && !state.isMissionActive;
             markerLayer.style.transformOrigin = '0 0';
             markerLayer.style.transform = transform;
-            markerLayer.classList.toggle('is-lod', scale <= 0.4 && !state.isMissionActive);
+            markerLayer.classList.toggle('is-lod', isLod);
+            const renderTier = getMarkerRenderTier(scale);
+
+            if (!state.isMissionActive && state._markerLastRenderTier !== renderTier) {
+                refreshMarkerRenderTier(markerLayer, renderTier, scale);
+                state._markerLastRenderTier = renderTier;
+            }
+
+            if (state._markerLastLoggedLodState !== isLod) {
+                console.log('[MarkerLOD]', 'LOD mode changed', {
+                    isLod,
+                    scale,
+                    missionActive: state.isMissionActive
+                });
+                state._markerLastLoggedLodState = isLod;
+            }
         }
 
         if (markerZoomIndicator) {
