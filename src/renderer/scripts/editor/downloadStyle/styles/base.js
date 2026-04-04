@@ -19,7 +19,6 @@ export const base = `
 
     body {
         font-family: "Inter Tight", "Leelawadee UI", system-ui, sans-serif;
-        letter-spacing: ${designConfig.letterSpacing};
         line-height: ${designConfig.lineHeight};
         -webkit-font-smoothing: ${designConfig.fontSmoothingWebkit};
         -moz-osx-font-smoothing: ${designConfig.fontSmoothingMoz};
@@ -40,7 +39,6 @@ export const base = `
 
     div, p, span {
         font-family: "Inter Tight", "Leelawadee UI", system-ui, sans-serif;
-        letter-spacing: ${designConfig.letterSpacing};
     }
 
     h1, h2, h3, h4, h5, h6 {
