@@ -1,0 +1,86 @@
+.marker-toolbar {
+    position: absolute;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 24px;
+    background: var(--marker-toolbar-bg);
+    border: 1px solid var(--marker-toolbar-border);
+    box-shadow: var(--ctx-menu-shadow);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    z-index: 4;
+}
+
+.marker-toolbar-btn {
+    position: relative;
+    color: var(--theme-fg);
+    background: none;
+    border: none;
+    border-radius: 100vmax;
+    outline: none;
+    line-height: 0;
+    cursor: pointer;
+    padding: 4px;
+    transition: background-color 140ms ease, color 140ms ease;
+    border: solid var(--zoom-btn-border-width) transparent;
+}
+
+.marker-toolbar-btn:hover {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+    box-shadow: var(--theme-shadow);
+    border: solid var(--zoom-btn-border-width) var(--theme-border);
+}
+
+.marker-toolbar-status {
+    position: absolute;
+    top: 2px;
+    right: 0px;
+    min-width: 18px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+    font-family: var(--font-editor);
+    font-size: 12px;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+    opacity: 0;
+    scale: 0.7;
+    pointer-events: none;
+    transition: opacity 180ms ease, scale 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.marker-toolbar-status.is-visible {
+    opacity: 1;
+    scale: 1;
+}
+
+.marker-zoom-indicator {
+    position: absolute;
+    top: 48px;
+    right: 14px;
+    z-index: 5;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--marker-toolbar-bg);
+    border: 1px solid var(--marker-toolbar-border);
+    color: var(--theme-fg);
+    font-family: var(--font-editor);
+    font-size: 12px;
+    font-weight: 550;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    box-shadow: var(--ctx-menu-shadow);
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+}

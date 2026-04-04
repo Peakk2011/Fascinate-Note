@@ -15,8 +15,34 @@
 @import url("./components/table.css");
 @import url("./components/ui-controls.css");
 @import url("./components/link-card.css");
-@import url("./components/marker.css");
 
+/* Marker */
+@import './marker/window/animations.css';
+@import './marker/mission/animations.css';
+@import './marker/toolbar/animations.css';
+
+/* workspace */
+@import './marker/workspace/base.css';
+@import './marker/workspace/layer.css';
+
+/* window */
+@import './marker/window/base.css';
+@import './marker/window/header.css';
+@import './marker/window/content.css';
+@import './marker/window/states.css';
+
+/* mission */
+@import './marker/mission/overlay.css';
+@import './marker/mission/minimized-panel.css';
+
+/* toolbar */
+@import './marker/toolbar/base.css';
+@import './marker/toolbar/bottombar.css';
+
+/* group */
+@import './marker/group/trigger.css';
+@import './marker/group/menu.css';
+@import './marker/group/input.css';
 
 /* --- Global Animations --- */
 

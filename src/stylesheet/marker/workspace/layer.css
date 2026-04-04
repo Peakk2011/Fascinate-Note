@@ -1,0 +1,41 @@
+.marker-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    -webkit-user-select: none;
+    user-select: none;
+    z-index: 2;
+}
+
+.marker-layer.is-lod .marker-window {
+    background: transparent;
+    outline: none;
+    box-shadow: none;
+}
+
+.marker-layer.is-lod .marker-window-header,
+.marker-layer.is-lod .marker-window-content,
+.marker-layer.is-lod .marker-window-resize {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.marker-layer.is-lod .marker-window-lod {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 0s;
+    pointer-events: auto;
+}
+
+.marker-layer.space-pan-active,
+.marker-layer.space-pan-active * {
+    cursor: grab !important;
+}
+
+.marker-layer.space-pan-grabbing,
+.marker-layer.space-pan-grabbing * {
+    cursor: grabbing !important;
+}

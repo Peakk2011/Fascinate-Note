@@ -1,0 +1,55 @@
+.marker-window {
+    position: absolute;
+    border-radius: 10px;
+    background-color: var(--theme-model);
+    backdrop-filter: blur(12px) saturate(150%);
+    color: var(--theme-fg);
+    outline: 1.5px solid var(--theme-model-border);
+    box-shadow: var(--theme-shadow);
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    min-height: 100px;
+    transition: background-color 180ms ease, box-shadow 180ms ease, outline-color 180ms ease, opacity 210ms ease, filter 210ms ease, scale 340ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.marker-window.is-current {
+    border-color: var(--image-border-color);
+}
+
+.marker-window-ghost {
+    pointer-events: none;
+    background: transparent;
+    border: 2px dashed var(--marker-ghost-border);
+    box-shadow: none;
+}
+
+.marker-window-resize {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 18px;
+    height: 18px;
+    cursor: se-resize;
+    border-bottom-right-radius: 10px;
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.marker-window-transition-ghost {
+    position: fixed;
+    margin: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transform-origin: center center;
+    scale: 1;
+    opacity: 1;
+    filter: blur(0);
+    transition:
+        left 520ms cubic-bezier(0.18, 0.88, 0.24, 1),
+        top 520ms cubic-bezier(0.18, 0.88, 0.24, 1),
+        scale 520ms cubic-bezier(0.86, 0, 0.07, 1),
+        opacity 150ms ease 360ms,
+        filter 460ms ease;
+}

@@ -1,0 +1,69 @@
+.marker-mission-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--marker-mission-bg);
+    z-index: 1;
+    pointer-events: auto;
+}
+
+.marker-mission-mask {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100px;
+    pointer-events: none;
+    background: linear-gradient(to bottom, rgba(15, 15, 15, 0) 0%, rgba(15, 15, 15, 0.25) 40%, var(--theme-bg) 100%);
+    z-index: 7;
+}
+
+@media (prefers-color-scheme: light) {
+    .marker-mission-mask {
+        display: none;
+    }
+}
+
+.marker-mission-mask.is-hidden {
+    display: none;
+}
+
+.marker-mission-info {
+    position: absolute;
+    top: 48px;
+    left: 50%;
+    z-index: 5;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--marker-toolbar-bg);
+    border: 1px solid var(--marker-toolbar-border);
+    color: var(--theme-fg);
+    font-family: var(--font-editor);
+    font-size: 12px;
+    font-weight: 550;
+    letter-spacing: -0.3px;
+    line-height: 1;
+    box-shadow: var(--ctx-menu-shadow);
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, -40px);
+    transition: opacity 100ms ease, transform 300ms cubic-bezier(0.2, 0, 0, 1), visibility 0s linear 220ms;
+}
+
+.marker-mission-info.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition: opacity 100ms ease, transform 300ms cubic-bezier(0.2, 0, 0, 1), visibility 0s linear 0s;
+}
+
+@media (max-width: 410px) {
+    .marker-mission-info {
+        width: fit-content;
+        text-align: center;
+        font-size: fit-content;
+        border-radius: 100vmax;
+    }
+}

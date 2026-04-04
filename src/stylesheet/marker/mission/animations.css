@@ -1,0 +1,21 @@
+@keyframes markerMinimizedPanelIn {
+    from {
+        bottom: -300px;
+    }
+
+    to {
+        bottom: 0;
+    }
+}
+
+@keyframes markerMinimizedPanelOut {
+    from {
+        bottom: var(--status-top);
+        opacity: 1;
+    }
+
+    to {
+        bottom: calc(var(--status-top) - 80px);
+        opacity: 0;
+    }
+}

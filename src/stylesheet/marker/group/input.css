@@ -1,0 +1,11 @@
+.marker-group-name-input {
+    border: 1px solid var(--marker-toolbar-border);
+    padding: 7px 12px;
+    border-radius: 14px;
+    background: var(--marker-toolbar-bg);
+    color: var(--theme-fg);
+    font-family: var(--font-text);
+    font-size: 12px;
+    outline: none;
+    width: 120px;
+}

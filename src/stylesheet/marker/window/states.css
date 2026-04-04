@@ -1,0 +1,125 @@
+.marker-window.is-mission .marker-window-resize {
+    display: none;
+}
+
+.marker-window.is-mission {
+    pointer-events: auto;
+    cursor: grab;
+    transition: all var(--transition);
+}
+
+.marker-window.is-mission:hover {
+    outline-color: var(--marker-ghost-border);
+    outline-width: 2px;
+    outline-style: solid;
+}
+
+.marker-window.is-mission .marker-window-header {
+    cursor: inherit;
+}
+
+.marker-window.is-mission .marker-window-minimize {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.marker-window.is-mission.is-mission-single {
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+}
+
+.marker-window.is-restoring {
+    transition:
+        background-color 180ms ease,
+        box-shadow 180ms ease,
+        outline-color 180ms ease,
+        opacity 230ms ease,
+        filter 280ms ease,
+        scale 340ms cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+.marker-window.is-comment-stickie {
+    background: #FEF597;
+    outline-color: #f0d56a;
+    border-radius: 0px;
+}
+
+.marker-window.is-comment-stickie .marker-window-header {
+    background: transparent;
+    height: 42px;
+    width: 100%;
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: 2;
+    margin: 0;
+    padding: 0 0px;
+    justify-content: flex-end;
+    cursor: grab;
+}
+
+.marker-window.is-comment-stickie .marker-window-title {
+    color: rgba(67, 46, 0, 0.72);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity: 1;
+    display: none;
+}
+
+.marker-window.is-comment-stickie .marker-window-group {
+    display: none;
+}
+
+.marker-window.is-comment-stickie .marker-window-actions {
+    margin-right: 0px;
+}
+
+.marker-window.is-comment-stickie .marker-window-content,
+.marker-window.is-comment-stickie .marker-window-content p,
+.marker-window.is-comment-stickie .marker-window-content div {
+    color: #4f3c05;
+    font-family: var(--font-display);
+    letter-spacing: -0.4px;
+    font-size: 14px;
+    line-height: 1.55;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.marker-window.is-comment-stickie .marker-window-content p,
+.marker-window.is-comment-stickie .marker-window-content div {
+    padding: 0;
+}
+
+.marker-window.is-comment-stickie .marker-window-content.is-placeholder::after {
+    color: rgba(79, 60, 5, 0.48);
+    opacity: 1;
+    font-size: 13px;
+    font-style: normal;
+}
+
+.marker-window.is-comment-stickie .marker-window-close {
+    font-size: 30px;
+    color: rgba(79, 60, 5, 0.58);
+    opacity: 1;
+    border-top-right-radius: 0;
+    transform: translate(0px, 0px);
+    background-color: #FEF597;
+}
+
+.marker-window.is-comment-stickie .marker-window-close:hover {
+    background-color: #cbc378;
+    color: #3c2c00;
+}
+
+.marker-window.is-comment-stickie .marker-window-minimize {
+    display: none;
+}
+
+.marker-window.is-comment-stickie .marker-window-resize {
+    width: 22px;
+    height: 22px;
+    border-bottom-right-radius: 18px;
+}

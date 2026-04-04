@@ -1,0 +1,134 @@
+.marker-minimized-panel {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: min(340px, calc(100vw - 24px));
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 22px;
+    z-index: 6;
+    animation: markerMinimizedPanelIn 600ms cubic-bezier(0.86, 0, 0.07, 1);
+    max-height: min(225px, calc(100vh - 80px));
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--theme-fg) 26%, transparent) transparent;
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+}
+
+.marker-minimized-panel.is-leaving {
+    animation: markerMinimizedPanelOut 280ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.marker-minimized-title {
+    color: var(--theme-fg);
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.marker-minimized-list {
+    display: flex;
+    flex-direction: column;
+    align-content: start;
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 6px;
+    overflow: visible;
+    padding: 6px 8px 6px 2px;
+    margin: -6px -8px -6px -2px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--theme-fg) 26%, transparent) transparent;
+}
+
+.marker-minimized-panel.is-single-item .marker-minimized-list {
+    overflow: hidden;
+    padding-right: 0;
+    scrollbar-width: none;
+}
+
+.marker-minimized-panel::-webkit-scrollbar,
+.marker-minimized-list::-webkit-scrollbar {
+    width: 10px;
+}
+
+.marker-minimized-panel.is-single-item .marker-minimized-list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.marker-minimized-panel::-webkit-scrollbar-track,
+.marker-minimized-list::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 999px;
+}
+
+.marker-minimized-panel::-webkit-scrollbar-thumb,
+.marker-minimized-list::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--theme-fg) 24%, transparent);
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+
+.marker-minimized-panel::-webkit-scrollbar-thumb:hover,
+.marker-minimized-list::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--theme-fg) 38%, transparent);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.marker-minimized-item {
+    --marker-minimized-item-scale: 1;
+    border: var(--zoom-btn-border-width) solid var(--marker-toolbar-border);
+    box-shadow: var(--ctx-menu-shadow);
+    outline: none;
+    border-radius: 16px;
+    background-color: var(--theme-model);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    color: var(--theme-fg);
+    text-align: left;
+    padding: 12px 14px;
+    cursor: pointer;
+    transform-origin: center center;
+    scale: var(--marker-minimized-item-scale);
+    transition: background-color 140ms ease, color 140ms ease, scale 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.marker-minimized-panel.is-multi-selecting .marker-minimized-item {
+    cursor: cell;
+}
+
+.marker-minimized-item.is-selected {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+    outline: 1px solid color-mix(in srgb, var(--theme-accent-text) 30%, transparent);
+}
+
+.marker-minimized-item:hover {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+}
+
+.marker-minimized-item-title,
+.marker-minimized-item-state {
+    display: block;
+}
+
+.marker-minimized-item-title {
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+}
+
+.marker-minimized-item-state {
+    margin-top: 4px;
+    font-family: var(--font-editor);
+    font-size: 12px;
+    opacity: 0.64;
+}

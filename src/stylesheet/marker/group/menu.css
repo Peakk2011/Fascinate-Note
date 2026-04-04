@@ -1,0 +1,79 @@
+.marker-group-menu {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 14px);
+    transform: translateX(-50%) translateY(4px);
+    min-width: 180px;
+    padding: 6px;
+    border-radius: var(--ctx-menu-radius);
+    background: var(--ctx-menu-bg);
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--theme-shadow);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 140ms ease, transform 140ms ease, visibility 0s linear 140ms;
+    z-index: 8;
+}
+
+.marker-group-control.is-open .marker-group-menu {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+    transition: opacity 140ms ease, transform 140ms ease, visibility 0s linear 0s;
+}
+
+.marker-group-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    border: none;
+    border-radius: var(--export-btn-border-radius);
+    background: transparent;
+    color: var(--theme-fg);
+    text-align: left;
+    font-family: var(--font-text);
+    font-size: var(--export-btn-font-size);
+    padding: 7px 10px;
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+
+.marker-group-option-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-weight: var(--export-btn-weight);
+    letter-spacing: var(--export-btn-letter-spacing);
+}
+
+.marker-group-delete {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 0;
+    transition: opacity 120ms ease, background-color 120ms ease;
+}
+
+.marker-group-delete:hover {
+    opacity: 1;
+    background: color-mix(in srgb, var(--theme-border) 65%, transparent);
+}
+
+.marker-group-option:hover,
+.marker-group-option.is-active {
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+}
