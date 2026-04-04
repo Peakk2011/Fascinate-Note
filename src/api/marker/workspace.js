@@ -94,16 +94,53 @@ export const createWorkspace = async (container, options = {}) => {
 
     container.addEventListener('pointermove', updateMousePos);
 
-    // middle-button dragging support
+    let spacePanActive = false;
     let middleDrag = null;
-    container.addEventListener('mousedown', (e) => {
-        if (e.button === 1) {
+    const updatePanCursor = () => {
+        if (!board?.layer) return;
+        const isDragging = Boolean(middleDrag);
+        board.layer.classList.toggle('space-pan-active', spacePanActive && !isDragging);
+        board.layer.classList.toggle('space-pan-grabbing', isDragging);
+    };
+
+    const onSpaceKeyDown = (e) => {
+        if (e.code !== 'Space' || e.repeat) return;
+        if (e.target instanceof HTMLElement && (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName) || e.target.isContentEditable)) {
+            return;
+        }
+        spacePanActive = true;
+        updatePanCursor();
+        e.preventDefault();
+    };
+
+    const onSpaceKeyUp = (e) => {
+        if (e.code !== 'Space') return;
+        spacePanActive = false;
+        updatePanCursor();
+        e.preventDefault();
+    };
+
+    const onWindowBlur = () => {
+        spacePanActive = false;
+        if (middleDrag) {
+            middleDrag = null;
+            window.removeEventListener('mousemove', onMiddleMove);
+            window.removeEventListener('mouseup', onMiddleUp);
+        }
+        updatePanCursor();
+    };
+
+    const onContainerMouseDown = (e) => {
+        if (e.button === 1 || (e.button === 0 && spacePanActive)) {
             e.preventDefault();
             middleDrag = { x: e.clientX, y: e.clientY };
+            updatePanCursor();
             window.addEventListener('mousemove', onMiddleMove);
             window.addEventListener('mouseup', onMiddleUp);
         }
-    });
+    };
+
+    container.addEventListener('mousedown', onContainerMouseDown);
 
     const onMiddleMove = (e) => {
         if (!middleDrag) return;
@@ -113,7 +150,6 @@ export const createWorkspace = async (container, options = {}) => {
         const dy = (e.clientY - middleDrag.y) * middlePanSensitivity;
 
         const newPanX = state.panX + dx;
-
         const newPanY = state.panY + dy;
         panImmediately(newPanX, newPanY);
 
@@ -122,12 +158,18 @@ export const createWorkspace = async (container, options = {}) => {
     };
 
     const onMiddleUp = (e) => {
-        if (e.button === 1) {
+        if (!middleDrag) return;
+        if (e.button === 1 || e.button === 0) {
             middleDrag = null;
+            updatePanCursor();
             window.removeEventListener('mousemove', onMiddleMove);
             window.removeEventListener('mouseup', onMiddleUp);
         }
     };
+
+    window.addEventListener('keydown', onSpaceKeyDown);
+    window.addEventListener('keyup', onSpaceKeyUp);
+    window.addEventListener('blur', onWindowBlur);
 
     // 5. Add event listeners
     container.addEventListener('wheel', handleWheel, { passive: false });
@@ -153,11 +195,15 @@ export const createWorkspace = async (container, options = {}) => {
         destroy: () => {
             container.removeEventListener('wheel', handleWheel);
             container.removeEventListener('pointermove', updateMousePos);
+            container.removeEventListener('mousedown', onContainerMouseDown);
             
             resizeObserver.disconnect();
             
             window.removeEventListener('mousemove', onMiddleMove);
             window.removeEventListener('mouseup', onMiddleUp);
+            window.removeEventListener('keydown', onSpaceKeyDown);
+            window.removeEventListener('keyup', onSpaceKeyUp);
+            window.removeEventListener('blur', onWindowBlur);
             
             container.innerHTML = '';
             board?.destroy();
