@@ -171,6 +171,7 @@ export class MissionView {
                 el.style.transition = '';
                 el.style.transformOrigin = '';
                 el.classList.remove('is-mission');
+                el.classList.remove('is-mission-single');
                 delete el._missionTransform;
                 
                 if (--pending === 0) {

@@ -121,13 +121,21 @@
     margin-right: 0px;
 }
 
-.marker-window.is-comment-stickie .marker-window-content {
+.marker-window.is-comment-stickie .marker-window-content,
+.marker-window.is-comment-stickie .marker-window-content p,
+.marker-window.is-comment-stickie .marker-window-content div {
     color: #4f3c05;
     font-family: var(--font-display);
-    letter-spacing: -0.2px;
+    letter-spacing: -0.4px;
     font-size: 14px;
     line-height: 1.55;
     padding: 10px;
+    font-weight: 500;
+}
+
+.marker-window.is-comment-stickie .marker-window-content p,
+.marker-window.is-comment-stickie .marker-window-content div {
+    padding: 0;
 }
 
 .marker-window.is-comment-stickie .marker-window-content.is-placeholder::after {
@@ -388,6 +396,21 @@
 }
 
 /* Window content */
+
+.marker-window.is-mission.is-mission-single {
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        black 0%,
+        black 70%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        black 0%,
+        black 70%,
+        transparent 100%
+    );
+}
 
 .marker-window-content {
     padding: 6px 16px 24px;
