@@ -230,19 +230,35 @@ export class MissionView {
         this.minimizedPanelAbort = new AbortController();
         const { signal } = this.minimizedPanelAbort;
 
+        const isScrollableElement = (element) => {
+            if (!element) return false;
+
+            const overflowY = window.getComputedStyle(element).overflowY;
+            const canScrollY = overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay';
+
+            return (
+                canScrollY &&
+                (element.scrollHeight - element.clientHeight) > 1
+            );
+        };
+        
+        const getScrollContainer = () => {
+            if (isScrollableElement(panel)) return panel;
+            if (isScrollableElement(list)) return list;
+            return panel;
+        };
+
         panel.addEventListener('wheel', (e) => {
+            if (this.isShiftSelecting || e.shiftKey) {
+                const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+                if (delta !== 0) {
+                    const scrollContainer = getScrollContainer();
+                    e.preventDefault();
+                    scrollContainer.scrollTop += delta;
+                }
+            }
+            
             e.stopPropagation();
-        }, { passive: false, signal });
-
-        list?.addEventListener('wheel', (e) => {
-            if (!this.isShiftSelecting && !e.shiftKey) return;
-
-            const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-            if (delta === 0) return;
-
-            e.preventDefault();
-            e.stopPropagation();
-            list.scrollTop += delta;
         }, { passive: false, signal });
 
         window.addEventListener('keydown', (e) => {
@@ -271,10 +287,12 @@ export class MissionView {
             item.type = 'button';
             item.className = 'marker-minimized-item';
             item.dataset.windowId = win.id;
+            
             item.innerHTML = `
                 <span class="marker-minimized-item-title">${win.title || 'Untitled'}</span>
                 <span class="marker-minimized-item-state">minimized</span>
             `;
+            
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -282,10 +300,12 @@ export class MissionView {
                     if (this.minimizedSelectionIds.has(win.id)) {
                         this.minimizedSelectionIds.delete(win.id);
                         item.classList.remove('is-selected');
+                 
                     } else {
                         this.minimizedSelectionIds.add(win.id);
                         item.classList.add('is-selected');
                     }
+                 
                     return;
                 }
                 this.windowManager.restoreWindowById(win.id);
@@ -302,24 +322,82 @@ export class MissionView {
         if (!panel || !list) return;
 
         let frame = null;
-        const update = () => {
-            frame = null;
-            const panelRect = panel.getBoundingClientRect();
-            const panelCenterY = panelRect.top + (panelRect.height * 0.5);
-            const range = Math.max(panelRect.height * 0.5, 1);
-            const items = list.querySelectorAll('.marker-minimized-item');
+        
+        const isScrollableElement = (element) => {
+            if (!element) return false;
+
+            const overflowY = window.getComputedStyle(element).overflowY;
+            const canScrollY = overflowY === 'auto' || overflowY === 'scroll' || overflowY === 'overlay';
+
+            return (
+                canScrollY &&
+                (element.scrollHeight - element.clientHeight) > 1
+            );
+        };
+        
+        const getScrollContainer = () => {
+            if (isScrollableElement(panel)) return panel;
+            if (isScrollableElement(list)) return list;
+            return panel;
+        };
+        
+        const getItems = () => [...list.querySelectorAll('.marker-minimized-item')];
+        
+        const getViewportMetrics = () => {
+            const scrollContainer = getScrollContainer();
+            const scrollRect = scrollContainer.getBoundingClientRect();
+
+            return {
+                scrollContainer,
+                viewportTop: scrollRect.top,
+                viewportBottom: scrollRect.bottom,
+                viewportCenterY: scrollRect.top + (scrollRect.height * 0.5)
+            };
+        };
+        
+        const getAnchorIndex = (items, metrics) => {
+            if (!items.length) return -1;
+
+            if (metrics.scrollContainer.scrollTop <= 1) {
+                return 0;
+            }
+
+            let anchorIndex = 0;
+            let smallestDistance = Number.POSITIVE_INFINITY;
 
             items.forEach((item, index) => {
-                if (index === 0) {
-                    item.style.setProperty('--marker-minimized-item-scale', '1');
-                    return;
-                }
-
                 const rect = item.getBoundingClientRect();
+                const isVisible = rect.bottom > metrics.viewportTop && rect.top < metrics.viewportBottom;
+                if (!isVisible) return;
+
                 const itemCenterY = rect.top + (rect.height * 0.5);
-                const distance = Math.abs(itemCenterY - panelCenterY);
-                const ratio = Math.min(distance / range, 1);
-                const scale = 1 - (ratio * 0.1);
+                const distance = Math.abs(itemCenterY - metrics.viewportCenterY);
+
+                if (distance < smallestDistance) {
+                    smallestDistance = distance;
+                    anchorIndex = index;
+                }
+            });
+
+            return anchorIndex;
+        };
+        
+        const getScaleForDistance = (distanceFromAnchor) => {
+            const scaleStops = [1, 0.92, 0.84, 0.77, 0.72];
+            return scaleStops[Math.min(distanceFromAnchor, scaleStops.length - 1)];
+        };
+        
+        const update = () => {
+            frame = null;
+            const items = getItems();
+            if (!items.length) return;
+
+            const metrics = getViewportMetrics();
+            const anchorIndex = getAnchorIndex(items, metrics);
+
+            items.forEach((item, index) => {
+                const distanceFromAnchor = Math.abs(index - anchorIndex);
+                const scale = getScaleForDistance(distanceFromAnchor);
                 item.style.setProperty('--marker-minimized-item-scale', scale.toFixed(3));
             });
         };
@@ -329,6 +407,7 @@ export class MissionView {
             frame = requestAnimationFrame(update);
         };
 
+        panel.addEventListener('scroll', scheduleUpdate, { passive: true, signal });
         list.addEventListener('scroll', scheduleUpdate, { passive: true, signal });
         window.addEventListener('resize', scheduleUpdate, { passive: true, signal });
         requestAnimationFrame(update);

@@ -652,7 +652,7 @@ body.darwin {
         --hover-color: #dfdfdf;
         --theme-border: hsl(0, 0%, 88%);
         --image-border-color: #b0c6cb;
-        --theme-accent: hsl(200, 20%, 93%);
+        --theme-accent: hsl(185, 30%, 93%);
         --theme-accent-text: #000000;
         --PrimaryButtonsColors: hsl(50, 10%, 80%);
         --PrimaryButtonsColors: hsl(0, 0%, 95%);
