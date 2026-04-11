@@ -12,6 +12,22 @@ export class WindowFactory {
         this.board = windowManager.board;
     }
 
+    syncTitleInlineWidth(titleEl) {
+        if (!titleEl) return;
+        const raw = typeof titleEl.value === 'string' ? titleEl.value : '';
+        const text = raw.trim() || 'Untitled';
+        const windowEl = titleEl.closest('.marker-window');
+        if (!windowEl) return;
+
+        const windowWidth = windowEl.offsetWidth;
+        const maxWidthPx = windowWidth * 0.4; // 40% of window width
+        const minWidthPx = 4 * 14.5; // 4ch at 14.5px font-size
+        const widthPx = Math.min(Math.max(text.length * 14.5, minWidthPx), maxWidthPx);
+
+        titleEl.style.width = `${widthPx}px`;
+        titleEl.style.maxWidth = `${maxWidthPx}px`;
+    }
+
     createWindowElement(data) {
         const element = document.createElement('div');
         element.className = 'marker-window';
@@ -55,6 +71,7 @@ export class WindowFactory {
         title.spellcheck = false;
         title.autocomplete = 'off';
         title.readOnly = true;
+        this.syncTitleInlineWidth(title);
 
         const badge = document.createElement('span');
         badge.className = 'marker-window-group';
@@ -172,6 +189,14 @@ export class WindowFactory {
         const closeButton = element.querySelector('.marker-window-close');
         const content = element.querySelector('.marker-window-content');
         const resizeHandle = element.querySelector('.marker-window-resize');
+        const beginWindowDrag = (e) => {
+            this.windowManager.bringToFront(data.id);
+            this.windowManager.setActiveWindow(data.id);
+
+            const coords = this.windowManager.getCanvasCoords(e);
+            this.windowManager.drag.start(data.id, coords, element);
+        };
+
         const startWindowDrag = (e) => {
             if (e.button !== 0) return;
             if (e.target.closest('.marker-window-close')) return;
@@ -180,26 +205,34 @@ export class WindowFactory {
             if (this.board.missionView?.isActive()) return;
 
             const titleInput = e.target.closest('.marker-window-title');
-            if (titleInput && titleInput.readOnly === false) return;
+            if (titleInput) return;
 
-            if (!titleInput) {
-                e.preventDefault();
-            } else if (titleInput.readOnly) {
-                titleInput.blur();
-            }
-
-            this.windowManager.bringToFront(data.id);
-            this.windowManager.setActiveWindow(data.id);
-
-            const coords = this.windowManager.getCanvasCoords(e);
-            this.windowManager.drag.start(data.id, coords, element);
+            e.preventDefault();
+            beginWindowDrag(e);
         };
 
         // Title events
-        title.addEventListener('dblclick', () => {
+        const startTitleEdit = () => {
+            if (!title.readOnly) return;
             title.readOnly = false;
             title.focus();
             title.select();
+        };
+
+        title.addEventListener('pointerdown', (e) => {
+            if (e.button !== 0) return;
+            e.stopPropagation();
+            this.windowManager.selectWindow(data.id);
+        });
+
+        title.addEventListener('pointerup', (e) => {
+            e.stopPropagation();
+            startTitleEdit();
+        });
+
+        title.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            startTitleEdit();
         });
 
         title.addEventListener('focus', () => {
@@ -208,12 +241,21 @@ export class WindowFactory {
 
         title.addEventListener('blur', () => {
             title.readOnly = true;
+            this.syncTitleInlineWidth(title);
         });
 
         title.addEventListener('input', () => {
             data.title = title.value.trim() || 'Untitled';
+            this.syncTitleInlineWidth(title);
             if (data.noteId) updateNote(data.noteId, { title: data.title });
             persist(this.windowManager.windows, this.board.groups, this.board.activeGroupId);
+        });
+
+        title.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                title.blur();
+            }
         });
 
         minimizeButton?.addEventListener('pointerdown', e => e.stopPropagation());
@@ -270,6 +312,11 @@ export class WindowFactory {
 
         element.addEventListener('pointerup', e => {
             if (!clickStart) return;
+
+            if (e.target.closest('.marker-window-title')) {
+                clickStart = null;
+                return;
+            }
 
             const dx = Math.abs(e.clientX - clickStart.x);
             const dy = Math.abs(e.clientY - clickStart.y);

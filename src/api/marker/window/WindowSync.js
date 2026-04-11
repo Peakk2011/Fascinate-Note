@@ -35,6 +35,9 @@ export class WindowSync {
         if (titleEl && titleEl.value !== data.title) {
             titleEl.value = data.title || 'Untitled';
         }
+        if (titleEl) {
+            this.windowManager.factory.syncTitleInlineWidth(titleEl);
+        }
 
         const lodTitleEl = element.querySelector('.marker-window-lod-title');
         if (lodTitleEl) {

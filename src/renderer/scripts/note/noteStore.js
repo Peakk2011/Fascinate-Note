@@ -3,7 +3,7 @@ const SETTINGS_KEY = 'fascinateNotesSettings';
 const LEGACY_KEY = 'editorContent';
 const DEFAULT_TITLE = 'New Note';
 
-const MAX_HTML_CHARS = 1000000;
+const SOFT_MAX_HTML_CHARS = 1000000;
 
 const safeParse = (value, fallback) => {
     if (!value) return fallback;
@@ -177,12 +177,11 @@ export const updateNote = (id, updates = {}) => {
         note.title = normalizeTitle(updates.title);
     }
     if (typeof updates.html === 'string') {
-        if (updates.html.length > MAX_HTML_CHARS) {
-            console.warn('updateNote: html exceeds maximum length, truncating');
-            note.html = updates.html.slice(0, MAX_HTML_CHARS);
-        } else {
-            note.html = updates.html;
+        if (updates.html.length > SOFT_MAX_HTML_CHARS) {
+            console.warn('updateNote: html exceeds recommended size, storing full html to avoid breaking rich content');
         }
+        // Never hard-truncate the HTML
+        note.html = updates.html;
     }
 
     note.updatedAt = Date.now();

@@ -12,7 +12,7 @@
 }
 
 .marker-window-title {
-    flex: 1;
+    flex: 0 1 auto;
     border: none;
     background: transparent;
     color: var(--theme-fg);
@@ -24,8 +24,13 @@
     display: inline-block;
     opacity: 0.5;
     transition: opacity 150ms ease;
-    cursor: default;
-    width: 0;
+    cursor: text;
+    min-width: 4ch;
+    max-width: 40%;
+    width: auto;
+    text-overflow: ellipsis;
+    overflow: hidden !important;
+    white-space: nowrap;
 }
 
 .marker-window.is-active .marker-window-title,
@@ -33,9 +38,14 @@
     opacity: 1;
 }
 
+.marker-window-title:focus {
+    cursor: text;
+}
+
 .marker-window-actions {
     display: inline-flex;
     align-items: stretch;
+    margin-left: auto;
     margin-right: -12px;
     transition: opacity 140ms ease, scale 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }

@@ -124,19 +124,26 @@ export const createSaveData = (els, setStatus) => {
         try {
             const html = els.textarea.innerHTML;
             const currentId = getCurrentNoteId();
+            let savedHtml = html;
 
             if (currentId) {
-                updateNote(currentId, { html });
+                const updated = updateNote(currentId, { html });
+                if (updated?.html) {
+                    savedHtml = updated.html;
+                }
             } else {
                 const note = createNote({ html });
                 if (note?.id) {
                     setCurrentNoteId(note.id);
                 }
+                if (note?.html) {
+                    savedHtml = note.html;
+                }
             }
 
             // Keep Marker previews in sync with editor saves.
             if (window.__workspaceApi) {
-                window.__workspaceApi.refreshCurrentNote?.(html);
+                window.__workspaceApi.refreshCurrentNote?.(savedHtml);
             }
 
             setFontSize(currentFontSize);
