@@ -1,4 +1,5 @@
 import { refreshWindowPreview } from '../board/preview.js';
+import { hasRenderableContent } from '../board/utils.js';
 import { getFontSize } from '../sharedNoteStore.js';
 // import { PLACEHOLDER_TEXT } from '../board/constants.js';
 
@@ -41,13 +42,27 @@ export class WindowSync {
         }
         
         if (contentEl) {
-            const isEmpty = !data.content || data.content.trim() === '';
-            if (isEmpty) {
-                contentEl.textContent = '';
-                contentEl.classList.add('is-placeholder');
+            if (data.type === 'comment') {
+                const isEmpty = !data.content || data.content.trim() === '';
+                if (isEmpty) {
+                    contentEl.textContent = '';
+                    contentEl.classList.add('is-placeholder');
+                } else {
+                    contentEl.textContent = data.content;
+                    contentEl.classList.remove('is-placeholder');
+                }
             } else {
-                contentEl.textContent = data.content;
-                contentEl.classList.remove('is-placeholder');
+                const previewHtml = typeof data.previewHtml === 'string'
+                    ? data.previewHtml
+                    : '';
+                const isEmpty = !hasRenderableContent(previewHtml);
+                if (isEmpty) {
+                    contentEl.innerHTML = '';
+                    contentEl.classList.add('is-placeholder');
+                } else {
+                    contentEl.innerHTML = previewHtml;
+                    contentEl.classList.remove('is-placeholder');
+                }
             }
             contentEl.style.fontSize = `${getFontSize(16)}px`;
         }

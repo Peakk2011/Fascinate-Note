@@ -19,6 +19,7 @@ export class WindowData {
             id: createId(),
             type: 'note',
             title: note.title || 'New Note',
+            previewHtml: '',
             content: '',
             x: x ?? 320,
             y: y ?? 240,

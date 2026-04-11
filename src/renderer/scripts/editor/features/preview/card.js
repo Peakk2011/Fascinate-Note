@@ -12,6 +12,7 @@ export const createCardElement = (url) => {
     const wrapper = document.createElement('div');
     wrapper.className  = 'link-card animate-appear';
     wrapper.draggable  = true;
+    wrapper.tabIndex   = 0;
     wrapper.contentEditable = 'false';
     wrapper.setAttribute('contenteditable', 'false');
     wrapper.setAttribute('role', 'group');
@@ -62,6 +63,85 @@ export const createCardElement = (url) => {
     wrapper.appendChild(thumb);
     wrapper.appendChild(body);
     wrapper.appendChild(badge);
+
+    // Create corner-only resize handles for active preview cards
+    ['nw', 'ne', 'se', 'sw'].forEach((pos) => {
+        const handle = document.createElement('div');
+        handle.className = `link-card-handle ${pos}`;
+        handle.dataset.handle = pos;
+        handle.setAttribute('aria-hidden', 'true');
+        handle.contentEditable = 'false';
+        wrapper.appendChild(handle);
+    });
+
+    let resizeState = null;
+
+    const onPointerMove = (event) => {
+        if (!resizeState) return;
+
+        const dx = event.clientX - resizeState.startX;
+        const dy = event.clientY - resizeState.startY;
+        const aspectRatio = 16 / 9;
+        const minWidth = 220;
+        const minHeight = Math.round(minWidth * 9 / 16);
+
+        const parent = wrapper.parentElement;
+        const maxWidth = parent ? Math.max(minWidth, parent.clientWidth - 24) : Infinity;
+        const maxHeight = parent ? Math.max(minHeight, parent.clientHeight - 24) : Infinity;
+
+        const xSign = resizeState.handle.includes('w') ? -1 : 1;
+        const ySign = resizeState.handle.includes('n') ? -1 : 1;
+
+        const widthFromX = resizeState.startWidth + dx * xSign;
+        const widthFromY = (resizeState.startHeight + dy * ySign) * aspectRatio;
+        let nextWidth = Math.max(minWidth, Math.min(maxWidth, Math.max(widthFromX, widthFromY)));
+        let nextHeight = Math.max(minHeight, Math.round(nextWidth / aspectRatio));
+
+        if (nextHeight > maxHeight) {
+            nextHeight = maxHeight;
+            nextWidth = Math.round(maxHeight * aspectRatio);
+        }
+
+        wrapper.style.width = `${nextWidth}px`;
+        wrapper.style.height = `${nextHeight}px`;
+    };
+
+    const onPointerUp = () => {
+        if (!resizeState) return;
+        wrapper.classList.remove('is-resizing');
+        resizeState = null;
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+    };
+
+    wrapper.addEventListener('pointerdown', (event) => {
+        const resizeHandle = event.target.closest('.link-card-handle');
+        if (resizeHandle && event.button === 0) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            wrapper.focus();
+            wrapper.classList.add('is-resizing');
+
+            const rect = wrapper.getBoundingClientRect();
+            const handle = resizeHandle.dataset.handle || 'se';
+            resizeState = {
+                startX: event.clientX,
+                startY: event.clientY,
+                startWidth: rect.width,
+                startHeight: rect.height,
+                handle,
+            };
+
+            document.addEventListener('pointermove', onPointerMove);
+            document.addEventListener('pointerup', onPointerUp);
+            return;
+        }
+
+        if (!event.target.closest('a')) {
+            wrapper.focus();
+        }
+    });
 
     // Store URL for internal tracking
     wrapper.dataset.url = url;

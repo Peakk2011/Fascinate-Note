@@ -1,19 +1,262 @@
 .marker-window-content {
     padding: 6px 16px 24px;
-    line-height: 1.45;
+    line-height: var(--editor-line-height, 1.6);
     color: var(--marker-content-color);
     overflow: auto;
     flex: 1;
     -webkit-user-select: text;
     user-select: text;
-    font-weight: 450;
-    font-family: var(--font-display);
+    font-weight: 430;
+    font-family: var(--font-editor);
     font-size: 14px;
-    white-space: pre-wrap;
+    letter-spacing: var(--editor-letter-spacing, normal);
+    white-space: normal;
+    overflow-wrap: anywhere;
     word-break: break-word;
     opacity: 1;
     transform: scale(1);
     transition: font-size 300ms cubic-bezier(0.075, 0.82, 0.165, 1), opacity 180ms ease, transform 180ms ease;
+}
+
+.marker-window-content > :first-child {
+    margin-top: 0;
+}
+
+.marker-window-content > :last-child {
+    margin-bottom: 0;
+}
+
+.marker-window-content p,
+.marker-window-content h1,
+.marker-window-content h2,
+.marker-window-content h3,
+.marker-window-content h4,
+.marker-window-content h5,
+.marker-window-content h6,
+.marker-window-content blockquote,
+.marker-window-content pre,
+.marker-window-content ul,
+.marker-window-content ol, 
+.marker-window-content div {
+    margin: 0 0 0.55em;
+    color: var(--theme-fg);
+}
+
+.marker-window-content div,
+.marker-window-content p {
+    font-family: var(--font-editor);
+    letter-spacing: var(--editor-letter-spacing, normal);
+    font-weight: 430;
+}
+
+.marker-window-content h1,
+.marker-window-content h2,
+.marker-window-content h3,
+.marker-window-content h4 {
+    font-family: var(--font-display);
+    letter-spacing: var(--editor-heading-letter-spacing, -0.4px);
+    font-weight: var(--editor-heading-weight, 650);
+    margin-bottom: var(--editor-heading-margin, 0.45em);
+}
+
+.marker-window-content h1 div,
+.marker-window-content h2 div,
+.marker-window-content h3 div,
+.marker-window-content h4 div,
+.marker-window-content h1 p,
+.marker-window-content h2 p,
+.marker-window-content h3 p,
+.marker-window-content h4 p {
+    font-family: var(--font-display);
+    letter-spacing: var(--editor-heading-letter-spacing, -0.4px);
+    font-weight: var(--editor-heading-weight, 650);
+}
+
+.marker-window-content h1 span,
+.marker-window-content h2 span,
+.marker-window-content h3 span,
+.marker-window-content h4 span,
+.marker-window-content h1 mark,
+.marker-window-content h2 mark,
+.marker-window-content h3 mark,
+.marker-window-content h4 mark {
+    font-family: var(--font-display);
+    letter-spacing: calc(var(--editor-heading-letter-spacing, -0.4px) - 0.6px);
+    font-weight: var(--editor-heading-weight, 650);
+}
+
+.marker-window-content h1 {
+    font-size: 1.656em;
+}
+
+.marker-window-content h2 {
+    font-size: 1.4em;
+}
+
+.marker-window-content h3 {
+    font-size: 1.183em;
+}
+
+.marker-window-content h4 {
+    font-size: 1em;
+    letter-spacing: -0.2px;
+}
+
+.marker-window-content b,
+.marker-window-content strong {
+    font-weight: var(--editor-bold-weight, 700);
+    letter-spacing: var(--editor-bold-letter-spacing, normal);
+    font-family: var(--font-editor);
+}
+
+.marker-window-content i,
+.marker-window-content em,
+.marker-window-content s,
+.marker-window-content mark {
+    font-family: var(--font-editor);
+    font-weight: 430;
+}
+
+.marker-window-content blockquote {
+    font-family: var(--font-editor);
+    letter-spacing: var(--editor-letter-spacing, normal);
+    font-weight: var(--editor-blockquote-weight, 500);
+    line-height: var(--editor-blockquote-line-height, 1.6);
+    padding-left: var(--editor-blockquote-padding, 12px);
+    padding-right: var(--editor-blockquote-padding, 12px);
+    border-left: solid var(--editor-blockquote-border, 3px) var(--theme-accent);
+    color: color-mix(in srgb, var(--theme-fg) 65%, transparent);
+    background-color: var(--theme-accent-blockquote);
+    display: inline-block;
+}
+
+.marker-window-content ul li {
+    position: relative;
+    padding-left: var(--editor-list-padding, 20px);
+    list-style: none;
+    font-family: var(--font-editor);
+    font-weight: 430;
+}
+
+.marker-window-content ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(var(--editor-bullet-offset-x, 0), var(--editor-bullet-offset-y, 0));
+    font-size: var(--editor-bullet-size, 1em);
+    font-family: var(--font-editor);
+}
+
+.marker-window-content ol {
+    counter-reset: item;
+    padding-left: 0;
+}
+
+.marker-window-content ol li {
+    position: relative;
+    padding-left: var(--editor-list-padding, 20px);
+    list-style: none;
+    counter-increment: item;
+    font-family: var(--font-editor);
+    font-weight: 430;
+}
+
+.marker-window-content ol li::marker {
+    content: " ";
+}
+
+.marker-window-content ol li::before {
+    content: counter(item) ".";
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: var(--editor-heading-weight, 650);
+}
+
+.marker-window-content hr {
+    border: solid 1px currentColor;
+    opacity: var(--editor-hr-opacity, 0.3);
+}
+
+.marker-window-content a {
+    color: var(--theme-accent);
+    text-decoration-thickness: 1.2px;
+    text-underline-offset: 2px;
+}
+
+.marker-window-content img,
+.marker-window-content video,
+.marker-window-content iframe,
+.marker-window-content table {
+    max-width: 100%;
+}
+
+.marker-window-content iframe {
+    border: 0;
+}
+
+.marker-window-content pre,
+.marker-window-content code {
+    font-family: var(--code-font-family, var(--font-editor));
+    font-size: 0.9em;
+    color: var(--theme-fg);
+    line-height: 1.6;
+    letter-spacing: 0;
+    font-weight: 400;
+}
+
+.marker-window-content :not(pre) > code {
+    background-color: var(--theme-accent-blockquote);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.9em;
+}
+
+.marker-window-content pre {
+    background-color: var(--PrimaryButtonsColors);
+    box-shadow: var(--theme-shadow);
+    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.marker-window-content pre span,
+.marker-window-content pre span div {
+    font-family: var(--code-font-family, var(--font-editor));
+    font-weight: 400;
+}
+
+.marker-window-content ul[style*="list-style-type: none"] {
+    padding-left: 0;
+}
+
+.marker-window-content ul[style*="list-style-type: none"] li {
+    display: flex;
+    align-items: flex-start;
+    padding-left: 0;
+    margin-bottom: 8px;
+}
+
+.marker-window-content ul[style*="list-style-type: none"] li::before {
+    content: none;
+}
+
+.marker-window-content input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
+    margin-top: 4px;
+    cursor: pointer;
+    accent-color: var(--theme-accent);
+    flex-shrink: 0;
+}
+
+.marker-window-content input[type="checkbox"]:checked + span {
+    text-decoration: line-through;
+    opacity: 0.6;
 }
 
 .marker-window-content[contenteditable="true"] {

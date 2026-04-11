@@ -3,6 +3,11 @@
     align-items: center;
     flex-direction: column;
 
+    width: 220px;
+    min-width: 220px;
+    min-height: 124px;
+    overflow: visible;
+
     /* padding: 0.45rem; */
     /* border-radius: 12px; */
     /* border: var(--theme-border) solid 1.5px; */
@@ -15,9 +20,65 @@
     margin: 1.5rem 0;
     margin-bottom: 4rem;
 
-    width: 220px;
     position: relative;
     pointer-events: auto;
+}
+
+/* .link-card:focus-within {} */
+
+.link-card:focus-within,
+.link-card:active {
+    outline: 2px solid var(--image-border-color);
+    outline-offset: 2px;
+}
+
+.link-card-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    display: none;
+    pointer-events: auto;
+    border: 2px solid var(--image-border-color);
+    background: #ffffff;
+    border-radius: 0px;
+    z-index: 9999;
+    touch-action: none;
+}
+
+.link-card:focus-within .link-card-handle {
+    display: block;
+}
+
+.link-card-handle.nw {
+    top: -6px;
+    left: -6px;
+    cursor: nwse-resize;
+}
+
+.link-card-handle.ne {
+    top: -6px;
+    right: -6px;
+    cursor: nesw-resize;
+}
+
+.link-card-handle.se {
+    bottom: -6px;
+    right: -6px;
+    cursor: nwse-resize;
+}
+
+.link-card-handle.sw {
+    bottom: -6px;
+    left: -6px;
+    cursor: nesw-resize;
+}
+
+.link-card.no-image .link-card-thumb {
+    display: none;
+}
+
+.link-card.no-image .link-card-body {
+    margin-top: 0.75rem;
 }
 
 .link-card:hover {
@@ -35,11 +96,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
+    transition: padding 120ms ease;
 
     box-shadow: var(--theme-shadow);
     border: var(--theme-border) solid 1px;
     outline: var(--theme-border) solid 1px;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .link-card-thumb img {

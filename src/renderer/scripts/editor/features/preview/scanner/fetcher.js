@@ -71,16 +71,20 @@ export const createFetcher = (editor, state) => {
 
                     img.onerror = () => {
                         console.warn('Image failed to load:', normalizedImage);
-                        thumbElement.innerHTML = '<div class="thumb-placeholder"></div>';
+                        wrapper.classList.add('no-image');
+                        thumbElement.innerHTML = '';
                     };
 
+                    wrapper.classList.remove('no-image');
                     thumbElement.innerHTML = '';
                     thumbElement.appendChild(img);
                 } else {
-                    thumbElement.innerHTML = '<div class="thumb-placeholder"></div>';
+                    wrapper.classList.add('no-image');
+                    thumbElement.innerHTML = '';
                 }
             } else {
-                thumbElement.innerHTML = '<div class="thumb-placeholder"></div>';
+                wrapper.classList.add('no-image');
+                thumbElement.innerHTML = '';
             }
 
             wrapper.dataset.previewStatus = 'ok';
@@ -104,7 +108,8 @@ export const createFetcher = (editor, state) => {
             try { fallbackTitle = new URL(normalizedUrl).hostname; } catch {}
 
             titleElement.textContent = fallbackTitle;
-            thumbElement.innerHTML   = '<div class="thumb-placeholder"></div>';
+            wrapper.classList.add('no-image');
+            thumbElement.innerHTML   = '';
             wrapper.dataset.previewStatus = 'error';
         } finally {
             if (timeoutId) clearTimeout(timeoutId);

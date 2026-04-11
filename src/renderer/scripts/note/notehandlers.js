@@ -137,7 +137,6 @@ export const createSaveData = (els, setStatus) => {
             // Keep Marker previews in sync with editor saves.
             if (window.__workspaceApi) {
                 window.__workspaceApi.refreshCurrentNote?.(html);
-                window.__workspaceApi.refreshAllNotes?.();
             }
 
             setFontSize(currentFontSize);

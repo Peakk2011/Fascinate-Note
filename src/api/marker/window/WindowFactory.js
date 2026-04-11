@@ -1,6 +1,7 @@
 import { getFontSize, updateNote } from '../sharedNoteStore.js';
 import { PLACEHOLDER_TEXT } from '../board/constants.js';
 import { persist } from '../board/persistence.js';
+import { hasRenderableContent } from '../board/utils.js';
 import { getState } from '../utils/config.js';
 import { focusWindowAtScale } from '../controllers/zoomPan.js';
 import { showContextMenu } from './contextMenu.js';
@@ -93,18 +94,29 @@ export class WindowFactory {
 
         if (data.type === 'comment') {
             content.contentEditable = 'true';
+            const isEmpty = !data.content || data.content.trim() === '';
+            if (isEmpty) {
+                content.textContent = '';
+                content.dataset.placeholder = 'Add Comment...';
+                content.classList.add('is-placeholder');
+            } else {
+                content.textContent = data.content;
+                content.classList.remove('is-placeholder');
+            }
         } else {
             content.contentEditable = 'false';
-        }
-
-        const isEmpty = !data.content || data.content.trim() === '';
-        if (isEmpty) {
-            content.textContent = '';
-            content.dataset.placeholder = data.type === 'comment' ? 'Add Comment...' : PLACEHOLDER_TEXT;
-            content.classList.add('is-placeholder');
-        } else {
-            content.textContent = data.content;
-            content.classList.remove('is-placeholder');
+            const previewHtml = typeof data.previewHtml === 'string'
+                ? data.previewHtml
+                : '';
+            const isEmpty = !hasRenderableContent(previewHtml);
+            if (isEmpty) {
+                content.innerHTML = '';
+                content.dataset.placeholder = PLACEHOLDER_TEXT;
+                content.classList.add('is-placeholder');
+            } else {
+                content.innerHTML = previewHtml;
+                content.classList.remove('is-placeholder');
+            }
         }
 
         return content;

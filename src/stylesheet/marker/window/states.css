@@ -27,6 +27,7 @@
 .marker-window.is-mission.is-mission-single {
     -webkit-mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
     mask-image: linear-gradient(to bottom, black 0%, black 70%, transparent 100%);
+    filter: brightness(125%);
 }
 
 .marker-window.is-restoring {
@@ -86,6 +87,7 @@
     line-height: 1.55;
     padding: 10px;
     font-weight: 500;
+    white-space: pre-wrap;
 }
 
 .marker-window.is-comment-stickie .marker-window-content p,

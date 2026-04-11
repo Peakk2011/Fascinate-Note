@@ -1,5 +1,9 @@
 import { createNote, getNoteById, getCurrentNoteId } from '../sharedNoteStore.js';
-import { htmlToText, truncateText } from './utils.js';
+import {
+    htmlToText,
+    truncateText,
+    sanitizePreviewHtml
+} from './utils.js';
 import { getState } from '../utils/config.js';
 
 const logPreviewDebug = (message, details = {}) => {
@@ -57,8 +61,10 @@ export const refreshWindowPreview = (win) => {
     }
 
     if (note) {
+        const safeHtml = sanitizePreviewHtml(note.html || '');
         win.title = note.title || win.title;
-        win.content = truncateText(htmlToText(note.html), 260);
+        win.previewHtml = safeHtml;
+        win.content = truncateText(htmlToText(safeHtml), 260);
         logPreviewDebug('Preview refreshed', {
             windowId: win.id,
             noteId: win.noteId,
@@ -101,6 +107,7 @@ export const ensureCurrentWindow = (windows) => {
     const current = {
         id: `win_${crypto.randomUUID?.() || Date.now().toString(36)}`,
         title: 'Current Notes',
+        previewHtml: '',
         content: '',
         x: centeredX, y: centeredY,
         width, height,

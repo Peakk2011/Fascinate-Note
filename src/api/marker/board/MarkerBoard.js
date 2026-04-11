@@ -1,5 +1,9 @@
 import { DEFAULT_WINDOW_SIZE } from './constants.js';
-import { htmlToText, truncateText } from './utils.js';
+import {
+    htmlToText,
+    truncateText,
+    sanitizePreviewHtml
+} from './utils.js';
 import { loadWindows, loadGroups, loadActiveGroup, persist } from './persistence.js';
 import { refreshAllPreviews, ensureCurrentWindow } from './preview.js';
 import { WindowManager } from '../window/WindowManager.js';
@@ -661,19 +665,12 @@ export class MarkerBoard {
     refreshCurrentNote(html) {
         const currentNoteId = getCurrentNoteId();
         const win = this.windows.find(w => w.noteId === currentNoteId);
-        if (!win) return;
+        if (!win || win.type === 'comment') return;
 
-        win.content = truncateText(htmlToText(html), 260);
-
-        const el = this.windowManager.windowMap.get(win.id);
-        if (!el) return;
-
-        const contentEl = el.querySelector('.marker-window-content');
-        if (!contentEl) return;
-
-        const isEmpty = !win.content.trim();
-        contentEl.textContent = isEmpty ? '' : win.content;
-        contentEl.classList.toggle('is-placeholder', isEmpty);
+        const safeHtml = sanitizePreviewHtml(html || '');
+        win.previewHtml = safeHtml;
+        win.content = truncateText(htmlToText(safeHtml), 260);
+        this.windowManager.sync.syncWindowElement(win);
         persist(this.windows, this.groups, this.activeGroupId);
     }
 
