@@ -1,7 +1,7 @@
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 
-Copyright © 2025 Mint teams 
+Copyright © 2026 Mint teams 
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 ---
 
-ลิขสิทธิ์ (c) 2025 Mint teams | มิ้นทีม
+ลิขสิทธิ์ (c) 2026 Mint teams | มิ้นทีม
 
 โปรแกรมนี้เป็นซอฟต์แวร์ฟรี: คุณสามารถเผยแพร่ซ้ำและ/หรือแก้ไขได้ภายใต้ข้อกำหนดของสัญญาอนุญาตสาธารณะทั่วไป GNU ตามที่เผยแพร่โดยมูลนิธิซอฟต์แวร์เสรี ไม่ว่าจะเป็นสัญญาอนุญาตเวอร์ชัน 3 หรือ (ตามที่คุณเลือก) เวอร์ชันที่ใหม่กว่า
 
