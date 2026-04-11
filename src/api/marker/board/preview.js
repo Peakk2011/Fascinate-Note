@@ -104,7 +104,7 @@ export const ensureCurrentWindow = (windows) => {
         content: '',
         x: centeredX, y: centeredY,
         width, height,
-        // color: '#7aa5ff',
+        color: '#7aa5ff',
         groupId: null,
         isCurrent: false,
         noteId: note?.id ?? getCurrentNoteId()
