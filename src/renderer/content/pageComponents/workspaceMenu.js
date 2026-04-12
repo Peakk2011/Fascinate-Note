@@ -16,8 +16,8 @@ export const createWorkspaceMenuMarkup = (config) => {
             <div class="workspace-menu-header">Workspace</div>
             <div class="workspace-menu-showcase">
                 <picture>
-                    <source srcset="/showcase/marker-preview-dark.svg" media="(prefers-color-scheme: dark)" />
-                    <img src="/showcase/marker-preview.svg" alt="Workspace Showcase" />
+                    <source srcset="./assets/showcase/marker-preview-dark.svg" media="(prefers-color-scheme: dark)" />
+                    <img src="./assets/showcase/marker-preview.svg" alt="Workspace Showcase" />
                 </picture>
             </div>
             <button id="workspace-open-marker" class="workspace-menu-action" type="button">

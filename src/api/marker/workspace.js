@@ -76,6 +76,8 @@ export const createWorkspace = async (container, options = {}) => {
         onReturnToEditor: options.onReturnToEditor,
     });
 
+    console.log('Workspace: MarkerBoard created', board);
+
     if (board?.layer) {
         updateState({
             markerLayer: board.layer,
@@ -192,6 +194,7 @@ export const createWorkspace = async (container, options = {}) => {
         refreshAllNotes: () => {
             board?.refreshAllNotes && board.refreshAllNotes();
         },
+        markerAPI: board,
         destroy: () => {
             container.removeEventListener('wheel', handleWheel);
             container.removeEventListener('pointermove', updateMousePos);
@@ -209,6 +212,9 @@ export const createWorkspace = async (container, options = {}) => {
             board?.destroy();
         }
     };
+
+    // Set global marker API for command palette
+    window.__markerAPI = board;
 
     return api;
 };

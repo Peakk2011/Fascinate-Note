@@ -136,6 +136,12 @@ export default defineConfig({
                     copyFolder(srcApi, distApi);
                 }
 
+                // Copy entire assets folder
+                const srcAssets = resolve(__dirname, 'assets');
+                const distAssets = resolve(__dirname, 'dist/renderer/assets');
+                if (existsSync(srcAssets)) {
+                    copyFolder(srcAssets, distAssets);
+                }
             }
         }
     ]

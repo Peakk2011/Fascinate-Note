@@ -34,6 +34,7 @@ export class MarkerBoard {
         onOpenNote = null,
         onReturnToEditor = null,
     }) {
+        console.log('MarkerBoard: constructor called');
         this.container = container;
         this.getCanvasCoords = getCanvasCoords;
         this.groupModal = groupModal;
@@ -54,6 +55,7 @@ export class MarkerBoard {
      * Initializes the marker board.
      */
     init() {
+        console.log('MarkerBoard: init called');
         // Load data
         this.windows = loadWindows();
         this.groups = loadGroups();
@@ -172,10 +174,13 @@ export class MarkerBoard {
      * Sets up event listeners for the marker board.
      */
     setupEventListeners() {
+        console.log('MarkerBoard: setupEventListeners called');
         this.handleBottomBarClickBound = (e) => this.handleBottomBarClick(e);
         this.handleKeyDownBound = (e) => this.handleKeyDown(e);
 
         this.bottomBar.addEventListener('click', this.handleBottomBarClickBound);
+        console.log('MarkerBoard: bottomBar click listener attached');
+
         this.handleOutsidePointerDown = (e) => {
             if (!this.bottomBar?.contains(e.target)) {
                 this.closeGroupMenu();
@@ -190,8 +195,11 @@ export class MarkerBoard {
      * @param {MouseEvent} e - The click event.
      */
     handleBottomBarClick(e) {
+        console.log('MarkerBoard: handleBottomBarClick', e.target);
+
         const groupTrigger = e.target.closest('.marker-group-trigger');
         if (groupTrigger) {
+            console.log('MarkerBoard: group trigger clicked');
             this.toggleGroupMenu();
             return;
         }
@@ -217,10 +225,12 @@ export class MarkerBoard {
 
         const button = e.target.closest('.marker-toolbar-btn');
         if (button?.dataset.action === 'new-note') {
+            console.log('MarkerBoard: new-note clicked');
             this.createNewWindow();
             return;
         }
         if (button?.dataset.action === 'new-group') {
+            console.log('MarkerBoard: new-group clicked');
             this.groupManager.createNewGroup();
             return;
         }
@@ -228,9 +238,13 @@ export class MarkerBoard {
         const btn = e.target.closest('.marker-bottom-btn');
         if (!btn) return;
 
+        console.log('MarkerBoard: bottom btn clicked', btn.dataset.action);
+
         if (btn.dataset.action === 'clear-all') {
+            console.log('MarkerBoard: clear-all clicked');
             this.clearAllWindows();
         } else if (btn.dataset.action === 'mission-view') {
+            console.log('MarkerBoard: mission-view clicked');
             if (!this.hasMissionContent()) {
                 this.shakeBottomBar();
                 return;
@@ -539,6 +553,7 @@ export class MarkerBoard {
      * Creates a new window on the board.
      */
     createNewWindow() {
+        console.log('MarkerBoard: createNewWindow called');
         const rect = this.container.getBoundingClientRect();
         const coords = this.getCanvasCoords({
             clientX: rect.left + rect.width / 2,
@@ -565,6 +580,8 @@ export class MarkerBoard {
             this.applyVisibility();
             this.windowManager.selectWindow(data.id);
         }
+
+        this.updateMissionControlStatus();
     }
 
     /**
@@ -613,6 +630,7 @@ export class MarkerBoard {
      * Clears all windows from the board.
      */
     clearAllWindows() {
+        console.log('MarkerBoard: clearAllWindows called, windows count:', this.windows.length);
         const toRemove = [...this.windows];
         const last = toRemove[toRemove.length - 1];
 
@@ -623,6 +641,31 @@ export class MarkerBoard {
                 this.windowManager.removeWindowImmediate(w.id);
             }
         });
+
+        persist(this.windows, this.groups, this.activeGroupId);
+        this.updateMissionControlStatus();
+    }
+
+    /**
+     * Toggles mission control view.
+     */
+    toggleMissionView() {
+        console.log('MarkerBoard: toggleMissionView called');
+        if (!this.hasMissionContent()) {
+            console.log('MarkerBoard: no mission content, shaking bottom bar');
+            this.shakeBottomBar();
+            return;
+        }
+        console.log('MarkerBoard: toggling mission view');
+        this.missionView.toggle();
+    }
+
+    /**
+     * Creates a new group.
+     */
+    createNewGroup() {
+        console.log('MarkerBoard: createNewGroup called');
+        this.groupManager.createNewGroup();
     }
 
     /**

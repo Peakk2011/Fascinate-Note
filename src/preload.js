@@ -10,6 +10,8 @@ const { contextBridge, ipcRenderer } = require('electron');
  * @property {() => Promise<string>} getOS - Retrieves the operating system platform identifier
  * @property {() => void} closeApp - Sends a signal to close the application
  * @property {() => Promise<boolean>} newWindow - Creates a new application window
+ * @property {(options: Object) => Promise<Object>} showOpenDialog - Shows a file open dialog
+ * @property {(filePath: string) => Promise<Object>} readFile - Reads a file from the filesystem
  */
 
 try {
@@ -54,6 +56,20 @@ try {
          * @returns {Promise<boolean>} A promise that resolves to the new always-on-top state.
          */
         toggleAlwaysOnTop: () => ipcRenderer.invoke('app:toggle-always-on-top'),
+
+        /**
+         * Shows a file open dialog
+         * @param {Object} options - Dialog options
+         * @returns {Promise<Object>} Dialog result with filePaths
+         */
+        showOpenDialog: (options) => ipcRenderer.invoke('show-open-dialog', options),
+
+        /**
+         * Reads a file from the filesystem
+         * @param {string} filePath - Path to the file to read
+         * @returns {Promise<Object>} Result with content or error
+         */
+        readFile: (filePath) => ipcRenderer.invoke('read-file', filePath),
     });
 } catch (error) {
     /**

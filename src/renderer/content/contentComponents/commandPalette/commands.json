@@ -9,8 +9,8 @@
         {
             "id": "load",
             "label": "Load Note",
-            "action": "loadData",
-            "description": "Load a saved note"
+            "action": "loadFile",
+            "description": "Load a note from file"
         },
         {
             "id": "zoomIn",

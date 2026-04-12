@@ -61,6 +61,12 @@ import {
     createLoadData,
     
     /**
+     * Creates a file loading function
+     * @type {(elements: NoteElements, setStatus: StatusSetter) => () => Promise<void>}
+     */
+    createLoadFile,
+    
+    /**
      * Creates a data saving function
      * @type {(elements: NoteElements, setStatus: StatusSetter) => () => Promise<void>}
      */
@@ -107,6 +113,7 @@ import {
 /**
  * @typedef {Object} NoteFeaturesAPI
  * @property {() => Promise<void>} loadData - Loads note data from storage
+ * @property {() => Promise<void>} loadFile - Loads a file from disk and displays it
  * @property {() => Promise<void>} saveData - Saves current note data to storage
  * @property {() => void} zoomIn - Increases the editor font size
  * @property {() => void} zoomOut - Decreases the editor font size
@@ -208,6 +215,12 @@ export const noteFeatures = async (
          * @type {() => Promise<void>}
          */
         const loadData = createLoadData(els, setStatus);
+        
+        /**
+         * File loading function with dialog
+         * @type {() => Promise<void>}
+         */
+        const loadFile = createLoadFile(els, setStatus);
         
         /**
          * Data saving function with status updates
@@ -332,6 +345,7 @@ export const noteFeatures = async (
          */
         return {
             loadData,
+            loadFile,
             saveData,
             zoomIn,
             zoomOut,

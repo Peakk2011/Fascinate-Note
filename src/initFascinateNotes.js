@@ -3,7 +3,8 @@
  * Handles all initialization logic for the Electron application
  */
 
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import fs from 'fs/promises';
 import { createWindow } from './core/createWindow.js';
 import { preloadAssets } from './core/preloadAssets.js';
 import { OS } from './config/osConfig.js';
@@ -57,10 +58,15 @@ const handleSquirrelEvents = () => {
 /**
  * Registers IPC handlers that should be initialized once.
  */
-let newWindowHandlerRegistered = false;
+let ipcHandlersRegistered = false;
 
 const registerIpcHandlers = () => {
-	if (newWindowHandlerRegistered) return;
+	if (ipcHandlersRegistered) {
+		console.log('IPC handlers already registered, skipping');
+		return;
+	}
+
+	console.log('Registering IPC handlers...');
 
 	ipcMain.handle('new-window', async () => {
 		try {
@@ -69,6 +75,36 @@ const registerIpcHandlers = () => {
 		} catch (error) {
 			console.error('Failed to create new window:', error);
 			return false;
+		}
+	});
+
+	ipcMain.handle('show-open-dialog', async (event, options) => {
+		console.log('Handling show-open-dialog with options:', options);
+		const win = BrowserWindow.fromWebContents(event.sender);
+		if (!win) {
+			console.log('No window found for show-open-dialog');
+			return { canceled: true, filePaths: [] };
+		}
+		
+		try {
+			const result = await dialog.showOpenDialog(win, options);
+			console.log('show-open-dialog result:', result);
+			return result;
+		} catch (error) {
+			console.error('Failed to show open dialog:', error);
+			return { canceled: true, filePaths: [] };
+		}
+	});
+
+	ipcMain.handle('read-file', async (event, filePath) => {
+		console.log('Handling read-file for:', filePath);
+		try {
+			const content = await fs.readFile(filePath, 'utf8');
+			console.log('File read successfully, length:', content.length);
+			return { success: true, content };
+		} catch (error) {
+			console.error('Failed to read file:', error);
+			return { success: false, error: error.message };
 		}
 	});
 
@@ -83,10 +119,15 @@ const registerIpcHandlers = () => {
     });
 
 	app.on('will-quit', () => {
+		console.log('Removing IPC handlers...');
 		ipcMain.removeHandler('new-window');
+		ipcMain.removeHandler('show-open-dialog');
+		ipcMain.removeHandler('read-file');
+		ipcMain.removeHandler('app:toggle-always-on-top');
 	});
 
-	newWindowHandlerRegistered = true;
+	ipcHandlersRegistered = true;
+	console.log('IPC handlers registered successfully');
 };
 
 /**

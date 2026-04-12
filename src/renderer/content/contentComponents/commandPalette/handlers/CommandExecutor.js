@@ -34,8 +34,8 @@ export class CommandExecutor {
     executeMarkerCommand(command) {
         const api = this.markerAPI || window.__markerAPI;
         
-        if (this.markerAPI && typeof this.markerAPI[command.action] === 'function') {
-            this.markerAPI[command.action]();
+        if (api && typeof api[command.action] === 'function') {
+            api[command.action]();
         }
     }
 

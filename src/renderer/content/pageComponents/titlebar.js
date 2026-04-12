@@ -135,6 +135,7 @@ export const initTitlebar = (threshold = 60) => {
     };
 
     const toggleWorkspace = async () => {
+        console.log('Titlebar: toggleWorkspace called');
         // If already transitioning, wait for it to finish first
         if (isViewTransitioning) {
             await waitForTransitionEnd(workspaceContainer, 560);
@@ -148,6 +149,8 @@ export const initTitlebar = (threshold = 60) => {
             workspaceContainer.classList.contains('is-active') ||
             workspaceContainer.style.display === 'block';
         const willShowWorkspace = !isWorkspaceVisible;
+
+        console.log('Titlebar: willShowWorkspace:', willShowWorkspace, 'isWorkspaceInitialized:', isWorkspaceInitialized);
 
         if (willShowWorkspace && !isWorkspaceInitialized) {
             try {
@@ -268,6 +271,7 @@ export const initTitlebar = (threshold = 60) => {
     window.addEventListener('scroll', onScroll, listenerOptions);
 
     const handleMarkerClick = async () => {
+        console.log('Titlebar: handleMarkerClick called');
         await closeMenu({ waitForAnimation: true });
         await toggleWorkspace();
     };

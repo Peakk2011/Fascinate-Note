@@ -113,6 +113,70 @@ export const createLoadData = (els, setStatus) => {
 };
 
 /**
+ * Creates a function to load a file from disk.
+ * @param {{textarea: HTMLTextAreaElement}} els - An object containing the textarea element.
+ * @param {function} setStatus - The function created by `createSetStatus`.
+ * @returns {function(): Promise<void>} An async function that opens a file dialog and loads the selected file.
+ */
+export const createLoadFile = (els, setStatus) => {
+    return async () => {
+        try {
+            if (!window.electronAPI?.showOpenDialog || !window.electronAPI?.readFile) {
+                setStatus('error', 'File loading not available');
+                return;
+            }
+
+            const result = await window.electronAPI.showOpenDialog({
+                title: 'Load Note File',
+                properties: ['openFile'],
+                filters: [
+                    { name: 'Text Files', extensions: ['txt', 'md', 'html'] },
+                    { name: 'All Files', extensions: ['*'] }
+                ]
+            });
+
+            if (result.canceled || !result.filePaths.length) {
+                return; // User canceled
+            }
+
+            const filePath = result.filePaths[0];
+            const fileResult = await window.electronAPI.readFile(filePath);
+
+            if (!fileResult.success) {
+                setStatus('error', 'Failed to read file');
+                return;
+            }
+
+            let content = fileResult.content;
+            
+            // Convert file content to HTML based on extension
+            const extension = filePath.split('.').pop()?.toLowerCase();
+            if (extension === 'txt') {
+                // Convert plain text to HTML with line breaks
+                content = content.replace(/\n/g, '<br>');
+            } else if (extension === 'md') {
+                // Basic markdown to HTML conversion (simple)
+                content = content
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                    .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+            }
+            // HTML files are loaded as-is
+
+            els.textarea.innerHTML = content;
+            setStatus('saved', 'File loaded');
+        } catch (error) {
+            console.error('Error loading file:', error);
+            setStatus('error', 'Failed to load file');
+            throw error;
+        }
+    };
+};
+
+/**
  * Creates a function to save the current state of the editor.
  * @param {{textarea: HTMLTextAreaElement}} els - An object containing the textarea element.
  * @param {function} setStatus - The function created by `createSetStatus`.
