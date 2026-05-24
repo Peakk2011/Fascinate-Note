@@ -70,6 +70,14 @@ try {
          * @returns {Promise<Object>} Result with content or error
          */
         readFile: (filePath) => ipcRenderer.invoke('read-file', filePath),
+
+        /**
+         * Opens the "About" window of the application, providing information about the app version and credits.
+         * @function openAboutWindow
+         * @returns {Promise<void>} A promise that resolves when the about window is opened
+         * @throws {Error} Throws if the IPC channel handler is not registered in the main process
+         */
+        openAboutWindow: () => ipcRenderer.invoke('open-about-window'),
     });
 } catch (error) {
     /**

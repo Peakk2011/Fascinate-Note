@@ -3,7 +3,7 @@
  * Handles all initialization logic for the Electron application
  */
 
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, nativeTheme, shell } from 'electron';
 import fs from 'fs/promises';
 import { createWindow } from './core/createWindow.js';
 import { preloadAssets } from './core/preloadAssets.js';
@@ -59,6 +59,7 @@ const handleSquirrelEvents = () => {
  * Registers IPC handlers that should be initialized once.
  */
 let ipcHandlersRegistered = false;
+let aboutWindow = null;
 
 const registerIpcHandlers = () => {
 	if (ipcHandlersRegistered) {
@@ -85,7 +86,7 @@ const registerIpcHandlers = () => {
 			console.log('No window found for show-open-dialog');
 			return { canceled: true, filePaths: [] };
 		}
-		
+
 		try {
 			const result = await dialog.showOpenDialog(win, options);
 			console.log('show-open-dialog result:', result);
@@ -109,14 +110,72 @@ const registerIpcHandlers = () => {
 	});
 
 	ipcMain.handle('app:toggle-always-on-top', (event) => {
-        const win = BrowserWindow.fromWebContents(event.sender);
-        if (win) {
-            const isAlwaysOnTop = win.isAlwaysOnTop();
-            win.setAlwaysOnTop(!isAlwaysOnTop);
-            return !isAlwaysOnTop;
-        }
-        return false;
-    });
+		const win = BrowserWindow.fromWebContents(event.sender);
+		if (win) {
+			const isAlwaysOnTop = win.isAlwaysOnTop();
+			win.setAlwaysOnTop(!isAlwaysOnTop);
+			return !isAlwaysOnTop;
+		}
+		return false;
+	});
+
+	ipcMain.handle('open-about-window', async () => {
+		if (aboutWindow && !aboutWindow.isDestroyed()) {
+			aboutWindow.focus();
+			return;
+		}
+
+		const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+
+		aboutWindow = new BrowserWindow({
+			width: 520,
+			height: 230,
+			parent: mainWindow,
+			modal: true,
+			show: true,
+			resizable: false,
+			minimizable: false,
+			maximizable: false,
+			// Styling options
+			title: 'About Fascinate Notes',
+			center: true,
+			frame: false,
+			titleBarStyle: 'hidden',
+			titleBarOverlay: {
+				color: '#00000000',
+				symbolColor: nativeTheme.shouldUseDarkColors ? '#ffffff' : '#000000',
+				height: 38
+			},
+			webPreferences: {
+				nodeIntegration: false,
+				contextIsolation: true,
+				// preload: path.join(__dirname, 'preload.js')
+			}
+		});
+
+		// Source 
+		await aboutWindow.loadURL('https://mint-teams.web.app/Fascinate-Welcome/');
+
+		aboutWindow.once('ready-to-show', () => {
+			aboutWindow.show();
+		});
+
+		aboutWindow.on('closed', () => {
+			aboutWindow = null;
+		});
+	});
+
+	app.on('web-contents-created', (event, contents) => {
+		contents.on('will-navigate', (event, url) => {
+			event.preventDefault();
+			shell.openExternal(url);
+		});
+
+		contents.setWindowOpenHandler(({ url }) => {
+			shell.openExternal(url);
+			return { action: 'deny' };
+		});
+	});
 
 	app.on('will-quit', () => {
 		console.log('Removing IPC handlers...');

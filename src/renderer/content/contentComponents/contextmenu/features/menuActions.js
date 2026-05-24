@@ -289,6 +289,21 @@ export const handleMenuItemClick = async (params) => {
                 document.execCommand('selectAll');
                 break;
 
+            case 'openAboutFN':
+                // call electronAPI.openAboutWindow
+                if (window.electronAPI && typeof window.electronAPI.openAboutWindow === 'function') {
+                    try {
+                        await window.electronAPI.openAboutWindow();
+                    } catch (error) {
+                        console.error('[ContextMenu] Failed to open about window:', error);
+                    }
+                } else {
+                    console.warn('[ContextMenu] electronAPI.openAboutWindow not available');
+                    // fallback
+                    alert('About window coming soon!');
+                }
+                break;
+
             default:
                 try {
                     document.execCommand(command);

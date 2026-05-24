@@ -130,6 +130,12 @@
       "id": "context-command-palette",
       "label": "Command Palette...",
       "command": "showCommandPalette"
+    },
+    { "type": "separator" },
+    {
+      "id": "about-fascinate-notes",
+      "label": "About this app",
+      "command": "openAboutFN"
     }
   ]
 }
