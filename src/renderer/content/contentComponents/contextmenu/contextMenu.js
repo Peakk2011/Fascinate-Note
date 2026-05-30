@@ -1,3 +1,4 @@
+// Editor ContextMenu Component Implementation
 import { Mint } from '@mintkit';
 import { fetchJSON } from '@fJson';
 import { renderMenu } from './menu/menuRenderer.js';
@@ -11,6 +12,7 @@ import {
     isValidElement,
     removeAllEventListeners
 } from './utils/domUtility.js';
+import Mucous from '../../../../api/mucous.js';
 
 Mint.include('stylesheet/style-components/context-menu.css');
 
@@ -70,6 +72,11 @@ export const createContextMenu = async () => {
             // Cleanup functions / registered listeners
             const eventListeners = [];
 
+            // Mucous hover highlight instance
+            let mucousInstance = null;
+            let submenuMucousInstance = null;
+
+
             /**
              * Initialize and validate required DOM elements
              * @returns {boolean} Success status
@@ -92,6 +99,45 @@ export const createContextMenu = async () => {
                         );
                         return false;
                     }
+
+                    // Attach Mucous hover highlight to the context menu
+                    mucousInstance = Mucous(elements.contextMenu, {
+                        speed: 80,
+                        itemSelector: ':scope > .context-menu-item:not([data-disabled="true"]):not(.disabled)',
+                    });
+
+                    elements.contextMenu.style.overflow = '';
+
+                    // Submenu
+                    const submenu = elements.contextMenu.querySelector('.context-submenu');
+                    if (submenu) {
+                        submenu.addEventListener('transitionend', () => {
+                            if (submenu.classList.contains('visible') && !submenuMucousInstance) {
+                                submenuMucousInstance = Mucous(submenu, {
+                                    speed: 80,
+                                    itemSelector: '.context-menu-item',
+                                });
+                                submenu.style.overflow = '';
+                            }
+                        }, { once: false });
+
+                        submenu.addEventListener('mouseleave', () => {
+                            submenuMucousInstance?.destroy();
+                            submenuMucousInstance = null;
+                        });
+                    }
+
+                    elements.contextMenu.addEventListener('mouseover', (event) => {
+                        const item = event.target.closest('.context-menu-item');
+                        if (!item) return;
+                        if (item.dataset.disabled === 'true' || item.classList.contains('disabled')) {
+                            const highlight = elements.contextMenu.querySelector('.mucous-highlight');
+                            if (highlight) highlight.style.opacity = '0';
+                            elements.contextMenu
+                                .querySelectorAll('.context-menu-item')
+                                .forEach(i => i.classList.remove('hovered'));
+                        }
+                    });
 
                     // Populate menu items cache
                     for (const item of (config.items || [])) {
@@ -188,6 +234,12 @@ export const createContextMenu = async () => {
             const destroy = () => {
                 if (stateManager.isDestroyed()) return;
                 stateManager.setDestroyed(true);
+
+                mucousInstance?.destroy();
+                mucousInstance = null;
+
+                submenuMucousInstance?.destroy();
+                submenuMucousInstance = null;
 
                 removeAllEventListeners(eventListeners);
 

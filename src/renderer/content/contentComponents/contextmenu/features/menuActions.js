@@ -270,6 +270,12 @@ export const handleMenuItemClick = async (params) => {
                 break;
 
             case 'translate':
+                if (!target.dataset.value) {
+                    const submenu = target.querySelector('.context-submenu');
+                    if (submenu) submenu.classList.toggle('visible');
+                    return;
+                }
+
                 await handleTranslate({ target, hideMenu });
                 break;
 
@@ -319,7 +325,8 @@ export const handleMenuItemClick = async (params) => {
         console.error('[ContextMenu] handleMenuItemClick failed', error);
     } finally {
         // Don't hide menu if translate submenu was clicked
-        if (event.target.closest('[data-command="translate"]') === null) {
+        if (event.target.closest('[data-command="translate"]') === null &&
+            event.target.closest('.context-submenu') === null) {
             hideMenu();
         }
     }

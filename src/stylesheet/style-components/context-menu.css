@@ -95,9 +95,31 @@ body.darwin .context-menu {
     align-items: center;
 }
 
-.context-menu-item:hover {
+.context-menu-item span {
+    font-weight: 500;
+}
+
+/* .context-menu-item:hover {
     background-color: var(--theme-accent);
     color: var(--theme-accent-text);
+} */
+
+.mucous-highlight {
+    background-color: var(--theme-accent);
+    border-radius: var(--ctx-sub-menu-radius) !important;
+}
+
+.context-menu:has(.context-menu-item.disabled:hover) .mucous-highlight {
+    opacity: 0 !important;
+}
+
+.context-menu-item.hovered {
+    color: var(--theme-accent-text);
+}
+
+.context-menu-item[data-disabled='true'].hovered,
+.context-menu-item.disabled.hovered {
+    color: var(--ctx-menu-text) !important;
 }
 
 .context-menu-item[data-disabled='true'] .context-menu-shortcut {

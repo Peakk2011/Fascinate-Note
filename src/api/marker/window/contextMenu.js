@@ -1,11 +1,14 @@
+// Marker Window Context Menu Implementation
 import { Mint } from '@mintkit';
 import menuConfig from './contextMenuConfig.json';
+import Mucous from '../../../api/mucous.js';
 Mint.include('stylesheet/style-components/context-menu.css');
 
 let menuElement = null;
 let config = null;
 let currentWindowId = null;
 let handleOutsidePointerDown = null;
+let mucousInstance = null;
 
 /**
  * Renders the menu structure from the config.
@@ -125,6 +128,15 @@ export const createMarkerContextMenu = ({ onItemClick }) => {
     menuElement = document.getElementById(config.menuId);
 
     if (menuElement) {
+        // Attach Mucous hover highlight
+        mucousInstance = Mucous(menuElement, {
+            speed: 80,
+            itemSelector: ':scope > .context-menu-item:not([data-disabled="true"]):not(.disabled)',
+        });
+
+        // Reset overflow so nothing gets clipped
+        menuElement.style.overflow = '';
+
         menuElement.addEventListener('pointerdown', (e) => {
             e.stopPropagation();
         });
@@ -142,4 +154,22 @@ export const createMarkerContextMenu = ({ onItemClick }) => {
             }
         });
     }
+}
+
+/**
+ * Destroys the context menu and cleans up all resources.
+ */
+export const destroyMarkerContextMenu = () => {
+    mucousInstance?.destroy();
+    mucousInstance = null;
+
+    if (handleOutsidePointerDown) {
+        document.removeEventListener('pointerdown', handleOutsidePointerDown, true);
+        handleOutsidePointerDown = null;
+    }
+
+    menuElement?.remove();
+    menuElement = null;
+    config = null;
+    currentWindowId = null;
 }
