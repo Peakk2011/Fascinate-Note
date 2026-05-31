@@ -13,6 +13,7 @@ import { MissionView } from '../mission/MissionView.js';
 import { getFontSize, getCurrentNoteId } from '../sharedNoteStore.js';
 import { getState } from '../utils/config.js';
 import { createMarkerContextMenu } from '../window/contextMenu.js';
+import wait from '@wait';
 
 /**
  * Manages the marker board, including windows, groups, and interactions.
@@ -396,15 +397,16 @@ export class MarkerBoard {
     pulseBottomBar(mode = 'minimize') {
         if (!this.bottomBar) return;
         this.bottomBar.classList.remove('is-minimize-reacting', 'is-restore-reacting', 'is-denied');
-        
+
         void this.bottomBar.offsetWidth;
         this.bottomBar.classList.add(mode === 'restore' ? 'is-restore-reacting' : 'is-minimize-reacting');
-        
-        clearTimeout(this.bottomBarPulseTimeout);
-        
-        this.bottomBarPulseTimeout = setTimeout(() => {
-            this.bottomBar?.classList.remove('is-minimize-reacting', 'is-restore-reacting');
-        }, 745);
+
+        this.bottomBarPulseController?.abort();
+        this.bottomBarPulseController = new AbortController();
+
+        wait(745, this.bottomBarPulseController.signal)
+            .then(() => this.bottomBar?.classList.remove('is-minimize-reacting', 'is-restore-reacting'))
+            .catch(() => {});
     }
 
     shakeBottomBar() {
@@ -412,10 +414,13 @@ export class MarkerBoard {
         this.bottomBar.classList.remove('is-minimize-reacting', 'is-restore-reacting', 'is-denied');
         void this.bottomBar.offsetWidth;
         this.bottomBar.classList.add('is-denied');
-        clearTimeout(this.bottomBarShakeTimeout);
-        this.bottomBarShakeTimeout = setTimeout(() => {
-            this.bottomBar?.classList.remove('is-denied');
-        }, 420);
+
+        this.bottomBarShakeController?.abort();
+        this.bottomBarShakeController = new AbortController();
+
+        wait(420, this.bottomBarShakeController.signal)
+            .then(() => this.bottomBar?.classList.remove('is-denied'))
+            .catch(() => {});
     }
 
     animateWindowMinimize(win, element) {
@@ -450,20 +455,17 @@ export class MarkerBoard {
 
         this.pulseBottomBar('minimize');
 
-        return new Promise(resolve => {
-            requestAnimationFrame(() => {
-                ghost.style.left = `${targetRect.left + ((targetRect.width - sourceRect.width) * 0.5)}px`;
-                ghost.style.top = `${targetRect.top + ((targetRect.height - sourceRect.height) * 0.5) + 1}px`;
-                ghost.style.scale = '0.12';
-                ghost.style.opacity = '0';
-                ghost.style.filter = 'blur(18px)';
-            });
+        requestAnimationFrame(() => {
+            ghost.style.left = `${targetRect.left + ((targetRect.width - sourceRect.width) * 0.5)}px`;
+            ghost.style.top = `${targetRect.top + ((targetRect.height - sourceRect.height) * 0.5) + 1}px`;
+            ghost.style.scale = '0.12';
+            ghost.style.opacity = '0';
+            ghost.style.filter = 'blur(18px)';
+        });
 
-            window.setTimeout(() => {
-                actions?.classList.remove('is-minimizing');
-                ghost.remove();
-                resolve();
-            }, animationMs + 40);
+        return wait(animationMs + 40).then(() => {
+            actions?.classList.remove('is-minimizing');
+            ghost.remove();
         });
     }
 
@@ -491,13 +493,13 @@ export class MarkerBoard {
             });
         });
 
-        window.setTimeout(() => {
+        wait(animationMs).then(() => {
             element.classList.remove('is-restoring');
             element.style.removeProperty('opacity');
             element.style.removeProperty('filter');
             element.style.removeProperty('scale');
             element.style.removeProperty('will-change');
-        }, animationMs);
+        });
     }
 
     /**

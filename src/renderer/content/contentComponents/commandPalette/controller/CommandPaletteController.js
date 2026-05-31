@@ -5,8 +5,11 @@ import { CommandPaletteResults } from '../components/CommandPaletteResults.js';
 import { InputHandler } from '../handlers/InputHandler.js';
 import { CommandExecutor } from '../handlers/CommandExecutor.js';
 import { EventManager } from '../handlers/EventManager.js';
+import Mucous from '@mucous';
 
 export class CommandPaletteController {
+    #mucousObserver = null;
+
     constructor(config, systemCommands, markdownCommands, markerCommands, apis) {
         this.config = config;
 
@@ -20,6 +23,7 @@ export class CommandPaletteController {
         this.modal = new CommandPaletteModal(config);
         this.inputComponent = null;
         this.resultsComponent = null;
+        this.mucousInstance = null;
 
         // Handlers
         this.inputHandler = new InputHandler(systemCommands, markdownCommands, markerCommands);
@@ -52,6 +56,48 @@ export class CommandPaletteController {
         this.eventManager.registerEscapeKey(() => this.hide(), () => this.isVisible);
 
         this.resultsComponent.preventBlurOnClick(this.modal.input);
+    }
+
+    /**
+     * Destroy and re-init Mucous after every render
+     * because results DOM is replaced each time.
+     * MutationObserver watches for .active class changes
+     * from keyboard navigation and moves highlight accordingly.
+     */
+    #refreshMucous() {
+        this.mucousInstance?.destroy();
+        this.mucousInstance = null;
+        this.#mucousObserver?.disconnect();
+        this.#mucousObserver = null;
+
+        if (!this.modal.results) return;
+
+        this.mucousInstance = Mucous(this.modal.results, {
+            speed: 80,
+            easing: 'cubic-bezier(.4,0,.2,1)',
+            itemSelector: `:scope > .${this.config.itemClass}`,
+        });
+
+        // Reset overflow so Mucous doesn't clip anything
+        this.modal.results.style.overflow = '';
+
+        // Watch for .active toggled by keyboard navigation
+        this.#mucousObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.attributeName === 'class') {
+                    const item = mutation.target;
+                    if (item.classList.contains('active')) {
+                        this.mucousInstance?.moveTo(item);
+                    }
+                }
+            }
+        });
+
+        this.#mucousObserver.observe(this.modal.results, {
+            attributes: true,
+            attributeFilter: ['class'],
+            subtree: true,
+        });
     }
 
     #handleInputChange(value, isMarkdownMode) {
@@ -104,6 +150,7 @@ export class CommandPaletteController {
             },
             null
         );
+        this.#refreshMucous();
     }
 
     #renderMarkdownCommands(commands) {
@@ -121,6 +168,7 @@ export class CommandPaletteController {
                 }
             }
         );
+        this.#refreshMucous();
     }
 
     #renderMarkerCommands(commands) {
@@ -133,6 +181,7 @@ export class CommandPaletteController {
             },
             null
         );
+        this.#refreshMucous();
     }
 
     /**
@@ -235,6 +284,10 @@ export class CommandPaletteController {
     }
 
     destroy() {
+        this.mucousInstance?.destroy();
+        this.mucousInstance = null;
+        this.#mucousObserver?.disconnect();
+        this.#mucousObserver = null;
         this.inputComponent?.destroy();
         this.eventManager.destroy();
     }

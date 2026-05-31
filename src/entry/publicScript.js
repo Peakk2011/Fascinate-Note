@@ -8,7 +8,7 @@
  */
 const initOS = async () => {
     if (typeof window.electronAPI === 'undefined') {
-        setTimeout(initOS, 50);
+        wait(50).then(initOS);
         return;
     }
 

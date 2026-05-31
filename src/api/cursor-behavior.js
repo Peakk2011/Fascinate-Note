@@ -11,6 +11,8 @@
  * cursor.toggle();
  */
 
+import wait from '@wait';
+
 /** @private Throttles function calls */
 const throttle = (fn, limit) => {
     let inThrottle;
@@ -18,9 +20,9 @@ const throttle = (fn, limit) => {
         if (!inThrottle) {
             fn(...args);
             inThrottle = true;
-            setTimeout(() => {
+            wait(limit).then(() => {
                 inThrottle = false;
-            }, limit);
+            });
         }
     };
 };

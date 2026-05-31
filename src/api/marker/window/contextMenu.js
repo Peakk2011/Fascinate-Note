@@ -1,7 +1,8 @@
 // Marker Window Context Menu Implementation
 import { Mint } from '@mintkit';
 import menuConfig from './contextMenuConfig.json';
-import Mucous from '../../../api/mucous.js';
+import Mucous from '@mucous';
+import wait from '@wait';
 Mint.include('stylesheet/style-components/context-menu.css');
 
 let menuElement = null;
@@ -92,25 +93,33 @@ export const showContextMenu = ({ event, windowId, isPinned = false }) => {
  */
 export const hideContextMenu = () => {
     if (menuElement) {
+        const controller = new AbortController();
+
         menuElement.classList.remove('visible');
 
         const handleTransitionEnd = () => {
-            if (!menuElement.classList.contains('visible')) {
-                menuElement.style.display = 'none';
-            }
-    
+            controller.abort();
+            menuElement.style.display = 'none';
             menuElement.removeEventListener('transitionend', handleTransitionEnd);
         };
 
         menuElement.addEventListener('transitionend', handleTransitionEnd);
+
+        wait(300, controller.signal)
+            .then(() => {
+                menuElement.style.display = 'none';
+                menuElement.removeEventListener('transitionend', handleTransitionEnd);
+            })
+            .catch(() => {});
     }
+
     currentWindowId = null;
-    
+
     if (handleOutsidePointerDown) {
         document.removeEventListener('pointerdown', handleOutsidePointerDown, true);
         handleOutsidePointerDown = null;
     }
-}
+};
 
 /**
  * Creates and initializes the context menu.

@@ -1,10 +1,11 @@
 import path from 'node:path';
 import { safeLog } from '#utils-logger';
 import { app } from 'electron';
+import wait from '@wait';
 
 const isDev = !app.isPackaged;
 const VITE_DEV_SERVER_URL = "http://localhost:5173";
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const sleep = wait;
 
 /**
  * Loads the main interface HTML into the window

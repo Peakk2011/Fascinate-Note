@@ -73,14 +73,13 @@ export const createMarkerGroupModal = ({ onConfirm } = {}) => {
                 status.textContent = '';
             };
 
-            const show = () => {
+            const show = async () => {
                 modal.style.display = 'flex';
-                requestAnimationFrame(() => {
+                requestAnimationFrame(async () => {
                     modal.classList.add('visible');
-                    setTimeout(() => {
-                        input.focus();
-                        input.select();
-                    }, 50);
+                    await wait(50);
+                    input.focus();
+                    input.select();
                 });
             };
 

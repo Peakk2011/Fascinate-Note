@@ -12,7 +12,7 @@ import {
     isValidElement,
     removeAllEventListeners
 } from './utils/domUtility.js';
-import Mucous from '../../../../api/mucous.js';
+import Mucous from '@mucous';
 
 Mint.include('stylesheet/style-components/context-menu.css');
 

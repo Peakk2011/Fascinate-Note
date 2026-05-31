@@ -1,4 +1,5 @@
 import { translate } from '../../../../../api/translate/translator.js';
+import wait from '@wait';
 
 /**
  * Handle paste command
@@ -180,7 +181,11 @@ const handleTranslate = async ({ target, hideMenu }) => {
     range.insertNode(feedbackNode);
 
     try {
-        const translatedText = await translateFunc(selectedText);
+        const [translatedText] = await Promise.all([
+            translateFunc(selectedText),
+            wait(400),
+        ]);
+
         feedbackNode.textContent = translatedText;
 
         // Move cursor to the end of the translated text

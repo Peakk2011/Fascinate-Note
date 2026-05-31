@@ -96,6 +96,18 @@ export default defineConfig({
             '@fJson': resolve(
                 __dirname,
                 './src/utils/fetch.js'
+            ),
+
+            // Mucous
+            '@mucous': resolve(
+                __dirname,
+                './src/api/mucous.js'
+            ),
+
+            // Wait
+            '@wait': resolve(
+                __dirname,
+                './src/api/wait.js'
             )
         },
         dedupe: ['yjs', 'y-protocols', 'lib0']
