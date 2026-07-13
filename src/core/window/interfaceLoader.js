@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { safeLog } from '#utils-logger';
 import { app } from 'electron';
-import wait from '@wait';
+// import wait from '@wait';
+import wait from '../../api/wait.js';
 
 const isDev = !app.isPackaged;
 const VITE_DEV_SERVER_URL = "http://localhost:5173";
