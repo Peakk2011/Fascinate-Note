@@ -52,6 +52,11 @@ export const getWindowConfig = () => {
                 height: 38
             }
         }),
+        ...(OS === 'linux' && {
+            titleBarStyle: 'default',
+            frame: true,
+            transparent: false
+        }),
         webPreferences: {
             preload: resolvePath('../preload.js'),
             contextIsolation: true,

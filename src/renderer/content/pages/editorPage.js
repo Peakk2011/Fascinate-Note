@@ -205,19 +205,19 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
 
         // Command Palette - Markdown Helper
         /**
-         * Handle global keydown for Command Palette shortcut (Ctrl/Cmd+K).
+         * Handle global keydown for Command Palette shortcut (Ctrl/Cmd+Shift+P).
          * @param {KeyboardEvent} e
          */
         const handleCommandPaletteShortcut = (e) => {
-            if (!(e.ctrlKey || e.metaKey)) return;
+            if (!(e.ctrlKey || e.metaKey) || !e.shiftKey) return;
 
-            const keyIsK = e.code === 'KeyK' || (typeof e.key === 'string' && e.key.toLowerCase() === 'k');
+            const keyIsP = e.code === 'KeyP' || (typeof e.key === 'string' && e.key.toLowerCase() === 'p');
 
-            if (keyIsK) {
+            if (keyIsP) {
                 e.preventDefault();
                 const isInMarker = document.getElementById('workspace-container')
                     ?.classList.contains('is-active');
-                console.log('[shortcut] isInMarker:', isInMarker); // เพิ่ม
+                console.log('[shortcut] isInMarker:', isInMarker);
                 if (isInMarker) {
                     window.__commandPaletteAPI?.toggle('marker');
                     return;
