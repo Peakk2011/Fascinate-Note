@@ -1,18 +1,25 @@
 {
   "name": "fascinate-note",
+  "private": true,
   "productName": "Fascinate Note",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Feel the idea before you write it.",
   "main": "src/main.js",
   "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "start": "cross-env NODE_ENV=development node dev.js",
     "dev:renderer": "vite",
-    "dev:electron": "cross-env NODE_ENV=development electron .",
+    "dev:electron": "cross-env NODE_ENV=development electron . --ozone-platform=x11",
+    "dev:mobile": "npm --workspace apps/mobile run dev",
     "collab:server": "cross-env HOST=localhost PORT=1234 npx y-websocket",
     "build:renderer": "vite build",
     "build": "cross-env NODE_ENV=production npm run build:renderer && electron-builder",
     "build:dir": "cross-env NODE_ENV=production npm run build:renderer && electron-builder --dir",
+    "collab-server": "cross-env HOST=0.0.0.0 PORT=1234 y-websocket",
     "lint": "echo \"No linting configured\""
   },
   "keywords": [],
@@ -28,6 +35,7 @@
   "build": {
     "appId": "com.peakk.fascinatenote",
     "productName": "Fascinate Note",
+    "afterPack": "./scripts/sixPack.js",
     "directories": {
       "output": "dist"
     },
@@ -49,18 +57,40 @@
       "createStartMenuShortcut": true,
       "runAfterFinish": true
     }
+    ,
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/icons/icon.png"
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libuuid1"
+      ]
+    }
   },
   "dependencies": {
     "dom-to-image": "^2.6.0",
+    "dompurify": "^3.4.12",
     "electron-store": "^11.0.2",
+    "hammerjs": "^2.0.8",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.27"
   },
   "devDependencies": {
     "@y/websocket-server": "^0.1.1",
     "cross-env": "^10.1.0",
-    "electron": "38.4.0",
-    "electron-builder": "^26.0.12",
+    "electron": "^43.3.0",
+    "electron-builder": "^25.1.8",
     "vite": "^7.3.0"
   }
 }

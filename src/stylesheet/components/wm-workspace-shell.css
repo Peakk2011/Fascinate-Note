@@ -1,0 +1,380 @@
+/**
+ * @component WorkspaceMenuProfileModal
+ * @description Standalone Profile modal shell - mirrors .collab-share-root/-panel/-overlay/-modal
+ *              property-for-property, under different class names.
+ */
+.workspace-menu-view-root {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10001;
+    display: none;
+}
+
+.workspace-menu-view-root.is-visible {
+    display: block;
+}
+
+.workspace-menu-view-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+.workspace-menu-view-panel.is-visible {
+    display: block;
+    pointer-events: auto;
+}
+
+.workspace-menu-view-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--theme-overlay);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    opacity: 0;
+    transition:
+        opacity 220ms cubic-bezier(0.32, 0.72, 0, 1),
+        backdrop-filter 420ms cubic-bezier(0.32, 0.72, 0, 1),
+        -webkit-backdrop-filter 420ms cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+}
+
+.workspace-menu-view-overlay.is-visible {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    pointer-events: auto;
+}
+
+.workspace-menu-view-overlay::after {
+    position: absolute;
+    top: 0;
+    width: 100vw;
+    height: 38px;
+    background-color: var(--theme-bg);
+    content: '';
+}
+
+.workspace-menu-view-overlay::before {
+    position: absolute;
+    content: 'Your Profile';
+    top: 0;
+    z-index: 2;
+
+    left: calc(var(--status-right) - 6px);
+    right: 0;
+
+    top: calc(var(--status-top) - 14px);
+    font-family: var(--font-display);
+    font-size: var(--titlebar-font-size);
+    font-weight: var(--titlebar-font-weight);
+    letter-spacing: -0.2px;
+}
+
+body.linux .workspace-menu-view-overlay::before,
+body.linux .workspace-menu-view-overlay::after {
+    display: none;
+}
+
+.workspace-menu-view {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    transform: translate(-50%, calc(-50% + 100vh));
+    transition: transform 500ms cubic-bezier(0.32, 0.72, 0, 1);
+
+    width: 300px;
+    max-height: calc(100vh - 100px);
+    display: flex;
+    border-radius: 8px;
+    box-shadow: var(--theme-shadow-panel);
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-border);
+    overflow-y: auto;
+}
+
+.workspace-menu-view.is-open {
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+}
+
+.workspace-menu-view.is-closing {
+    transform: translate(-50%, calc(-50% + 100vh));
+    pointer-events: none;
+}
+
+.workspace-menu-view-inner {
+    width: 100%;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+.workspace-menu-view-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: fixed;
+    right: 12px;
+    height: 32px;
+    z-index: 999;
+}
+
+.workspace-menu-view-close {
+    border: none;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 160ms ease, background 160ms ease;
+
+    background: var(--theme-surface-solid);
+    border-radius: 100vmax;
+    border: solid 1px var(--theme-border);
+    color: var(--theme-fg);
+    box-shadow: var(--theme-shadow);
+}
+
+.workspace-menu-view-close:hover {
+    opacity: 1;
+    background: var(--hover-color, rgba(255, 255, 255, 0.06));
+}
+
+.workspace-menu-view-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+    transition: height 380ms cubic-bezier(0.33, 0, 0.2, 1);
+}
+
+.workspace-menu-view-title {
+    margin: 6px 0 0;
+    font-family: var(--font-text);
+    font-weight: 550;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.88px;
+    color: var(--theme-fg);
+    text-transform: capitalize;
+}
+
+.workspace-menu-view-description {
+    margin: 0;
+    font-family: var(--font-display, 'Inter', system-ui, sans-serif);
+    font-weight: 450;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--theme-fg);
+    opacity: 0.6;
+}
+
+/* Profile picture */
+
+.workspace-menu-header-row {
+    display: flex;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+    border-bottom: solid 1px var(--theme-border);
+}
+
+.workspace-menu-profile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: var(--export-menu-border-radius);
+    transition: var(--zoom-btn-transition);
+
+    transform: translateY(-2.5px);
+}
+
+.workspace-menu-profile:hover {
+    background: var(--theme-accent);
+}
+
+.workspace-menu-profile:hover #workspace-menu-profile-view-name {
+    color: var(--theme-accent-text);
+}
+
+.workspace-menu-profile:hover .workspace-menu-profile-label {
+    color: var(--zoom-btn-hover-color);
+}
+
+.workspace-menu-profile-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background-color: var(--theme-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    overflow: hidden;
+}
+
+.workspace-menu-profile-icon.hidden {
+    display: none;
+}
+
+.workspace-menu-profile-label,
+.workspace-menu-profile-label div {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--theme-fg);
+    text-align: left;
+}
+
+.workspace-menu-profile-label div {
+    font-size: 14px;
+}
+
+/*  */
+
+/**
+ * @component WorkspaceMenuProfileSteps
+ * @description Page-slide navigation between the profile option list and
+ *              each detail screen (upload / custom / delete). Mirrors the
+ *              step-slide pattern used elsewhere but scoped under its own
+ *              wm- prefixed classes to keep isolation from .collab-share-step.
+ */
+.workspace-menu-profile-viewport {
+    position: relative;
+    width: 100%;
+}
+
+.workspace-menu-profile-steps {
+    position: relative;
+    width: 100%;
+}
+
+.workspace-menu-profile-step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+}
+
+.workspace-menu-profile-step.hidden {
+    display: none;
+}
+
+.workspace-menu-profile-step.is-sliding {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+}
+
+.workspace-menu-profile-step.wm-slide-out-left,
+.workspace-menu-profile-step.wm-slide-out-right,
+.workspace-menu-profile-step.wm-slide-in-left,
+.workspace-menu-profile-step.wm-slide-in-right {
+    transition: transform 380ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.workspace-menu-profile-step.wm-slide-out-left {
+    transform: translateX(0);
+}
+
+.workspace-menu-profile-step.wm-slide-out-left.wm-slide-out-left-active {
+    transform: translateX(-150%);
+}
+
+.workspace-menu-profile-step.wm-slide-out-right {
+    transform: translateX(0);
+}
+
+.workspace-menu-profile-step.wm-slide-out-right.wm-slide-out-right-active {
+    transform: translateX(150%);
+}
+
+.workspace-menu-profile-step.wm-slide-in-right {
+    transform: translateX(150%);
+}
+
+.workspace-menu-profile-step.wm-slide-in-right.wm-slide-in-right-active {
+    transform: translateX(0);
+}
+
+.workspace-menu-profile-step.wm-slide-in-left {
+    transform: translateX(-150%);
+}
+
+.workspace-menu-profile-step.wm-slide-in-left.wm-slide-in-left-active {
+    transform: translateX(0);
+}
+
+.workspace-menu-profile-step-back {
+    align-self: flex-start;
+    background: var(--theme-surface-solid);
+    border-radius: 100vmax;
+    border: solid 1px var(--theme-border);
+    color: var(--theme-fg);
+    box-shadow: var(--theme-shadow);
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 160ms ease, background 160ms ease;
+}
+
+.workspace-menu-profile-step-back:hover {
+    background: var(--hover-color);
+}
+
+.wm-meta-description-details {
+    margin-bottom: 0rem;
+    margin-top: 0rem;
+}
+
+.wm-meta-desc {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5px;
+}
+
+.wm-meta-description-display-name {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+    .workspace-menu-view {
+        width: calc(100% - 24px);
+        max-width: 300px;
+        left: 50%;
+        top: 50%;
+    }
+
+    .workspace-menu-view.is-open {
+        transform: translate(-50%, -50%);
+    }
+
+    .workspace-menu-view.is-closing,
+    .workspace-menu-view:not(.is-open) {
+        transform: translate(-50%, calc(-50% + 100vh));
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    .workspace-menu-view {
+        box-shadow: var(--theme-shadow);
+        background: #fbfbfb;
+    }
+}

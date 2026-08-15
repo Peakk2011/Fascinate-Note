@@ -15,7 +15,7 @@ const parseMarkdownInPastedText = (text) => {
 
     /**
      * Parse inline markdown: bold, italic, strikethrough, code, mark, HTML mark tag
-     * Order matters — bold+italic (***) before bold (**) before italic (*)
+     * Order matters - bold+italic (***) before bold (**) before italic (*)
      *
      * @param {string} text
      * @returns {string}
@@ -124,7 +124,7 @@ const parseMarkdownInPastedText = (text) => {
 
                     html += `<li>${parseInline(content)}${nestedHtml}</li>`;
                 } else {
-                    // Deeper indent handled by recursive peek above — skip
+                    // Deeper indent handled by recursive peek above - skip
                     idx++;
                 }
             }

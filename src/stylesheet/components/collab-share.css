@@ -1,0 +1,1712 @@
+/**
+ * @component Collaboration Share
+ * @description Collaboration Share Model styling
+ * @uses Better UI, Share User-Interface
+ */
+.collab-share-root {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 10001;
+    display: none;
+}
+
+.collab-share-root.is-visible {
+    display: block;
+}
+
+.collab-share-panel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+.collab-share-panel.is-visible {
+    display: block;
+    pointer-events: auto;
+}
+
+.collab-share-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--theme-overlay);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    opacity: 0;
+    transition:
+        opacity 220ms cubic-bezier(0.32, 0.72, 0, 1),
+        backdrop-filter 420ms cubic-bezier(0.32, 0.72, 0, 1),
+        -webkit-backdrop-filter 420ms cubic-bezier(0.32, 0.72, 0, 1);
+    pointer-events: none;
+}
+
+.collab-share-overlay::after {
+    position: absolute;
+    top: 0;
+    width: 100vw;
+    height: 38px;
+    background-color: var(--theme-bg);
+    content: '';
+}
+
+.collab-share-overlay::before {
+    position: absolute;
+    content: 'Collaborate';
+    top: 0;
+    z-index: 2;
+
+    left: calc(var(--status-right) - 6px);
+    right: 0;
+
+    top: calc(var(--status-top) - 14px);
+    font-family: var(--font-display);
+    font-size: var(--titlebar-font-size);
+    font-weight: var(--titlebar-font-weight);
+    letter-spacing: -0.25px;
+}
+
+body:not(.win32):not(.darwin) .collab-share-overlay::before,
+body:not(.win32):not(.darwin) .collab-share-overlay::after {
+    display: none;
+}
+
+.collab-share-overlay.is-visible {
+    opacity: 1;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    pointer-events: auto;
+}
+
+.collab-share-modal,
+.collab-share-sidebar {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    pointer-events: none;
+    transform: translate(-50%, calc(-50% + 100vh));
+    transition: transform 500ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.collab-share-modal.is-open,
+.collab-share-sidebar.is-open {
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+}
+
+.collab-share-modal.is-closing,
+.collab-share-sidebar.is-closing {
+    transform: translate(-50%, calc(-50% + 100vh));
+    pointer-events: none;
+}
+
+.collab-share-sidebar.hidden {
+    display: none !important;
+}
+
+.collab-share-modal {
+    width: 300px;
+    max-height: calc(100vh - 56px);
+    display: flex;
+    border-radius: 8px;
+    box-shadow: var(--theme-shadow-panel);
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-border);
+    overflow-y: auto;
+}
+
+.collab-share-modal-inner {
+    width: 100%;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+}
+
+/*
+   Header bar
+ */
+
+.collab-share-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    height: 32px;
+}
+
+.collab-share-header-left {
+    display: flex;
+    align-items: center;
+    background: var(--theme-surface-solid);
+    border-radius: 100vmax;
+    border: solid 1px var(--theme-border);
+    box-shadow: var(--theme-shadow);
+}
+
+.collab-share-header-right {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+    position: absolute;
+    right: 0;
+    top: 0;
+}
+
+.collab-share-header-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--theme-border);
+    flex: 0 0 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+.collab-share-header-icon::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 22%;
+    width: 11px;
+    height: 11px;
+    background: var(--theme-bg);
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+.collab-share-header-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -6px;
+    width: 24px;
+    height: 16px;
+    background: var(--theme-bg);
+    border-radius: 12px 12px 0 0;
+    transform: translateX(-50%);
+}
+
+.collab-share-back {
+    border: none;
+    background: var(--theme-surface-solid);
+    color: var(--theme-fg);
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 100vmax 0px 0px 100vmax;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 160ms ease, background 160ms ease;
+    border-right: solid 1px var(--theme-border);
+
+}
+
+.collab-share-back:hover:not(.is-muted),
+.collab-share-minimized:hover {
+    opacity: 1;
+    background: var(--hover-color);
+}
+
+.collab-share-back.is-muted {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
+}
+
+.collab-share-close {
+    border: none;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 160ms ease, background 160ms ease;
+
+    background: var(--theme-surface-solid);
+    border-radius: 100vmax;
+    border: solid 1px var(--theme-border);
+    color: var(--theme-fg);
+    box-shadow: var(--theme-shadow);
+}
+
+.collab-share-close:hover {
+    opacity: 1;
+    background: var(--hover-color, rgba(255, 255, 255, 0.06));
+}
+
+/*
+   Title + description
+ */
+
+.collab-share-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    width: 100%;
+    transition: height 380ms cubic-bezier(0.33, 0, 0.2, 1);
+}
+
+.collab-share-title {
+    margin: 8px 0 0;
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: 24px;
+    line-height: 1.1;
+    letter-spacing: -0.88px;
+    color: var(--theme-fg);
+    text-transform: capitalize;
+}
+
+.collab-share-description {
+    font-family: var(--font-display);
+    font-weight: 450;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--theme-fg);
+    opacity: 0.6;
+}
+
+.collab-share-step-title {
+    margin: 8px 0 0;
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: 22px;
+    line-height: 1.1;
+    letter-spacing: -0.6px;
+    color: var(--theme-fg);
+    text-transform: capitalize;
+}
+
+.collab-share-step-description {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 450;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--theme-fg);
+    opacity: 0.6;
+}
+
+/*
+   Step container
+ */
+
+.collab-share-steps-viewport {
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: 12px;
+    margin: -12px;
+    transition: height 380ms cubic-bezier(0.33, 0, 0.2, 1);
+}
+
+.collab-share-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    position: relative;
+}
+
+/* Welcome User Interface */
+
+#collab-share-step-welcome .collab-share-label {
+    margin-top: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+#collab-share-step-welcome .collab-share-primary-button {
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.collab-share-step {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    width: 100%;
+}
+
+.collab-share-step.is-sliding {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    transition: transform 320ms cubic-bezier(0.33, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.collab-share-step.is-sliding.slide-out-left {
+    transform: translateX(0);
+}
+
+.collab-share-step.is-sliding.slide-out-left.slide-out-left-active {
+    transform: translateX(-110%);
+}
+
+.collab-share-step.is-sliding.slide-out-right {
+    transform: translateX(0);
+}
+
+.collab-share-step.is-sliding.slide-out-right.slide-out-right-active {
+    transform: translateX(110%);
+}
+
+.collab-share-step.is-sliding.slide-in-right {
+    transform: translateX(110%);
+}
+
+.collab-share-step.is-sliding.slide-in-right.slide-in-right-active {
+    transform: translateX(0);
+}
+
+.collab-share-step.is-sliding.slide-in-left {
+    transform: translateX(-110%);
+}
+
+.collab-share-step.is-sliding.slide-in-left.slide-in-left-active {
+    transform: translateX(0);
+}
+
+.collab-share-step.is-dragging {
+    transition: none;
+}
+
+.collab-share-step.hidden {
+    display: none !important;
+}
+
+/*
+   Labels + inputs
+ */
+
+.collab-share-label {
+    display: block;
+    font-family: var(--font-text);
+    letter-spacing: -0.15px;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--theme-fg);
+    opacity: 0.6;
+    margin: 0;
+}
+
+.collab-share-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+    margin-bottom: 0.25rem;
+}
+
+.collab-share-meta {
+    font-family: var(--font-text);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: -0.4px;
+    color: var(--theme-fg);
+    opacity: 0.6;
+    text-transform: capitalize;
+}
+
+.collab-share-input {
+    width: 100%;
+    height: 36px;
+    border-radius: 100vmax;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg);
+    padding: 0 12px;
+    color: var(--theme-fg);
+    font-family: var(--font-text), sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.24px;
+    outline: none;
+    box-shadow: var(--theme-shadow-control);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.collab-share-input::placeholder {
+    color: var(--theme-fg);
+    opacity: 0.5;
+    font-style: italic;
+}
+
+.collab-share-input:focus {
+    border-color: var(--theme-border);
+    box-shadow:
+        0 0 0 1px var(--theme-border),
+        var(--theme-shadow-control);
+}
+
+.collab-share-input[type="file"] {
+    border-radius: 8px;
+    padding: 6px 10px;
+    height: auto;
+}
+
+.collab-share-color-input {
+    border-radius: 8px;
+    padding: 4px;
+    height: 40px;
+    cursor: pointer;
+}
+
+.collab-share-error {
+    display: none;
+}
+
+/*
+   Primary / pill buttons
+ */
+
+.collab-share-primary-button,
+.collab-share-pill-button {
+    border: none;
+    border-radius: 100vmax;
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+    border: solid 1px var(--theme-border);
+    cursor: pointer;
+    font-size: 12px;
+    height: 35px;
+    padding: 0 12px;
+    box-shadow: var(--theme-shadow-control);
+    transition: transform 160ms ease, background 180ms ease, opacity 180ms ease;
+    align-self: stretch;
+    font-weight: 500;
+    font-family: var(--font-text);
+    vertical-align: middle;
+}
+
+.collab-share-primary-button span {
+    font-weight: 500;
+    font-family: var(--font-text);
+}
+
+.collab-share-primary-button:disabled,
+.collab-share-pill-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.collab-share-pill-button:not(:disabled):hover {
+    background: var(--hover-color);
+}
+
+.collab-share-pill-button {
+    width: 100%;
+    font-weight: 500;
+    font-family: var(--font-text);
+    margin-bottom: 0.25rem;
+}
+
+.collab-share-danger-button {
+    background: var(--theme-danger);
+    color: var(--theme-danger-text);
+    height: 36px;
+}
+
+.collab-share-danger-button:hover {
+    background: var(--theme-danger) !important;
+    color: var(--theme-danger-text) !important;
+    opacity: 0.7;
+}
+
+.collab-share-secondary-button {
+    outline: 1px solid var(--theme-border);
+    border: solid 0px transparent;
+    border-radius: 100vmax;
+    background: transparent;
+    color: var(--theme-fg);
+    background: var(--theme-surface-solid);
+    cursor: pointer;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 12px;
+    height: 35px;
+    padding: 0 14px;
+    transition: opacity 160ms ease, background 160ms ease;
+}
+
+.collab-share-secondary-button:hover {
+    background: var(--hover-color);
+}
+
+/*
+   Action grid (Welcome / Action step) - pill choices
+ */
+
+.collab-share-action-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.collab-share-choice {
+    width: 100%;
+    height: 40px;
+    border: 1px solid var(--theme-border);
+    border-radius: 100vmax;
+    background: var(--theme-bg);
+    color: var(--theme-fg);
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 0;
+    cursor: pointer;
+    text-align: left;
+    box-shadow: var(--theme-shadow);
+    transition: border-color 180ms ease, transform 180ms ease, background 180ms ease;
+    position: relative;
+}
+
+.collab-share-choice:hover {
+    border-color: #545454;
+    background: var(--hover-color);
+}
+
+.collab-share-choice-clip {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.collab-share-choice-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--theme-border);
+    flex: 0 0 40px;
+    margin-left: -1px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Profile icons */
+.collab-share-choice-icon::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 22%;
+    width: 13px;
+    height: 13px;
+    background: var(--theme-bg);
+    border-radius: 50%;
+    transform: translateX(-50%);
+}
+
+.collab-share-choice-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -7px;
+    width: 30px;
+    height: 20px;
+    background: var(--theme-bg);
+    border-radius: 15px 15px 0 0;
+    transform: translateX(-50%);
+}
+
+.collab-share-choice-label {
+    font-family: var(--font-display);
+    font-weight: 450;
+    font-size: 14px;
+    letter-spacing: -0.2px;
+    color: var(--theme-fg);
+    opacity: 0.65;
+    text-transform: capitalize;
+}
+
+/*
+   OTP group
+ */
+
+.collab-share-otp-group {
+    display: grid;
+    grid-template-columns: repeat(6, 40px);
+    gap: 6px;
+    justify-content: space-between;
+    margin: 4px 0 0;
+}
+
+.collab-share-otp-input {
+    width: 40px;
+    height: 47px;
+    border-radius: 6px;
+    border: 1px solid var(--theme-border);
+    background: var(--theme-bg);
+    color: var(--theme-fg);
+    text-align: center;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: 0;
+    padding: 0;
+    outline: none;
+    box-shadow: var(--theme-shadow-control);
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.collab-share-otp-input:focus {
+    border-color: var(--theme-border);
+    box-shadow:
+        0 0 0 1px var(--theme-border),
+        var(--theme-shadow-control);
+}
+
+.collab-share-otp-input.shake {
+    animation: shake 260ms ease;
+}
+
+.collab-share-hint {
+    margin: 0;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: -0.2px;
+    color: var(--theme-fg);
+    opacity: 0.6;
+    text-transform: capitalize;
+    margin-top: 0.2rem;
+}
+
+.wm-collab-hint {
+    position: absolute;
+    bottom: 0;
+    font-size: 10px;
+}
+
+/*
+   Footer row (Create step)
+ */
+
+.collab-share-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    gap: 0.5rem;
+}
+
+.wm-crop-operator-btn {
+    margin-top: 12px;
+    margin-bottom: 1rem;
+}
+
+/*
+   Profile step
+ */
+
+.collab-share-profile-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.collab-share-sync-status {
+    font-family: var(--font-display);
+    font-size: 11px;
+    letter-spacing: -0.2px;
+    opacity: 0.7;
+    min-height: 14px;
+    color: var(--theme-fg);
+}
+
+.collab-share-sync-status[data-status="unsaved"],
+.collab-share-sync-status[data-status="retrying"] {
+    color: var(--theme-danger, #ff6b6b);
+    opacity: 1;
+}
+
+.collab-share-sync-status[data-status="synced"] {
+    opacity: 0.55;
+}
+
+.collab-share-profile-options {
+    display: flex;
+    flex-direction: column;
+    margin: 8px 0 0px;
+}
+
+.collab-share-profile-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 12px;
+    transform: translateX(-15px);
+    border: 0px solid var(--theme-border);
+    /* border-radius: 12px; */
+    width: 111%;
+    cursor: pointer;
+    transition: border-color 180ms ease, background 180ms ease;
+}
+
+.collab-share-profile-option:hover {
+    border-color: #545454;
+    background: var(--hover-color);
+}
+
+.collab-share-profile-option-icon {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    display: grid;
+    place-items: center;
+}
+
+.collab-share-profile-option-icon svg {
+    fill: var(--theme-accent);
+}
+
+.collab-share-profile-option-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.collab-share-profile-option-info .collab-share-step-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0;
+    letter-spacing: -0.45px;
+}
+
+.collab-share-profile-option-info .collab-share-step-description {
+    font-size: 12px;
+    opacity: 0.65;
+    font-weight: 400;
+}
+
+.collab-share-profile-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-top: 4px;
+    border-top: 1px solid var(--theme-border);
+    margin-top: 4px;
+}
+
+.collab-share-profile-preview-container,
+.collab-share-preview-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    padding: 8px 0 2px;
+}
+
+.collab-share-profile-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--theme-border);
+    display: grid;
+    place-items: center;
+    font-size: 40px;
+    overflow: hidden;
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--theme-shadow-control);
+}
+
+.collab-share-file-input-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.collab-share-profile-preview-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 150ms ease;
+    pointer-events: none;
+}
+
+.collab-share-profile-preview-container:hover .collab-share-profile-preview-overlay,
+.collab-share-profile-preview-container:focus-within .collab-share-profile-preview-overlay {
+    opacity: 1;
+    scale: 1.08;
+}
+
+.collab-share-profile-preview.is-placeholder,
+.workspace-menu-profile-view-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-fg);
+}
+
+.collab-share-profile-preview-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    transition: transform 150ms ease;
+    gap: 4px;
+    border-bottom: solid 1px var(--theme-accent);
+    margin-top: 1.25rem;
+    margin-bottom: 0.4rem;
+}
+
+.collab-share-profile-preview-badge p {
+    font-family: var(--font-text);
+    letter-spacing: -0.4px;
+    color: var(--theme-accent);
+    vertical-align: middle;
+}
+
+.collab-share-profile-preview.is-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--theme-fg);
+    box-shadow: var(--theme-shadow);
+}
+
+/*
+   Crop tool
+ */
+
+.collab-share-crop-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.collab-share-crop-viewport {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background: var(--theme-border);
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--theme-shadow-control);
+    cursor: grab;
+    touch-action: none;
+}
+
+.collab-share-crop-viewport:active {
+    cursor: grabbing;
+}
+
+.collab-share-crop-image {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    max-width: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.collab-share-crop-zoom {
+    width: 140px;
+    height: 6px;
+    margin-top: 12px;
+    accent-color: var(--theme-accent);
+    border-radius: 4px;
+    background: var(--theme-border);
+    box-shadow: var(--theme-shadow-control);
+    appearance: none;
+    cursor: pointer;
+    transition: height 0.2s ease;
+}
+
+.collab-share-crop-zoom::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--theme-accent);
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.250), 0 8px 32px rgba(0, 0, 0, 0.300);
+    transition: 0.15s ease;
+}
+
+.collab-share-crop-zoom::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+}
+
+.collab-share-crop-undo-redo {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#collab-share-crop-confirm:hover {
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+    opacity: 0.7;
+}
+
+.collab-share-icon-button {
+    align-self: flex-start;
+    border-radius: 100vmax;
+    outline: solid 1px var(--theme-border);
+    border: solid 0px var(--theme-border);
+    color: var(--theme-fg);
+    box-shadow: var(--theme-shadow);
+    background: var(--theme-surface-solid);
+    width: 35px;
+    height: 35px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 160ms ease, background 160ms ease;
+}
+
+.collab-share-icon-button:hover {
+    background: var(--hover-color);
+}
+
+/*
+   Sidebar (session panel) - kept compact to match overall feel
+ */
+
+.collab-share-sidebar {
+    width: min(300px, calc(100% - 24px));
+    max-height: calc(100vh - 36px);
+    border-radius: 8px;
+    background: var(--theme-bg);
+    border: 1px solid var(--theme-border);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--theme-shadow-panel);
+}
+
+.collab-share-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 12px;
+}
+
+.collab-share-sidebar-header-left {
+    display: flex;
+    align-items: center;
+    background: var(--theme-surface-solid);
+    border-radius: 100vmax;
+    border: solid 1px var(--theme-border);
+    box-shadow: var(--theme-shadow);
+    flex: 0 0 auto;
+}
+
+.collab-share-sidebar-header-main {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.collab-share-sidebar-header .collab-share-back {
+    border-right: none;
+    border-radius: 100vmax;
+}
+
+.collab-share-sidebar-header h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: 14px;
+    letter-spacing: -0.25px;
+    text-transform: capitalize;
+    text-align: center;
+}
+
+.collab-share-sidebar-subtitle {
+    color: var(--theme-fg);
+    opacity: 0.6;
+    font-size: 11px;
+    font-family: var(--font-text);
+    text-align: center;
+    line-height: 1.4;
+}
+
+.collab-share-sidebar-content {
+    padding: 0px 14px 14px;
+    display: grid;
+    gap: 0.7rem;
+}
+
+.collab-share-current-session {
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+    padding: 12px;
+    background: var(--theme-bg);
+    box-shadow: var(--theme-shadow-control);
+    margin-bottom: 0.5rem;
+}
+
+.collab-share-participants-list {
+    display: grid;
+    margin: 0.2rem 0 0.5rem;
+}
+
+.collab-share-participant {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-display);
+    font-size: 12px;
+}
+
+.collab-share-participant-role {
+    opacity: 0.7;
+    font-size: 11px;
+    color: var(--theme-fg);
+}
+
+.collab-share-sync-indicator {
+    display: inline-block;
+    padding: 0.1rem 0.4rem;
+    border-radius: 6px;
+    font-size: 11px;
+}
+
+.collab-share-current-card {
+    display: grid;
+}
+
+.collab-share-current-card h1 {
+    font-family: var(--font-display-heading);
+    font-size-adjust: from-font;
+    letter-spacing: var(--editor-heading-letter-spacing);
+    font-weight: var(--editor-heading-weight);
+}
+
+.collab-share-current-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-display);
+    font-size: 12px;
+    margin-top: 0.5rem;
+}
+
+.collab-share-current-label {
+    opacity: 0.65;
+    font-size: 11px;
+}
+
+.collab-share-current-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0.5rem 0 0.2rem 0;
+    gap: 0.5rem;
+}
+
+.collab-share-history-panel {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.collab-share-history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.collab-share-history-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.4rem;
+    box-shadow: var(--theme-shadow);
+    border-radius: 10px;
+}
+
+.collab-share-history-item-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+/* Delete layer sits behind the card, revealed as the card slides away on swipe */
+.collab-share-history-item-delete {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.collab-share-history-delete-btn {
+    /* border: none; */
+    /* background: transparent; */
+    /* color: #fff; */
+    /* font-family: var(--font-display); */
+    /* font-weight: 500; */
+    /* font-size: 11px; */
+    /* cursor: pointer; */
+    /* padding: 0 16px; */
+    /* height: 100%; */
+    display: none;
+}
+
+.collab-share-history-item {
+    border: 1px solid var(--theme-border);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    background: var(--theme-bg);
+    box-shadow: var(--theme-shadow);
+    position: relative;
+    z-index: 1;
+    touch-action: pan-y;
+    transition: transform 220ms ease;
+}
+
+.collab-share-history-item.is-dragging {
+    transition: none;
+}
+
+.collab-share-history-meta {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.collab-share-history-title {
+    font-family: var(--font-display-heading);
+    font-size-adjust: from-font;
+    letter-spacing: -0.2px;
+    font-weight: var(--editor-heading-weight);
+    font-size: 12px;
+}
+
+.collab-share-history-subtitle {
+    opacity: 0.65;
+    font-size: 11px;
+    font-family: var(--font-text);
+    letter-spacing: -0.35px;
+}
+
+.collab-share-history-actions {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+}
+
+.collab-share-history-button {
+    border: 1px solid var(--theme-border);
+    box-shadow: var(--theme-shadow);
+    background-color: var(--PrimaryButtonsColors);
+    border-radius: 100vmax;
+    padding: 0.45rem 0.65rem;
+    cursor: pointer;
+    color: var(--theme-fg);
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    transition: opacity 180ms ease;
+}
+
+.collab-share-history-button:hover {
+    opacity: 1;
+    background-color: var(--hover-color);
+}
+
+.collab-share-history-count {
+    opacity: 0.65;
+    font-size: 11px;
+    font-family: var(--font-text);
+    letter-spacing: -0.35px;
+}
+
+/*
+   Minimized pill
+ */
+
+.collab-share-minimized {
+    border: solid 0px var(--theme-border);
+    border-left: none;
+    background: var(--theme-surface-solid);
+    color: var(--theme-fg);
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 0px 100vmax 100vmax 0px;
+    pointer-events: auto;
+    cursor: pointer;
+    padding: 0;
+    z-index: 1;
+    transition: opacity 160ms ease, background 160ms ease;
+}
+
+.collab-share-minimized-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: var(--theme-accent);
+    color: var(--theme-accent-text);
+    font-size: 10px;
+    display: grid;
+    place-items: center;
+    padding: 0 4px;
+}
+
+/*
+   Toasts
+ */
+
+.collab-share-toast-container {
+    position: fixed;
+    top: 48px;
+    right: 12px;
+    display: grid;
+    gap: 0.5rem;
+    z-index: 10003;
+    pointer-events: none;
+}
+
+.collab-share-toast {
+    min-width: fit-content;
+    /* max-width: 280px; */
+    padding: 0.4rem 0.8rem;
+    border-radius: 100vmax;
+    background: var(--theme-toast-bg);
+    backdrop-filter: blur(20px);
+    border: solid 1px var(--theme-border);
+    color: var(--theme-toast-text);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 200ms ease, transform 200ms ease;
+    pointer-events: auto;
+    font-family: var(--font-text), sans-serif;
+    letter-spacing: -0.15px;
+    font-size: 12px;
+
+    /* Slide left Anim */
+    transform: translateX(50%);
+}
+
+.collab-share-toast.visible {
+    opacity: 1;
+    transform: none;
+}
+
+.collab-share-toast-warning {
+    background: var(--theme-toast-warning-bg);
+    color: #000;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-6px);
+    }
+
+    75% {
+        transform: translateX(6px);
+    }
+}
+
+/* Swipe-to-delete animation removed */
+
+@media (max-width: 640px) {
+
+    .collab-share-modal,
+    .collab-share-sidebar {
+        width: calc(100% - 24px);
+        max-width: 300px;
+        left: 50%;
+        top: 50%;
+    }
+
+    .collab-share-modal.is-open,
+    .collab-share-sidebar.is-open {
+        transform: translate(-50%, -50%);
+    }
+
+    .collab-share-modal.is-closing,
+    .collab-share-sidebar.is-closing,
+    .collab-share-modal:not(.is-open),
+    .collab-share-sidebar:not(.is-open):not(.hidden) {
+        transform: translate(-50%, calc(-50% + 100vh));
+    }
+
+    .collab-share-otp-group {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
+/*
+   Light mode overrides - keep the compact shape but soften the look so the
+   card doesn't feel like a dark void on a light background.
+ */
+
+@media (prefers-color-scheme: light) {
+
+    .collab-share-modal,
+    .collab-share-sidebar,
+    .collab-share-input,
+    .collab-share-otp-input,
+    .collab-share-choice,
+    .collab-share-pill-button,
+    .collab-share-current-session,
+    .collab-share-history-item,
+    .collab-share-minimized {
+        box-shadow: var(--theme-shadow);
+    }
+
+    .collab-share-modal,
+    .collab-share-sidebar {
+        background: #fbfbfb;
+    }
+
+    .collab-share-choice {
+        background-color: #f7f7f7;
+    }
+
+    .collab-share-choice:hover {
+        background-color: #efefef;
+        border-color: var(--theme-border);
+    }
+
+    .collab-share-header-icon,
+    .collab-share-choice-icon {
+        background: var(--theme-icon-surface);
+    }
+
+
+    .collab-share-header-icon-1,
+    .collab-share-header-icon-2 {
+        background:
+            radial-gradient(circle at 50% 38%, var(--theme-icon-mark) 0 6px, transparent 7px),
+            var(--theme-icon-surface);
+    }
+
+    .collab-share-choice-icon {
+        background:
+            radial-gradient(circle at 50% 45%, var(--theme-icon-mark-strong) 0 4px, transparent 5px),
+            var(--theme-icon-surface);
+    }
+
+    .collab-share-primary-button {
+        background: var(--theme-solid-button-bg);
+        color: var(--theme-solid-button-text);
+    }
+
+    .collab-share-profile-option-icon svg,
+    .collab-share-profile-preview-badge svg {
+        fill: var(--theme-accent-dark);
+    }
+
+    .collab-share-profile-preview-badge {
+        border-bottom: 1px solid var(--theme-accent-dark);
+    }
+
+    .collab-share-profile-preview-badge p {
+        color: var(--theme-accent-dark);
+    }
+
+    .collab-share-crop-zoom {
+        accent-color: var(--theme-accent-dark);
+    }
+}
+
+/*
+   Profile view (landing page inside #workspace-menu-view)
+   - Avatar + name are centered above a list of optional fields.
+   - The collab-share-profile-options list is hidden until the user clicks
+     "Edit your profile" (handled via the .is-active step in workspaceMenu.js).
+*/
+
+.workspace-menu-profile-view-avatar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 2.5rem 0 0.4rem;
+}
+
+.workspace-menu-profile-view-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--theme-border);
+    border: 1px solid var(--theme-border);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: grid;
+    place-items: center;
+    font-size: 40px;
+    box-shadow: var(--theme-shadow);
+    overflow: hidden;
+}
+
+.workspace-menu-profile-view-name {
+    font-family: var(--font-display);
+    font-weight: 550;
+    font-size: 22px;
+    letter-spacing: -0.4px;
+    color: var(--theme-fg);
+    text-align: center;
+}
+
+#workspace-menu-profile-edit:hover {
+    background-color: var(--theme-accent);
+    color: var(--theme-accent-text);
+    opacity: 0.7;
+}
+
+.workspace-menu-profile-view-fields {
+    display: flex;
+    flex-direction: column;
+    padding: 6px 12px 4px;
+    border: 1px solid var(--theme-border);
+    border-radius: 12px;
+    background: var(--theme-bg);
+    box-shadow: var(--theme-shadow-control);
+}
+
+.workspace-menu-profile-view-field {
+    display: flex;
+    flex-direction: column;
+    padding: 0.6rem 0;
+}
+
+.pronouns-workspace-menu-section {
+    border-top: 1px solid var(--theme-border);
+    border-bottom: 1px solid var(--theme-border);
+}
+
+.workspace-menu-profile-view-field-label {
+    font-family: var(--font-text);
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: -0.2px;
+    color: var(--theme-fg);
+    opacity: 0.6;
+}
+
+.workspace-menu-profile-view-field-value {
+    font-family: var(--font-text);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--theme-fg);
+    word-break: break-word;
+}
+
+.workspace-menu-profile-view-field-empty {
+    opacity: 0.55;
+    font-style: italic;
+    font-weight: 450;
+}
+
+/*
+   Emoji grid (custom profile) + 5x5 pastel color swatch grid
+*/
+
+.collab-share-emoji-grid-scroll {
+    max-height: 160px;
+    overflow-y: auto;
+    border: 1px solid var(--theme-border);
+    border-radius: 10px;
+    background: var(--theme-bg);
+    box-shadow: var(--theme-shadow-control);
+}
+
+.collab-share-emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.collab-share-accordion-item.is-open #collab-share-emoji-panel {
+    margin-bottom: 1rem;
+}
+
+.collab-share-accordion-item.is-open .collab-share-accordion-color-palatte {
+    margin: 1.5rem 0 1.5rem;
+}
+
+.collab-share-emoji-option {
+    appearance: none;
+    border: 1px solid transparent;
+    background: transparent;
+    /* border-radius: 8px; */
+    height: 40px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 80ms ease, border-color 80ms ease, transform 80ms ease;
+}
+
+.collab-share-emoji-option:hover {
+    background: var(--hover-color);
+}
+
+.collab-share-emoji-option.is-selected {
+    border-color: var(--theme-border);
+    background: var(--hover-color);
+    box-shadow: 0 0 0 1px var(--theme-border) inset;
+}
+
+.collab-share-color-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-radius: 10px;
+    width: 200px;
+    overflow: auto;
+}
+
+.collab-share-color-swatch {
+    appearance: none;
+    border: 1px solid var(--theme-bg);
+    height: 40px;
+    cursor: pointer;
+    padding: 0;
+    transform: scale(var(--wave-scale, 1));
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+                border-color 140ms ease,
+                box-shadow 140ms ease,
+                filter 140ms ease;
+    will-change: transform;
+}
+
+#collab-share-color-panel {
+    width: 200px;
+}
+
+.collab-share-color-grid-container {
+    border-radius: 10px;
+}
+
+.collab-share-color-swatch:hover {
+    transform: scale(1.5);
+}
+
+.collab-share-color-swatch.is-selected {
+    border-color: var(--theme-fg);
+}
+
+.collab-share-color-swatch:hover {
+    filter: brightness(80%);
+}
+
+.collab-share-textarea {
+    height: auto;
+    min-height: 64px;
+    border-radius: 12px;
+    padding: 8px 12px;
+    resize: vertical;
+    font-family: var(--font-text);
+    line-height: 1.4;
+}
+
+.workspace-menu-profile-step .collab-share-pill-button {
+    margin-top: 6px;
+}
+
+#wm-profile-step-view .collab-share-pill-button {
+    margin-top: 6px;
+}
+
+/* Additional */
+
+.collab-share-title-titlebar {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px !important;
+
+    font-family: var(--font-display);
+    font-weight: 550;
+    letter-spacing: -0.25px !important;
+    text-transform: capitalize;
+}
+
+.collab-share-accordion-item {
+    border-bottom: 1px solid var(--theme-border);
+}
+
+.collab-share-accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.collab-share-accordion-header:hover .collab-share-accordion-item {
+    border-bottom: 1px solid var(--theme-border);
+}
+
+.collab-share-accordion-chevron {
+    transition: transform 0.2s ease;
+}
+
+.collab-share-accordion-item.is-open .collab-share-accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.collab-share-accordion-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.2s ease;
+}
+
+.collab-share-accordion-item.is-open .collab-share-accordion-panel {
+    grid-template-rows: 1fr;
+}
+
+.collab-share-accordion-panel-inner {
+    overflow: hidden;
+    border-radius: 10px;
+}
+
+.collab-share-accordion-color-palatte {
+    width: 267px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#collab-share-accordion-color-picker {
+    width: 200px;
+}

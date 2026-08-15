@@ -75,6 +75,13 @@ export const initRealtimeCollab = (editor, options = {}) => {
 
     const scheduleAwarenessUpdate = awarenessScheduler.scheduleAwarenessUpdate;
 
+    const handlePointerMove = (event) => {
+        awarenessScheduler.schedulePointerUpdate(event.clientX, event.clientY, overlayState?.container);
+    };
+    const handlePointerLeave = () => {
+        awarenessScheduler.clearPointer();
+    };
+
     const sync = createHtmlSync({
         editor,
         ytext,
@@ -123,6 +130,8 @@ export const initRealtimeCollab = (editor, options = {}) => {
     editor.addEventListener('blur', schedulePush);
     editor.addEventListener('keyup', scheduleAwarenessUpdate);
     editor.addEventListener('mouseup', scheduleAwarenessUpdate);
+    editor.addEventListener('mousemove', handlePointerMove);
+    editor.addEventListener('mouseleave', handlePointerLeave);
     editor.addEventListener('focus', scheduleAwarenessUpdate);
     editor.addEventListener('scroll', scheduleRender, { passive: true });
 
@@ -158,6 +167,8 @@ export const initRealtimeCollab = (editor, options = {}) => {
             editor.removeEventListener('blur', schedulePush);
             editor.removeEventListener('keyup', scheduleAwarenessUpdate);
             editor.removeEventListener('mouseup', scheduleAwarenessUpdate);
+            editor.removeEventListener('mousemove', handlePointerMove);
+            editor.removeEventListener('mouseleave', handlePointerLeave);
             editor.removeEventListener('focus', scheduleAwarenessUpdate);
             editor.removeEventListener('scroll', scheduleRender);
 

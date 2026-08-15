@@ -27,6 +27,11 @@ body.win32 .application-titlebar {
     height: calc(var(--titlebar-height) - 2px);
 }
 
+/* Disable '.application-titlebar' on web-version */
+body:not(.win32):not(.darwin) #title-bar {
+    display: none;
+}
+
 /**
  * @selector .application-titlebar span
  * @description Titlebar text element
@@ -71,17 +76,34 @@ body.darwin .status {
     right: calc(var(--status-right) - 6px);
 }
 
+/*
+ * @selector .bottom-bar-operations
+ * @description parent element for class application-workspace & application-workspace
+ */
+.bottom-bar-operations {
+    z-index: calc(var(--titlebar-z-index) + 1);
+    position: fixed;
+    bottom: var(--status-top);
+    right: var(--status-right);
+    height: 36px;
+    background: var(--theme-surface-solid);
+    /* border: solid 1px var(--theme-border); */
+    box-shadow: var(--theme-shadow);
+    border-radius: 100vmax;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* 
  * @selector .application-workspace-toggle-button
  * @description Menu that toggle workspace
 */
 
-.application-workspace-toggle-button {
+.application-workspace-toggle-button,
+.application-collab-share-button {
     -webkit-app-region: no-drag;
-    position: fixed;
-    z-index: calc(var(--titlebar-z-index) + 1);
-    bottom: var(--status-top);
-    right: var(--status-right);
 
     background-color: transparent;
     border: none;
@@ -92,9 +114,35 @@ body.darwin .status {
     line-height: 0;
     cursor: pointer;
     color: var(--theme-fg);
+    border: solid 1px var(--theme-border);
 
-    transition: opacity 0.2s;
-    /* opacity: 0; */
+    width: 36px;
+    height: 36px;
+    vertical-align: middle;
+
+    transition: opacity 0.2s, transform 0.2s ease;
+}
+
+.application-workspace-toggle-button {
+    border-radius: 0px 100vmax 100vmax 0px;
+}
+
+.application-collab-share-button {
+    border-radius: 100vmax 0px 0px 100vmax;
+    border-right: solid 0px var(--theme-border);
+}
+
+.application-collab-share-button svg {
+    transform: translateX(1.5px);
+}
+
+.application-workspace-toggle-button svg {
+    transform: translateX(-1px);
+}
+
+.application-workspace-toggle-button:hover,
+.application-collab-share-button:hover {
+    background: var(--hover-color);
 }
 
 /* #app:hover .application-workspace-toggle-button {
@@ -107,27 +155,32 @@ body.darwin .status {
  */
 .workspace-menu {
     position: fixed;
-    right: calc(var(--status-right) - 16px);
-    bottom: calc(var(--status-top) + 18px);
-    min-width: 220px;
-    width: 310px;
+    right: var(--status-right);
+    bottom: calc(var(--status-top) + 0px);
+    width: 190px;
     background: var(--ctx-menu-bg);
     border: var(--theme-border) 1px solid;
     border-radius: var(--ctx-menu-radius);
     box-shadow: var(--theme-shadow);
-    padding: 0.95rem;
+    padding: 0.5rem 0.4rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
     opacity: 0;
     pointer-events: none;
-    transform: translateY(6px);
-    transition: opacity 160ms ease, transform 160ms ease;
     z-index: calc(var(--titlebar-z-index) + 2);
     backdrop-filter: blur(14px) saturate(150%);
     -webkit-backdrop-filter: blur(14px) saturate(150%);
 
+    transition: 340ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: bottom right;
+    scale: 0.2;
+}
+
+.workspace-menu.is-open {
+    opacity: 1;
+    pointer-events: auto;
     scale: 0.9;
+    bottom: calc(var(--status-top) + 48px);
 }
 
 .workspace-menu-showcase img {
@@ -140,32 +193,16 @@ body.darwin .status {
     user-select: none;
 }
 
-.workspace-menu.is-open {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-}
-
-.workspace-menu-header {
-    font-family: var(--font-display);
-    font-size: 14px;
-    font-weight: 500;
-    letter-spacing: -0.2px;
-}
-
 .workspace-menu-action {
     border: none;
-    padding: 8px 12px;
+    padding: var(--export-btn-padding);
     cursor: pointer;
 
-    border-radius: var(--zoom-btn-border-radius);
-    background-color: var(--PrimaryButtonsColors);
-    box-shadow: var(--theme-shadow);
-    outline: solid var(--zoom-btn-border-width) var(--theme-border);
+    border-radius: var(--export-menu-border-radius);
+    background-color: transparent;
     font-family: var(--font-display);
     color: var(--theme-fg);
     transition: var(--zoom-btn-transition);
-    margin-bottom: 0.35rem;
 
     display: flex;
     justify-content: space-between;
@@ -187,7 +224,13 @@ body.darwin .status {
     position: static;
     transform: none;
     opacity: 1;
-    gap: 10px;
+    flex-direction: column;
+}
+
+.workspace-menu-controls .zoom-controls button {
+    display: block !important;
+    width: 100% !important;
+    text-align: left !important;
 }
 
 .workspace-menu-controls .export-menu {

@@ -20,7 +20,7 @@ export const createDomScanner = (editor, state, fetchUrlPreview) => {
 
         const timer = setTimeout(() => {
             state.urlUpdateTimers.delete(urlSpan);
-            // updateCardUrl is wired in after init — call via state hook
+            // updateCardUrl is wired in after init - call via state hook
             state.onUrlUpdate?.(urlSpan, urlSpan.textContent);
         }, URL_UPDATE_DEBOUNCE);
 

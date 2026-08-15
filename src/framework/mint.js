@@ -9,7 +9,6 @@ import { injectTitle } from './injection/title/index.js';
 import { inject } from './injection/unified/index.js';
 import { get, include } from './loader/index.js';
 
-// Export minimal APIs
 export { injectHTML, injectCSS, injectTitle, inject, get, include };
 
 export const Mint = {
@@ -21,8 +20,9 @@ export const Mint = {
     include
 };
 
-// Global availability (optional)
 if (typeof window !== 'undefined') {
     window.Mintkit = Mint;
-    window.Mint = Mint; // Shorter alias
+    window.Mint = Mint;
 }
+
+export default Mint;

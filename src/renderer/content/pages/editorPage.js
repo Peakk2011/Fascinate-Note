@@ -6,6 +6,7 @@ import { initExportMenu } from '@page-components/exportMenu.js';
 import { initSelectionMenu } from '@page-components/selectionMenu.js';
 import { initEditorMask } from '@page-components/editorMask.js';
 import { initRealtimeCollab } from '@collab/realtimeCollab.js';
+import { initCollabShare } from '@page-components/collabShare.js';
 
 /**
  * @typedef {Object} EditorConfig
@@ -103,6 +104,14 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
         cleanupFunctions.push(() => collabController.destroy());
     }
 
+    const collabShareController = initCollabShare({
+        config,
+        editorElement,
+        noteAPI
+    });
+    
+    cleanupFunctions.push(() => collabShareController.destroy());
+
     // Initialize other components first
     modelFind.init({ pageConfig: config, noteAPI });
 
@@ -133,6 +142,19 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
             editorMask.destroy
         );
 
+        // Focus the editor and place cursor at the end
+        editorElement.focus();
+
+        if (typeof window.getSelection !== 'undefined' && typeof document.createRange !== 'undefined') {
+            const range = document.createRange();
+            range.selectNodeContents(editorElement);
+            range.collapse(false);
+            
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
         // Initialize Keyboard Shortcuts with Command Palette support
         /** @type {EditorCallbacks} */
         const editorCallbacks = {
@@ -161,7 +183,7 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
                 if (modelFind && typeof modelFind.show === 'function') {
                     modelFind.show(true); // Pass true to open replace tab
                 } else {
-                    console.warn('modelFind.show(true) is not available.');
+                    console.warn('modelAnd.show(true) is not available.');
                 }
             },
             /**
@@ -183,19 +205,19 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
 
         // Command Palette - Markdown Helper
         /**
-         * Handle global keydown for Command Palette shortcut (Ctrl/Cmd+K).
+         * Handle global keydown for Command Palette shortcut (Ctrl/Cmd+Shift+P).
          * @param {KeyboardEvent} e
          */
         const handleCommandPaletteShortcut = (e) => {
-            if (!(e.ctrlKey || e.metaKey)) return;
+            if (!(e.ctrlKey || e.metaKey) || !e.shiftKey) return;
 
-            const keyIsK = e.code === 'KeyK' || (typeof e.key === 'string' && e.key.toLowerCase() === 'k');
+            const keyIsP = e.code === 'KeyP' || (typeof e.key === 'string' && e.key.toLowerCase() === 'p');
 
-            if (keyIsK) {
+            if (keyIsP) {
                 e.preventDefault();
                 const isInMarker = document.getElementById('workspace-container')
                     ?.classList.contains('is-active');
-                console.log('[shortcut] isInMarker:', isInMarker); // เพิ่ม
+                console.log('[shortcut] isInMarker:', isInMarker);
                 if (isInMarker) {
                     window.__commandPaletteAPI?.toggle('marker');
                     return;

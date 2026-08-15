@@ -125,7 +125,7 @@ export const getFontSize = (defaultSize = DEFAULT_FONT_SIZE) => {
 export const exportNotes = () => {
     const notes = loadNotes();
     const data = {
-        version: '1.0',
+        version: '1.3',
         exportDate: Date.now(),
         notes
     };

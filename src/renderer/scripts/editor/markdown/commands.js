@@ -60,7 +60,7 @@ export const handleCodeBlockExit = (e, currentElement, selection) => {
 };
 
 /*
-    Update 20260225 Version 1.0.12
+    Update 2026-02-25 Version 1.0.12
     Inline Markdown Formatting
     Triggers on every keypress when the closing character of a pattern is typed.
 
@@ -142,7 +142,7 @@ export const processInlineMarkdown = (e, beforeCursor, blockElement, selection) 
         return true;
     };
 
-    // ***bold+italic*** — must be before ** and *
+    // ***bold+italic*** - must be before ** and *
     if (beforeCursor.endsWith('***')) {
         if (replaceInlinePattern(/\*\*\*((?:[^*]|\*(?!\*\*))+)\*\*\*$/, 'strong', 'em')) {
             e.preventDefault();

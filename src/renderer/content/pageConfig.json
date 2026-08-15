@@ -19,7 +19,7 @@
     "exportMenuTxtText": "Download as plain text",
     "exportMenuImageText": "Download as image",
     "collab": {
-        "enabled": true,
+        "enabled": false,
         "serverUrl": "ws://localhost:1234",
         "room": "fascinate-notes",
         "mapName": "note",

@@ -35,6 +35,7 @@
         filter 420ms cubic-bezier(0.22, 1, 0.36, 1);
     transform-origin: center top;
     will-change: opacity, transform, filter;
+    overflow-x: hidden;
 }
 
 .textarea-container.is-workspace-leaving {
@@ -48,31 +49,6 @@
     opacity: 1;
     transform: translate3d(0, 0, 0) scale(1);
     filter: blur(0);
-}
-
-.collab-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3;
-}
-
-.collab-caret {
-    position: absolute;
-    width: 3px;
-    border-radius: 2px;
-}
-
-.collab-label {
-    position: absolute;
-    transform: translateY(-100%);
-    padding: 6px 8px;
-    border-radius: 100vmax;
-    color: #ffffff;
-    font-size: 11px;
-    line-height: 1;
-    white-space: nowrap;
-    box-shadow: var(--theme-shadow);
 }
 
 .editable-div .editor-block {
@@ -167,18 +143,19 @@ body.darwin .editor-placeholder {
 .editable-div h2,
 .editable-div h3,
 .editable-div h4 {
-    font-family: var(--font-display);
+    font-family: var(--font-display-heading);
+    font-size-adjust: from-font;
     letter-spacing: var(--editor-heading-letter-spacing);
     font-weight: var(--editor-heading-weight);
     margin-bottom: var(--editor-heading-margin);
-    /* width: var(--editor-heading-width); */
 }
 
 .editable-div h1 div,
 .editable-div h2 div,
 .editable-div h3 div,
 .editable-div h4 div {
-    font-family: var(--font-display);
+    font-family: var(--font-display-heading);
+    font-size-adjust: from-font;
     letter-spacing: var(--editor-heading-letter-spacing);
     font-weight: var(--editor-heading-weight);
 }
@@ -187,7 +164,8 @@ body.darwin .editor-placeholder {
 .editable-div h2 p,
 .editable-div h3 p,
 .editable-div h4 p {
-    font-family: var(--font-display);
+    font-family: var(--font-display-heading);
+    font-size-adjust: from-font;
     letter-spacing: var(--editor-heading-letter-spacing);
     font-weight: var(--editor-heading-weight);
 }
@@ -196,7 +174,8 @@ body.darwin .editor-placeholder {
 .editable-div h2 span,
 .editable-div h3 span,
 .editable-div h4 span {
-    font-family: var(--font-display);
+    font-family: var(--font-display-heading);
+    font-size-adjust: from-font;
     letter-spacing: calc(var(--editor-heading-letter-spacing) - 0.6px);
     font-weight: var(--editor-heading-weight);
 }
@@ -205,7 +184,8 @@ body.darwin .editor-placeholder {
 .editable-div h2 mark,
 .editable-div h3 mark,
 .editable-div h4 mark {
-    font-family: var(--font-display);
+    font-family: var(--font-display-heading);
+    font-size-adjust: from-font;
     letter-spacing: calc(var(--editor-heading-letter-spacing) - 0.6px);
     font-weight: var(--editor-heading-weight);
 }

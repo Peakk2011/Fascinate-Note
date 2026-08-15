@@ -1,7 +1,117 @@
 import { handleSpaceInBlockquote } from './markdown/handleEnterInBlockquote.js';
-import { processInlineMarkdown, processMarkdownInLine, handleCodeBlockExit } from './markdown/commands.js';
+import {
+    processInlineMarkdown,
+    processMarkdownInLine,
+    handleCodeBlockExit
+} from './markdown/commands.js';
 import { noteFeaturesConfig } from '../note/noteConfig.js';
 import { setCurrentFontSize } from '../note/state.js';
+
+const LINE_SELECTOR = 'div, p, li, blockquote, pre, h1, h2, h3, h4, h5, h6';
+
+const BLOCK_TAGS = new Set([
+    'DIV',
+    'P',
+    'LI',
+    'BLOCKQUOTE',
+    'PRE',
+    'H1',
+    'H2',
+    'H3',
+    'H4',
+    'H5',
+    'H6',
+]);
+
+/**
+ * Places the caret at the start or end of the given element.
+ * @param {HTMLElement} element
+ * @param {boolean} atStart
+ */
+const placeCaretIn = (element, atStart) => {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    range.collapse(atStart);
+
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+};
+
+/**
+ * Appends a fresh empty line and moves the caret into it.
+ * @param {HTMLElement} editor
+ */
+const insertEmptyLine = (editor) => {
+    const emptyLine = document.createElement('div');
+    emptyLine.innerHTML = '<br>';
+    editor.appendChild(emptyLine);
+    placeCaretIn(emptyLine, true);
+};
+
+const resolveLineElement = (node, editor) => {
+    let line = node.closest?.(LINE_SELECTOR);
+    if (!line || !editor.contains(line)) return null;
+
+    let parent = line.parentElement;
+
+    while (parent && parent !== editor && editor.contains(parent) && BLOCK_TAGS.has(parent.tagName)) {
+        // Stop climbing if the parent groups more than one line together —
+        // otherwise we'd end up deleting the whole wrapper instead of one line.
+        if (parent.children.length > 1) break;
+
+        line = parent;
+        parent = parent.parentElement;
+    }
+
+    return line;
+};
+
+/**
+ * @param {HTMLElement} editor
+ */
+const deleteCurrentLine = (editor) => {
+    const selection = window.getSelection();
+    if (!selection?.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    if (!range.collapsed) return;
+
+    let node = range.startContainer;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    if (!node) return;
+
+    let line = resolveLineElement(node, editor);
+    if (!line) return;
+
+    if (line === editor) {
+        line = editor.firstElementChild;
+        if (!line) {
+            insertEmptyLine(editor);
+            editor.focus();
+            return;
+        }
+    }
+
+    const previousLine = line.previousElementSibling;
+    const nextLine = line.nextElementSibling;
+    line.remove();
+
+    const target = nextLine ?? previousLine;
+    if (target && editor.contains(target)) {
+        placeCaretIn(target, Boolean(nextLine));
+    } else {
+        insertEmptyLine(editor);
+    }
+
+    editor.focus();
+
+    editor.dispatchEvent(new InputEvent('input', {
+        bubbles: true,
+        cancelable: true,
+        inputType: 'deleteContentBackward'
+    }));
+};
 
 /**
  * Handles keyboard shortcuts for the editor.
@@ -125,7 +235,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
         // Handle space in blockquote
         if (e.key === ' ') { if (handleSpaceInBlockquote(e, editor)) return; }
 
-        // Handle Enter key — code block exit + block-level markdown shortcuts (# - 1. /h1 etc.)
+        // Handle Enter key - code block exit + block-level markdown shortcuts (# - 1. /h1 etc.)
         if (e.key === 'Enter' && !isModKey) {
             const selection = window.getSelection();
 
@@ -279,7 +389,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                 return;
             }
 
-            // 8. Insert Line
+            // 8b. Insert Line
             if (e.key === 'Enter') {
                 e.preventDefault();
 
@@ -325,35 +435,16 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
                 return;
             }
 
-            // 9. Delete Line
-            if (e.code === 'KeyK' && e.shiftKey) {
+            // 9. Delete Line (Ctrl/Cmd + Shift + K)
+            if (isModKey && e.shiftKey && e.code === 'KeyK') {
                 e.preventDefault();
 
                 try {
-                    const selection = window.getSelection();
-                    if (!selection.rangeCount) return;
-
-                    const range = selection.getRangeAt(0);
-                    let node = range.startContainer;
-
-                    while (node && node !== editor && node.nodeType !== Node.ELEMENT_NODE) {
-                        node = node.parentNode;
-                    }
-
-                    if (node && node !== editor) {
-                        let startNode = node;
-                        const lineRange = document.createRange();
-                        lineRange.selectNodeContents(startNode);
-                        lineRange.deleteContents();
-
-                        if (!startNode.textContent.trim() && startNode.parentNode) {
-                            startNode.parentNode.removeChild(startNode);
-                        }
-                    }
+                    deleteCurrentLine(editor);
                 } catch (error) {
                     console.error('[Keymap] Delete line failed:', error);
-                    document.execCommand('delete');
                 }
+
                 return;
             }
 

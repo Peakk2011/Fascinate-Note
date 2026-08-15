@@ -1,4 +1,5 @@
 import { getSelectionOffsets, restoreSelection } from '../selection/index.js';
+import DOMPurify from 'dompurify';
 
 export const createHtmlSync = ({
     editor,
@@ -12,15 +13,19 @@ export const createHtmlSync = ({
     let applyingRemote = false;
     let localTimer = null;
 
+    // From another peer via Y.Text and could carry injected <script>
+    // Tags or event-handler attributes
+    // Strips those while keeping normal formatting
     const applyRemoteHtml = (nextHtml) => {
         if (isDestroyed?.()) return;
         if (nextHtml === lastHtml) return;
 
+        const cleanHtml = DOMPurify.sanitize(nextHtml);
         const selection = getSelectionOffsets(editor);
 
         applyingRemote = true;
-        editor.innerHTML = nextHtml;
-        lastHtml = nextHtml;
+        editor.innerHTML = cleanHtml;
+        lastHtml = cleanHtml;
         applyingRemote = false;
 
         if (selection) {
@@ -33,6 +38,7 @@ export const createHtmlSync = ({
         }
     };
 
+    // Push local edits into the shared Y.Text
     const pushLocal = () => {
         if (isDestroyed?.() || applyingRemote) return;
         const html = editor.innerHTML || '';
@@ -50,6 +56,7 @@ export const createHtmlSync = ({
         lastHtml = html;
     };
 
+    // Debounced trigger for local edits
     const schedulePush = () => {
         if (isDestroyed?.() || applyingRemote) return;
         if (localTimer) clearTimeout(localTimer);

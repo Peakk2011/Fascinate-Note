@@ -1,0 +1,9 @@
+{
+  "name": "@fascinate/mobile",
+  "private": true,
+  "version": "1.3.0",
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Mobile/PWA shell placeholder. Connect to the shared core later.'"
+  }
+}
