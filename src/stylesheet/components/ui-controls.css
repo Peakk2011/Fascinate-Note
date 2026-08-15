@@ -11,7 +11,6 @@
     transform: translateX(-50%);
     min-width: max-content;
     display: flex;
-    gap: var(--zoom-gap);
     opacity: 0;
     transition: opacity 0.2s;
     z-index: var(--zoom-z-index);
@@ -82,6 +81,22 @@
 }
 
 /**
+ * @selector #reset-zoom
+ * @description Reset zoom and Download Note UI
+ * @interactive look like contextmenu
+ */
+#reset-zoom,
+#export-html-btn {
+    border: 0px solid transparent;
+    outline: 0px solid transparent;
+    background-color: transparent;
+    cursor: pointer;
+    border-radius: var(--export-menu-border-radius);
+    padding: 1.1rem 0.6rem;
+    box-shadow: none;
+}
+
+/**
  * @component ExportContainer
  * @description Export menu dropdown container
  * @position Relative positioning for absolute menu
@@ -100,7 +115,7 @@
     position: absolute;
     bottom: calc(100% + var(--export-menu-offset));
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, 20px);
     background-color: var(--export-menu-bg);
     border: 1px solid var(--theme-border);
     box-shadow: var(--theme-shadow);
@@ -112,10 +127,13 @@
     transition: var(--export-menu-transition);
     opacity: 0;
     display: none;
+    backdrop-filter: blur(var(--ctx-menu-blur));
+    width: 220px;
 }
 
 .export-menu.show {
     opacity: 1;
+    transform: translate(-50%, 0px);
 }
 
 /**
@@ -154,10 +172,11 @@
  */
 .selection-menu {
     position: fixed;
-    background-color: var(--ctx-menu-bg);
+    /* background-color: var(--ctx-menu-bg); */
+    background: var(--theme-surface-solid);
     box-shadow: var(--theme-shadow);
     outline: solid 1.5px var(--theme-border);
-    border-radius: var(--selection-menu-border-radius);
+    border-radius: var(--selection-menu-border-radius) !important;
     padding: var(--selection-menu-padding);
     z-index: var(--selection-menu-z-index);
     display: flex;

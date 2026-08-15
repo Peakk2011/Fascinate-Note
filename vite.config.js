@@ -30,6 +30,10 @@ export default defineConfig({
     publicDir: resolve(__dirname, 'assets'),
     base: './',
 
+    server: {
+        open: false
+    },
+
     optimizeDeps: {
         include: ['dom-to-image', 'yjs', 'y-websocket']
     },

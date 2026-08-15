@@ -1,0 +1,71 @@
+/**
+ * @component CollabOverlay
+ * @description Container for all realtime collaboration cursor elements
+ */
+.collab-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+}
+
+/**
+ * @selector .collab-caret
+ * @description Thin blinking line marking a remote user's text caret
+ */
+.collab-caret {
+    position: absolute;
+    width: 3px;
+    border-radius: 2px;
+}
+
+/**
+ * @selector .collab-pointer-dot
+ * @description Cursor live mouse position.
+ */
+.collab-pointer-dot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 24px;
+    margin-left: 0;
+    margin-top: -4px;
+    pointer-events: none;
+    z-index: 3;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 2 L4 20 L8.5 16 L11.5 22 L14 21 L11 15 L18 15 Z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 2 L4 20 L8.5 16 L11.5 22 L14 21 L11 15 L18 15 Z'/%3E%3C/svg%3E");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    filter:
+        drop-shadow(1px 0 0 #fff)
+        drop-shadow(-1px 0 0 #fff)
+        drop-shadow(0 1px 0 #fff)
+        drop-shadow(0 -1px 0 #fff);
+}
+
+/**
+ * @selector .collab-pointer-label
+ * @description Name badge following a remote user's mouse pointer
+ */
+.collab-pointer-label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-left: 12px;
+    margin-top: -16px;
+    padding: 0.4rem 0.6em;
+    border-radius: 100vmax;
+    font-size: 12.5px;
+    font-weight: 550;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: var(--theme-shadow);
+    font-family: var(--font-text);
+    letter-spacing: -0.2px;
+    vertical-align: middle;
+    pointer-events: none;
+    z-index: 3;
+}

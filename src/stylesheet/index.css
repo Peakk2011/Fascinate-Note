@@ -1,14 +1,17 @@
 /* 
-    Made by Mint teams
+    Made by Peakk2011
     Fascinate-Note
     This file part is from Fascinate-Note
 
-    Updated: 2025-28-12
+    Updated: 2026-30-07
     License: MIT
 */
 
 /* Import all component styles */
 @import url("./components/app-shell.css");
+@import url("./components/wm-workspace-shell.css");
+@import url("./components/collab-share.css");
+@import url("./components/collab-pointer.css");
 @import url("./components/editor.css");
 @import url("./components/code.css");
 @import url("./components/task-list.css");

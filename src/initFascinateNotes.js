@@ -10,6 +10,12 @@ import { preloadAssets } from './core/preloadAssets.js';
 import { OS } from './config/osConfig.js';
 
 /**
+ * Indicates whether the app is running in development mode
+ * @type {boolean}
+ */
+const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
+
+/**
  * Indicates whether the current system is running on Apple Silicon architecture (ARM64)
  * @type {boolean}
  * @constant
@@ -56,7 +62,7 @@ const handleSquirrelEvents = () => {
 }
 
 /**
- * Registers IPC handlers that should be initialized once.
+ * Registers the Electron IPC handlers
  */
 let ipcHandlersRegistered = false;
 let aboutWindow = null;
@@ -80,17 +86,13 @@ const registerIpcHandlers = () => {
 	});
 
 	ipcMain.handle('show-open-dialog', async (event, options) => {
-		console.log('Handling show-open-dialog with options:', options);
 		const win = BrowserWindow.fromWebContents(event.sender);
 		if (!win) {
-			console.log('No window found for show-open-dialog');
 			return { canceled: true, filePaths: [] };
 		}
 
 		try {
-			const result = await dialog.showOpenDialog(win, options);
-			console.log('show-open-dialog result:', result);
-			return result;
+			return await dialog.showOpenDialog(win, options);
 		} catch (error) {
 			console.error('Failed to show open dialog:', error);
 			return { canceled: true, filePaths: [] };
@@ -98,10 +100,8 @@ const registerIpcHandlers = () => {
 	});
 
 	ipcMain.handle('read-file', async (event, filePath) => {
-		console.log('Handling read-file for:', filePath);
 		try {
 			const content = await fs.readFile(filePath, 'utf8');
-			console.log('File read successfully, length:', content.length);
 			return { success: true, content };
 		} catch (error) {
 			console.error('Failed to read file:', error);
@@ -126,17 +126,15 @@ const registerIpcHandlers = () => {
 		}
 
 		const mainWindow = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-
+		// About Fascinate Notes
 		aboutWindow = new BrowserWindow({
 			width: 520,
 			height: 230,
 			parent: mainWindow,
-			modal: true,
 			show: true,
 			resizable: false,
 			minimizable: false,
 			maximizable: false,
-			// Styling options
 			title: 'About Fascinate Notes',
 			center: true,
 			frame: false,
@@ -148,12 +146,10 @@ const registerIpcHandlers = () => {
 			},
 			webPreferences: {
 				nodeIntegration: false,
-				contextIsolation: true,
-				// preload: path.join(__dirname, 'preload.js')
+				contextIsolation: true
 			}
 		});
 
-		// Source 
 		await aboutWindow.loadURL('https://mint-teams.web.app/Fascinate-Welcome/');
 
 		aboutWindow.once('ready-to-show', () => {
@@ -167,18 +163,26 @@ const registerIpcHandlers = () => {
 
 	app.on('web-contents-created', (event, contents) => {
 		contents.on('will-navigate', (event, url) => {
+			if (isDev && url.startsWith('http://localhost:5173')) {
+				return;
+			}
+
 			event.preventDefault();
 			shell.openExternal(url);
 		});
 
 		contents.setWindowOpenHandler(({ url }) => {
+			// Allow opening Vite dev server URLs in development mode
+			if (isDev && url.startsWith('http://localhost:5173')) {
+				return { action: 'allow' };
+			}
+
 			shell.openExternal(url);
 			return { action: 'deny' };
 		});
 	});
 
 	app.on('will-quit', () => {
-		console.log('Removing IPC handlers...');
 		ipcMain.removeHandler('new-window');
 		ipcMain.removeHandler('show-open-dialog');
 		ipcMain.removeHandler('read-file');
@@ -186,7 +190,6 @@ const registerIpcHandlers = () => {
 	});
 
 	ipcHandlersRegistered = true;
-	console.log('IPC handlers registered successfully');
 };
 
 /**

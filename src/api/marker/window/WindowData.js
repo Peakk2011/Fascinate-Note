@@ -11,7 +11,7 @@ export class WindowData {
         const note = createNote({ title: 'New Note' });
         
         if (!note?.id) {
-            console.error('[MarkerBoard] Failed to create note — aborting');
+            console.error('[MarkerBoard] Failed to create note - aborting');
             return null;
         }
         

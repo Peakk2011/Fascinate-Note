@@ -95,4 +95,4 @@ Licensed under the GNU license. See [LICENSE.md](./LICENSE.md).
 
 ## Author
 
-Made by Mint teams.
+Made by Peakk2011.

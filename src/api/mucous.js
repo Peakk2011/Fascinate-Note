@@ -42,7 +42,7 @@ const Mucous = (selector, options = {}) => {
 
     const items = [...menu.querySelectorAll(o.itemSelector)];
 
-    // on hover — slide highlight over the item
+    // on hover - slide highlight over the item
     items.forEach(item => {
         item.addEventListener('mouseenter', () => {
             hl.style.top = `${item.offsetTop}px`;
@@ -52,7 +52,7 @@ const Mucous = (selector, options = {}) => {
         });
     });
 
-    // on leave — hide highlight
+    // on leave - hide highlight
     menu.addEventListener('mouseleave', () => {
         hl.style.opacity = '0';
         items.forEach(i => i.classList.remove(o.hoveredClass));

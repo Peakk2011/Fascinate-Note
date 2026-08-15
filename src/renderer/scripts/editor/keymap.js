@@ -125,7 +125,7 @@ export const handleKeydown = (e, editor, callbacks = {}) => {
         // Handle space in blockquote
         if (e.key === ' ') { if (handleSpaceInBlockquote(e, editor)) return; }
 
-        // Handle Enter key — code block exit + block-level markdown shortcuts (# - 1. /h1 etc.)
+        // Handle Enter key - code block exit + block-level markdown shortcuts (# - 1. /h1 etc.)
         if (e.key === 'Enter' && !isModKey) {
             const selection = window.getSelection();
 

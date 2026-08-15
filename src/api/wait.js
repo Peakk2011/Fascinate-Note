@@ -1,6 +1,6 @@
 /**
  * Returns a Promise that resolves after a given delay.
- * Supports cancellation via AbortSignal — integrates with
+ * Supports cancellation via AbortSignal - integrates with
  * the same AbortController used for fetch or other async ops.
  *
  * @param {number} ms            - Delay in milliseconds (must be ≥ 0)

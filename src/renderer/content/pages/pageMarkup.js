@@ -2,6 +2,7 @@ import { createStatusIndicatorMarkup } from '@page-components/statusIndicator.js
 import { createSelectionMenuMarkup } from '@page-components/selectionMenu.js';
 import { createWorkspaceMenuMarkup } from '@page-components/workspaceMenu.js';
 import { createFileDropOverlayMarkup } from '@page-components/fileDropOverlay.js';
+import { createCollabShareMarkup } from '@page-components/collabShare.js';
 
 /**
  * Generates the complete HTML markup for the page editor.
@@ -37,6 +38,7 @@ import { createFileDropOverlayMarkup } from '@page-components/fileDropOverlay.js
 export const createPageMarkup = (config, modelFind, contextMenu, titlebar, commandPalette) => {
     return `
         ${titlebar ? titlebar.markups : ''}
+        ${createCollabShareMarkup()}
         ${createWorkspaceMenuMarkup(config)}
         <div id="workspace-container" style="display: none;"></div>
         ${createStatusIndicatorMarkup(config)}

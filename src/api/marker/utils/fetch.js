@@ -1,7 +1,7 @@
 /**
  * Mintkit Fetch API with caching, retry logic, and optimizations
  * @module FetchAPI
- * @author Mint Teams
+ * @author Peakk2011
  * @version 2.0.0
  */
 

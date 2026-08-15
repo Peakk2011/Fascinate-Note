@@ -33,14 +33,13 @@ export const Page = {
     },
 
     async _getTitlebar() {
-        // Only create titlebar in Electron environment
-        if (window.electronAPI) {
-            if (!this._titlebarCache) {
-                this._titlebarCache = await createTitlebar();
-            }
-            return this._titlebarCache;
+        /*
+            Titlebar (and collab-share/workspace buttons) is now available for web-version (Fascinate Notes 1.3)
+        */
+        if (!this._titlebarCache) {
+            this._titlebarCache = await createTitlebar();
         }
-        return null; // Return null if not in Electron
+        return this._titlebarCache;
     },
 
     async _getCommandPalette() {

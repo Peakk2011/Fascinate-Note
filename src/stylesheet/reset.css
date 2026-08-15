@@ -1,8 +1,8 @@
 /* 
-    Made by Mint teams
+    Made by Peakk2011
     Fascinate-Note
 
-    Updated: 2025-23-12
+    Updated: 2026-30-07
     Fork from EssentialAPP
     License: MIT
 */
@@ -24,6 +24,7 @@
  */
 ::-webkit-scrollbar {
     width: 0px;
+    height: 0;
     background: transparent;
 }
 
@@ -207,6 +208,37 @@
     font-style: italic;
 }
 
+/**
+ * @font-face Editor Heading Display
+ * @description Composite face scoped only to editor headings
+ *              (.editable-div h1-h4). Reuses the same GeneralSans +
+ *              Anuphan source files as --font-display, but declares
+ *              an offset font-weight range for the Thai face so the
+ *              same requested weight (--editor-heading-weight) maps
+ *              to a visually heavier instance of Anuphan, matching
+ *              General Sans' perceived weight. Does NOT touch the
+ *              original 'General Sans' / 'Anuphan' families used
+ *              elsewhere.
+ * @tune Adjust the lower bound (350) while comparing Thai/English
+ *       headings side by side at --editor-heading-weight.
+ */
+@font-face {
+    font-family: 'Editor Heading Display';
+    src: url('../../assets/typefaces/GeneralSans-Variable.woff2') format('woff2-variations');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-024F, U+2000-206F, U+2074, U+20AC, U+2212;
+}
+
+@font-face {
+    font-family: 'Editor Heading Display';
+    src: url('../../assets/typefaces/Anuphan-VariableFont_wght.ttf') format('truetype-variations');
+    font-weight: 350 900;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0E00-0E7F;
+}
 
 /**
  * @root CSS Custom Properties
@@ -291,9 +323,9 @@
      * @var --theme-border
      * @type {color}
      * @description Border color for UI elements
-     * @default hsl(0, 0%, 20%) - Dark gray
+     * @default #3C3C3C - Dark gray
      */
-    --theme-border: hsl(0, 0%, 20%);
+    --theme-border: #3C3C3C;
 
     /**
      * @var --image-border-color
@@ -315,9 +347,9 @@
      * @var --theme-model-border
      * @type {color}
      * @description Modal border color
-     * @default hsl(0, 0%, 20%) - Dark gray
+     * @default #3C3C3C - Dark gray
      */
-    --theme-model-border: hsl(0, 0%, 20%);
+    --theme-model-border: #3C3C3C;
 
     /* Typography */
     /**
@@ -349,9 +381,20 @@
      * @type {font-family}
      * @description Monospace font stack for code but I want to use consolas as primary when open only in Windows/MacOS
      * @fallback Consolas, JetBrains Mono, SYSTEM
-     * @usage --font-editor: 'Consolas', 'JETBRAINSMONO', 'Leelawadee UI', 'Sans-serif';
+     * @usage --font-editor: 'Consolas', 'JETBRAINSMONO', 'Leelawadee UI', sans-serif;
      */
+    /* --font-editor: 'Consolas', 'JETBRAINSMONO', 'Leelawadee UI', sans-serif; */
     --font-editor: var(--font-text);
+
+    /**
+     * @var --font-display-heading
+     * @type {font-family}
+     * @description Editor heading font stack. Same visual family as
+     *              --font-display but with Thai weight compensated to
+     *              match General Sans at the same font-weight number.
+     *              Scoped to .editable-div h1-h4 only.
+     */
+    --font-display-heading: 'Editor Heading Display', var(--font-display);
 
     /**
      * @var --font-size-base
@@ -516,7 +559,7 @@
     --editor-line-height: 1.4;
     --editor-letter-spacing: -0.2px;
     --editor-heading-letter-spacing: -0.8px;
-    --editor-heading-weight: 550;
+    --editor-heading-weight: 525;
     --editor-heading-margin: 1rem;
     --editor-heading-width: 80%;
     --editor-blockquote-padding: 0.5rem;
@@ -557,7 +600,7 @@
     --export-menu-border-radius: 8px;
     --export-menu-z-index: 100;
     --export-menu-padding: 0.5rem;
-    --export-menu-transition: 200ms cubic-bezier(0.2, 0.0, 0, 1.0);
+    --export-menu-transition: 300ms cubic-bezier(0.32, 0.94, 0.60, 1);
     --export-btn-padding: 0.5rem calc(var(--ctx-menu-padding) * 1.15);
     --export-btn-font-size: 14px;
     --export-btn-weight: 500;
@@ -593,13 +636,151 @@
     --marker-color-btn-border: hsl(0, 0%, 22%);
     --marker-content-color: hsl(0, 0%, 75%);
     --marker-toolbar-bg: hsl(0, 0%, 10%);
-    --marker-toolbar-border: hsl(0, 0%, 20%);
+    --marker-toolbar-border: #3C3C3C;
     --marker-lod-hover-bg: hsl(0, 0%, 9%);
 
     /* Grid Dot */
     --marker-grid-step: 40px;
     --marker-grid-offset-x: 0px;
     --marker-grid-offset-y: 0px;
+
+    /* Collab Share Colors */
+
+    /**
+     * @var --theme-overlay
+     * @type {color}
+     * @description Backdrop overlay color behind the collab-share modal/sidebar
+     * @default rgba(0, 0, 0, 0.42) - Semi-transparent black
+     */
+    --theme-overlay: rgba(0, 0, 0, 0.42);
+
+    /**
+     * @var --theme-surface-solid
+     * @type {color}
+     * @description Solid dark surface used for pill buttons and icon badges (header pill, close button, sidebar header pill, minimized pill)
+     * @default #1a1a1a - Near-black gray
+     */
+    --theme-surface-solid: #1a1a1a;
+
+    /**
+     * @var --theme-shadow-panel
+     * @type {box-shadow}
+     * @description Drop shadow for floating panels such as the collab-share modal and sidebar
+     * @default 0 6px 20px 2px rgba(0, 0, 0, 0.35)
+     */
+    --theme-shadow-panel: 0 6px 20px 2px rgba(0, 0, 0, 0.35);
+
+    /**
+     * @var --theme-shadow-control
+     * @type {box-shadow}
+     * @description Drop shadow for smaller controls (inputs, buttons, pills, cards)
+     * @default 0 0 20px 2px rgba(0, 0, 0, 0.6)
+     */
+    --theme-shadow-control: 0 0 20px 2px rgba(0, 0, 0, 0.6);
+
+    /**
+     * @var --theme-shadow-soft
+     * @type {box-shadow}
+     * @description Softer, lighter drop shadow used for panels/cards in light mode
+     * @default 0 1px 2px rgba(15, 15, 15, 0.04)
+     */
+    --theme-shadow-soft: 0 1px 2px rgba(15, 15, 15, 0.04);
+
+    /**
+     * @var --theme-danger
+     * @type {color}
+     * @description Solid background color for destructive/delete actions
+     * @default rgba(255, 90, 90, 0.92) - Red
+     */
+    --theme-danger: rgba(255, 90, 90, 0.92);
+
+    /**
+     * @var --theme-danger-border
+     * @type {color}
+     * @description Border color for destructive/delete actions
+     * @default rgba(255, 90, 90, 0.45) - Muted red
+     */
+    --theme-danger-border: rgba(255, 90, 90, 0.45);
+
+    /**
+     * @var --theme-danger-subtle
+     * @type {color}
+     * @description Subtle background used behind a swipe-to-delete reveal
+     * @default rgba(255, 90, 90, 0.18) - Faint red
+     */
+    --theme-danger-subtle: rgba(255, 90, 90, 0.18);
+
+    /**
+     * @var --theme-danger-text
+     * @type {color}
+     * @description Text color on top of --theme-danger backgrounds
+     * @default #ffffff - White
+     */
+    --theme-danger-text: #ffffff;
+
+    /**
+     * @var --theme-toast-bg
+     * @type {color}
+     * @description Background color for toast notifications
+     * @default rgba(20, 20, 20, 0.9) - Near-black
+     */
+    --theme-toast-bg: rgba(20, 20, 20, 0.9);
+
+    /**
+     * @var --theme-toast-text
+     * @type {color}
+     * @description Text color for toast notifications
+     * @default #ffffff - White
+     */
+    --theme-toast-text: #ffffff;
+
+    /**
+     * @var --theme-toast-warning-bg
+     * @type {color}
+     * @description Background color for warning-flavored toast notifications
+     * @default rgba(255, 240, 0, 0.96) - Yellow
+     */
+    --theme-toast-warning-bg: rgba(255, 240, 0, 0.96);
+
+    /**
+     * @var --theme-icon-surface
+     * @type {color}
+     * @description Light-mode background circle color for person/avatar icon glyphs
+     * @default hsl(0, 0%, 92%) - Light gray
+     */
+    --theme-icon-surface: hsl(0, 0%, 92%);
+
+    /**
+     * @var --theme-icon-mark
+     * @type {color}
+     * @description Light-mode dot/mark color drawn on top of --theme-icon-surface (header icon)
+     * @default rgba(0, 0, 0, 0.5) - Semi-transparent black
+     */
+    --theme-icon-mark: rgba(0, 0, 0, 0.5);
+
+    /**
+     * @var --theme-icon-mark-strong
+     * @type {color}
+     * @description Light-mode dot/mark color drawn on top of --theme-icon-surface (choice icon), slightly stronger opacity than --theme-icon-mark
+     * @default rgba(0, 0, 0, 0.45) - Semi-transparent black
+     */
+    --theme-icon-mark-strong: rgba(0, 0, 0, 0.45);
+
+    /**
+     * @var --theme-solid-button-bg
+     * @type {color}
+     * @description Light-mode background for the solid/dark variant of the primary button
+     * @default hsl(0, 0%, 12%) - Near-black gray
+     */
+    --theme-solid-button-bg: hsl(0, 0%, 12%);
+
+    /**
+     * @var --theme-solid-button-text
+     * @type {color}
+     * @description Text color on top of --theme-solid-button-bg
+     * @default #ffffff - White
+     */
+    --theme-solid-button-text: #ffffff;
 }
 
 /* Platform-specific styles variables */
@@ -630,7 +811,7 @@ body.darwin {
         --theme-fg: #ffffff;
         --theme-accent: hsl(120, 7%, 85%);
         --hover-color: #2a2a2a;
-        --theme-border: hsl(0, 0%, 20%);
+        --theme-border: #3C3C3C;
         --image-border-color: #70a1c2;
         --PrimaryButtonsColors: hsl(0, 0%, 10%);
         color-scheme: dark;
@@ -652,9 +833,8 @@ body.darwin {
         --hover-color: #dfdfdf;
         --theme-border: hsl(0, 0%, 88%);
         --image-border-color: #b0c6cb;
-        --theme-accent: hsl(185, 30%, 93%);
+        --theme-accent: hsl(210, 50%, 94%);
         --theme-accent-text: #000000;
-        --PrimaryButtonsColors: hsl(50, 10%, 80%);
         --PrimaryButtonsColors: hsl(0, 0%, 95%);
         color-scheme: light;
         background: var(--theme-bg);
@@ -688,6 +868,33 @@ body.darwin {
         --marker-toolbar-bg: hsl(0, 0%, 97%);
         --marker-toolbar-border: hsl(0, 0%, 88%);
         --marker-lod-hover-bg: hsl(0, 0%, 96.5%);
+
+        /* Collab Share Colors (Light Mode) */
+        --theme-overlay: rgba(222, 222, 222, 0.350);
+        --theme-surface-solid: #ffffff;
+        --theme-shadow-panel: 0 6px 20px 2px rgba(15, 15, 15, 0.08);
+        --theme-shadow-control: 0 0 20px 2px rgba(15, 15, 15, 0.06);
+        --theme-shadow-soft: 0 1px 2px rgba(15, 15, 15, 0.04);
+        --theme-danger: rgba(240, 90, 90, 0.9);
+        --theme-danger-border: rgba(220, 60, 60, 0.35);
+        --theme-danger-subtle: rgba(220, 60, 60, 0.12);
+        --theme-danger-text: #ffffff;
+        --theme-toast-bg: rgba(255, 255, 255, 0.96);
+        --theme-toast-text: #0f0f0f;
+        --theme-toast-warning-bg: rgba(255, 240, 0, 0.96);
+        --theme-icon-surface: hsl(0, 0%, 92%);
+        --theme-icon-mark: rgba(0, 0, 0, 0.5);
+        --theme-icon-mark-strong: rgba(0, 0, 0, 0.45);
+        --theme-solid-button-bg: hsl(0, 0%, 12%);
+        --theme-solid-button-text: #ffffff;
+
+        /**
+         * @var --theme-accent-dark
+         * @type {color}
+         * @description Only in light mode (Darker accent color)
+         * @color #0078d4 - Blue
+        */
+        --theme-accent-dark: #0078d4;
     }
 }
 

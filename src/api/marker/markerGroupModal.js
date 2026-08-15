@@ -1,10 +1,11 @@
 import { Mint } from '@mintkit';
 Mint.include('stylesheet/style-components/find.css');
+import wait from '@wait';
 
 /**
  * Creates a New Group modal using Model Find UI
  * @param {Object} options
- * @param {Function} options.onConfirm - callback รับ (name) เมื่อกด confirm
+ * @param {Function} options.onConfirm
  * @returns {Object} { markups, init }
  */
 export const createMarkerGroupModal = ({ onConfirm } = {}) => {
