@@ -5,6 +5,10 @@ html:has(> body:is(.linux, .win32, .darwin)) {
     background: color-mix(in srgb, var(--theme-bg) var(--window-surface-opacity), transparent);
 }
 
+html:has(> body.win32) {
+    --window-surface-opacity: 50%;
+}
+
 body:is(.win32, .darwin) {
     min-height: 100vh;
     background: transparent;
@@ -22,6 +26,10 @@ html:has(> body:is(.linux)) {
 @media (prefers-color-scheme: light) {
     html:has(> body:is(.win32, .darwin)) {
         --window-surface-opacity: 90%;
+    }
+
+    html:has(> body.win32) {
+        --window-surface-opacity: 40%;
     }
 }
 
