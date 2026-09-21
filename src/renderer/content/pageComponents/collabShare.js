@@ -3,18 +3,11 @@ import Hammer from 'hammerjs';
 
 /**
  * @roadmap
- * 1. TODO — Room auth (OTP flow): room owner signs in via Firebase Auth
+ * 1. Room auth (OTP flow): room owner signs in via Firebase Auth
  *    (Google/GitHub) -> gets a 6-digit code with a TTL -> guests join with
  *    the code + a name -> guest enters the room as "NAME (Guest)".
- * 2. TODO — Code verification rate limiting must happen in a Cloud Function
+ * 2. Code verification rate limiting must happen in a Cloud Function
  *    (server-side) — never a raw client-side Firestore check.
- * 3. IMPLEMENTED (code) — y-partyserver client + Worker in workers/collab.
- *    Run npm run collab:server locally. Cloud deployment is still pending.
- * 4. IMPLEMENTED (code) — public endpoints use wss; loopback development
- *    supports ws. Set collab.serverUrl to the deployed Worker origin later.
- * 5. IMPLEMENTED (code) — onLoad/onSave persist Yjs snapshots atomically in
- *    Durable Object storage, including a flush when the last client leaves.
- *    See workers/collab/README.md for setup and remaining service work.
  */
 
 const STORAGE_KEY_USER = 'fascinate-collab-user-name';
