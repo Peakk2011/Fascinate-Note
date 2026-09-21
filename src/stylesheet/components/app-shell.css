@@ -23,12 +23,13 @@
     border-bottom: 1px solid var(--theme-border);
 }
 
-body.win32 .application-titlebar {
+body.win32 .application-titlebar,
+body.linux .application-titlebar {
     height: calc(var(--titlebar-height) - 2px);
 }
 
 /* Disable '.application-titlebar' on web-version */
-body:not(.win32):not(.darwin) #title-bar {
+body:not(.win32):not(.darwin):not(.linux) #title-bar {
     display: none;
 }
 
@@ -65,7 +66,8 @@ body:not(.win32):not(.darwin) #title-bar {
     width: fit-content;
 }
 
-body.win32 .status {
+body.win32 .status,
+body.linux .status {
     left: calc(var(--status-right) - 6px);
     right: 0;
     top: calc(var(--status-top) - 14px);

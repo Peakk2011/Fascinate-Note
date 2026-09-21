@@ -97,3 +97,6 @@ out/
 dist/
 
 .VSCodeCounter/
+# Local Cloudflare Worker state
+.wrangler/
+.dev.vars

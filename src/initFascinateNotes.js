@@ -3,11 +3,12 @@
  * Handles all initialization logic for the Electron application
  */
 
-import { app, BrowserWindow, ipcMain, dialog, nativeTheme, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import fs from 'fs/promises';
 import { createWindow } from './core/createWindow.js';
 import { preloadAssets } from './core/preloadAssets.js';
 import { OS } from './config/osConfig.js';
+import { bindTitleBarTheme, getTitleBarOverlay } from './core/window/titleBarTheme.js';
 
 /**
  * Indicates whether the app is running in development mode
@@ -139,17 +140,14 @@ const registerIpcHandlers = () => {
 			center: true,
 			frame: false,
 			titleBarStyle: 'hidden',
-			titleBarOverlay: {
-				color: '#00000000',
-				symbolColor: nativeTheme.shouldUseDarkColors ? '#ffffff' : '#000000',
-				height: 38
-			},
+			titleBarOverlay: getTitleBarOverlay(),
 			webPreferences: {
 				nodeIntegration: false,
 				contextIsolation: true
 			}
 		});
 
+		bindTitleBarTheme(aboutWindow);
 		await aboutWindow.loadURL('https://mint-teams.web.app/Fascinate-Welcome/');
 
 		aboutWindow.once('ready-to-show', () => {

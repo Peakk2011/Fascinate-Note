@@ -35,7 +35,7 @@ export default defineConfig({
     },
 
     optimizeDeps: {
-        include: ['dom-to-image', 'yjs', 'y-websocket']
+        include: ['dom-to-image', 'yjs', 'y-partyserver/provider']
     },
     resolve: {
         alias: {

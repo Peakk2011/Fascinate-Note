@@ -3,7 +3,7 @@ import net from "node:net";
 
 const spawnProcess = ({ label, command, args, exitOnFailure = true }) => {
     const p = spawn(command, args, {
-        shell: true,
+        shell: process.platform === "win32",
         stdio: "inherit",
     });
 
@@ -30,10 +30,18 @@ const isPortOpen = (port, host = "localhost") => new Promise((resolve) => {
     });
 });
 
+const electronArgs = process.argv.slice(2);
+const hasOzonePlatform = electronArgs.some(arg =>
+    arg === "--ozone-platform" || arg.startsWith("--ozone-platform=")
+);
+if (process.platform === "linux" && !hasOzonePlatform) {
+    electronArgs.push("--ozone-platform=x11");
+}
+
 const electronProcess = spawnProcess({
     label: "electron",
     command: "npm",
-    args: ["run", "dev:electron"],
+    args: ["run", "dev:electron", "--", ...electronArgs],
 });
 
 const rendererProcess = spawnProcess({
@@ -42,8 +50,8 @@ const rendererProcess = spawnProcess({
     args: ["run", "dev:renderer"],
 });
 
-const collabPort = Number(process.env.COLLAB_PORT || 1234);
-const collabHost = process.env.COLLAB_HOST || "localhost";
+const collabPort = Number(process.env.COLLAB_PORT || 8787);
+const collabHost = process.env.COLLAB_HOST || "127.0.0.1";
 
 let collabProcess = null;
 if (await isPortOpen(collabPort, collabHost)) {

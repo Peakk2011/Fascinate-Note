@@ -1,5 +1,5 @@
 import { osConfig, OS } from './osConfig.js';
-import { nativeTheme } from 'electron';
+import { getTitleBarOverlay } from '../core/window/titleBarTheme.js';
 import { resolvePath } from '#utils-paths';
 
 /**
@@ -34,6 +34,8 @@ export const getWindowConfig = () => {
         minHeight: windowSizeConfig.min.height,
         title: `Fascinate Note (${config.name})`,
         icon: config.icon || undefined,
+        // Vibrancy and transparency settings
+        backgroundColor: '#00000000',
         ...(OS === 'darwin' && {
             titleBarStyle: 'hiddenInset',
             transparent: true,
@@ -41,21 +43,14 @@ export const getWindowConfig = () => {
             visualEffectState: 'active',
             hasShadow: true,
         }),
-        ...(OS === 'win32' && {
-            backgroundMaterial: 'mica',
+        ...(OS === 'win32' && { backgroundMaterial: 'mica' }),
+        ...((OS === 'win32' || OS === 'linux') && {
             titleBarStyle: 'hidden',
-            // transparent: true,
             frame: false,
-            titleBarOverlay: {
-                color: '#00000000',
-                symbolColor: nativeTheme.shouldUseDarkColors ? '#ffffff' : '#000000',
-                height: 38
-            }
+            titleBarOverlay: getTitleBarOverlay()
         }),
         ...(OS === 'linux' && {
-            titleBarStyle: 'default',
-            frame: true,
-            transparent: false
+            transparent: false,
         }),
         webPreferences: {
             preload: resolvePath('../preload.js'),

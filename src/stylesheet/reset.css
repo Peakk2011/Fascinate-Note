@@ -785,6 +785,7 @@
 
 /* Platform-specific styles variables */
 body.win32,
+body.linux,
 body.darwin {
     --editor-padding: 1.2rem 1.2rem;
 }

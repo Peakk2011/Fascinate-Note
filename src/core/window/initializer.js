@@ -2,6 +2,7 @@ import { app, BrowserWindow } from "electron";
 import { IpcManager } from '../ipcManager.js';
 import { getWindowConfig } from '../../config/windowConfig.js';
 import { OpenDevTools } from '../devtools.js';
+import { bindTitleBarTheme } from './titleBarTheme.js';
 
 /**
  * Creates and configures the main BrowserWindow
@@ -10,6 +11,7 @@ import { OpenDevTools } from '../devtools.js';
 export const initializeWindow = () => {
     const windowOptions = getWindowConfig();
     const mainWindow = new BrowserWindow(windowOptions);
+    bindTitleBarTheme(mainWindow);
 
     mainWindow.show();
     mainWindow.webContents

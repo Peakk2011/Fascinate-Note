@@ -66,8 +66,8 @@
     letter-spacing: -0.25px;
 }
 
-body:not(.win32):not(.darwin) .collab-share-overlay::before,
-body:not(.win32):not(.darwin) .collab-share-overlay::after {
+body:not(.win32):not(.darwin):not(.linux) .collab-share-overlay::before,
+body:not(.win32):not(.darwin):not(.linux) .collab-share-overlay::after {
     display: none;
 }
 

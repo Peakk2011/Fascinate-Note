@@ -12,16 +12,18 @@
   ],
   "scripts": {
     "start": "cross-env NODE_ENV=development node dev.js",
-    "start:linux": "cross-env NODE_ENV=development ELECTRON_OZONE_PLATFORM_HINT=x11 GDK_BACKEND=x11 node dev.js",
+    "start:linux": "cross-env NODE_ENV=development ELECTRON_OZONE_PLATFORM_HINT=x11 GDK_BACKEND=x11 node dev.js --ozone-platform=x11",
     "dev:renderer": "vite",
     "dev:electron": "cross-env NODE_ENV=development electron .",
     "dev:mobile": "npm --workspace apps/mobile run dev",
-    "collab:server": "cross-env HOST=localhost PORT=1234 npx y-websocket",
+    "collab:server": "wrangler dev --local --show-interactive-dev-session=false --config workers/collab/wrangler.jsonc",
     "build:renderer": "vite build",
     "build": "cross-env NODE_ENV=production npm run build:renderer && electron-builder",
     "build:dir": "cross-env NODE_ENV=production npm run build:renderer && electron-builder --dir",
-    "collab-server": "cross-env HOST=0.0.0.0 PORT=1234 y-websocket",
-    "lint": "echo \"No linting configured\""
+    "collab-server": "npm run collab:server",
+    "lint": "echo \"No linting configured\"",
+    "collab:check": "wrangler deploy --dry-run --config workers/collab/wrangler.jsonc",
+    "test:collab": "node --test tests/collab/*.test.js"
   },
   "keywords": [],
   "author": {
@@ -63,14 +65,16 @@
     "dompurify": "^3.4.12",
     "electron-store": "^11.0.2",
     "hammerjs": "^2.0.8",
-    "y-websocket": "^3.0.0",
+    "partyserver": "^0.5.10",
+    "y-partyserver": "^2.2.0",
     "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "@y/websocket-server": "^0.1.1",
     "cross-env": "^10.1.0",
     "electron": "^43.2.0",
     "electron-builder": "^25.1.8",
-    "vite": "^7.3.0"
+    "vite": "^7.3.0",
+    "wrangler": "4.83.0",
+    "ws": "8.20.0"
   }
 }

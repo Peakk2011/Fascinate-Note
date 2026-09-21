@@ -1,0 +1,32 @@
+/* Fascinate Notes Vibrancy Blur Effect */
+html:has(> body:is(.linux, .win32, .darwin)) {
+    --window-surface-opacity: 88%;
+    min-height: 100%;
+    background: color-mix(in srgb, var(--theme-bg) var(--window-surface-opacity), transparent);
+}
+
+body:is(.win32, .darwin) {
+    min-height: 100vh;
+    background: transparent;
+}
+
+body:is(.win32, .darwin) .application-titlebar,
+body:is(.win32, .darwin) .status {
+    background: transparent;
+}
+
+html:has(> body:is(.linux)) {
+    --window-surface-opacity: 100%;
+}
+
+@media (prefers-color-scheme: light) {
+    html:has(> body:is(.win32, .darwin)) {
+        --window-surface-opacity: 90%;
+    }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    html:has(> body:is(.win32, .darwin)) {
+        --window-surface-opacity: 100%;
+    }
+}

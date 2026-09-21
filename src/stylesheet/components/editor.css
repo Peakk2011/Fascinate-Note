@@ -80,6 +80,7 @@
  * @description Platform-specific textarea container styling
  */
 body.win32 .textarea-container,
+body.linux .textarea-container,
 body.darwin .textarea-container {
     padding-top: 2.5rem;
     max-width: 768px;
@@ -112,6 +113,7 @@ body.darwin .textarea-container {
 }
 
 body.win32 .editor-placeholder,
+body.linux .editor-placeholder,
 body.darwin .editor-placeholder {
     margin-top: 2.5rem;
 }

@@ -47,6 +47,9 @@
 @import './marker/group/menu.css';
 @import './marker/group/input.css';
 
+/* Desktop translucency overrides the shell's solid canvas after components. */
+@import './components/window-surface.css';
+
 /* --- Global Animations --- */
 
 /**

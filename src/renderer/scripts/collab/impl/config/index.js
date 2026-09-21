@@ -1,5 +1,5 @@
 export const DEFAULTS = {
-    serverUrl: 'ws://localhost:1234',
+    serverUrl: 'http://127.0.0.1:8787',
     room: 'fascinate-notes',
     mapName: 'note',
     debounceMs: 120,

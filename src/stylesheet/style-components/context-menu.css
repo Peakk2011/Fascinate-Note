@@ -16,6 +16,7 @@
 }
 
 body.win32 .context-menu,
+body.linux .context-menu,
 body.darwin .context-menu {
     padding: 0.4rem;
 }

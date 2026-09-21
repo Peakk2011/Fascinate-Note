@@ -1,5 +1,6 @@
 import * as Y from 'yjs';
-import { WebsocketProvider } from 'y-websocket';
+import YProvider from 'y-partyserver/provider';
+import { resolveCollabEndpoint } from './impl/config/endpoint.js';
 import { ensureConfig } from '@collab-impl/config';
 import { getOrCreateUserIdentity } from '@collab-impl/identity';
 import { createOverlay } from '@collab-impl/overlay';
@@ -22,7 +23,7 @@ import { createHtmlSync } from '@collab-impl/sync';
  *      userName?: string,
  *      userColor?: string
  * }} options
- * @returns {{destroy: () => void, doc: Y.Doc, provider: WebsocketProvider}}
+ * @returns {{destroy: () => void, doc: Y.Doc, provider: YProvider}}
  */
 export const initRealtimeCollab = (editor, options = {}) => {
     if (!editor) {
@@ -30,13 +31,16 @@ export const initRealtimeCollab = (editor, options = {}) => {
     }
 
     const config = ensureConfig(options);
+    const endpoint = resolveCollabEndpoint(config.serverUrl);
     const doc = new Y.Doc();
-    const provider = new WebsocketProvider(
-        config.serverUrl,
+    const provider = new YProvider(
+        endpoint.host,
         config.room,
         doc,
         {
-            connect: true
+            connect: true,
+            party: 'collab-room',
+            protocol: endpoint.protocol
         }
     );
 

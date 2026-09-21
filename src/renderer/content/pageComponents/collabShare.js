@@ -2,20 +2,19 @@ import { initRealtimeCollab } from '@collab/realtimeCollab.js';
 import Hammer from 'hammerjs';
 
 /**
- * @roadmap Planned, not yet implemented — direction agreed, no code written:
- * 1. Room auth (OTP flow): room owner signs in via Firebase Auth
+ * @roadmap
+ * 1. TODO — Room auth (OTP flow): room owner signs in via Firebase Auth
  *    (Google/GitHub) -> gets a 6-digit code with a TTL -> guests join with
  *    the code + a name -> guest enters the room as "NAME (Guest)".
- * 2. Code verification rate limiting must happen in a Cloud Function
+ * 2. TODO — Code verification rate limiting must happen in a Cloud Function
  *    (server-side) — never a raw client-side Firestore check.
- * 3. Realtime sync transport: migrate from y-websocket (self-hosted server)
- *    to y-partyserver (Cloudflare Workers + Durable Objects — managed,
- *    free). Only the WebsocketProvider import in realtimeCollab.js changes;
- *    server-side Worker code not written yet.
- * 4. wss:// becomes automatic once on Cloudflare Workers (always https) —
- *    no separate fix needed, comes free with #3.
- * 5. Document persistence: use the Durable Object's own storage
- *    (onLoad/onSave hooks) instead of y-websocket's LevelDB persistence.
+ * 3. IMPLEMENTED (code) — y-partyserver client + Worker in workers/collab.
+ *    Run npm run collab:server locally. Cloud deployment is still pending.
+ * 4. IMPLEMENTED (code) — public endpoints use wss; loopback development
+ *    supports ws. Set collab.serverUrl to the deployed Worker origin later.
+ * 5. IMPLEMENTED (code) — onLoad/onSave persist Yjs snapshots atomically in
+ *    Durable Object storage, including a flush when the last client leaves.
+ *    See workers/collab/README.md for setup and remaining service work.
  */
 
 const STORAGE_KEY_USER = 'fascinate-collab-user-name';
@@ -214,7 +213,7 @@ export const createCollabShareMarkup = () => `
                 </div>
 
                 <div id="collab-share-content" class="collab-share-content">
-                <h2 id="collab-share-title" class="collab-share-title">Share &amp;<br>Collaborate</h2>
+                <h2 id="collab-share-title" class="collab-share-title">Share</h2>
                 <p class="collab-share-description">Create or join a collaboration room</p>
 
                 <div id="collab-share-steps-viewport" class="collab-share-steps-viewport">
