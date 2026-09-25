@@ -1,10 +1,10 @@
-<img src="./assets/icons/preview/fascinate-notes-icons.png" width="100" alt='Fascinate Notes'>
-
-# Fascinate Notes
+<p align='center'>
+  <img src="./assets/icons/preview/fascinate-notes-icons.png" width="80" alt='Fascinate Notes'>
+  <h1 align='center'>Fascinate Notes</h1>
+  <img src="https://mint-teams.web.app/Assets/Fascinate%20Notes%20Preview/Fascinate%20Notes%20Preview.png" alt='Fascinate Notes App Preview'>
+</p>
 
 <br>
-
-<img src="https://mint-teams.web.app/Assets/Fascinate%20Notes%20Preview/Fascinate%20Notes%20Preview.png" width="800" alt='Fascinate Notes App Preview'>
 
 <br>
 
