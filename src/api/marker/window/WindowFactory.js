@@ -194,11 +194,11 @@ export class WindowFactory {
             this.windowManager.setActiveWindow(data.id);
 
             const coords = this.windowManager.getCanvasCoords(e);
-            this.windowManager.drag.start(data.id, coords, element);
+            this.windowManager.drag.start(data.id, coords, element, e);
         };
 
         const startWindowDrag = (e) => {
-            if (e.button !== 0) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
             if (e.target.closest('.marker-window-close')) return;
             if (e.target.closest('.marker-window-minimize')) return;
             if (e.target.closest('.marker-window-resize')) return;

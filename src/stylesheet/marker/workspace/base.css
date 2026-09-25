@@ -1,6 +1,7 @@
 #workspace-container {
     position: fixed;
     inset: 0;
+    touch-action: none;
     background: var(--marker-bg);
     background-image: radial-gradient(circle,
             color-mix(in srgb, var(--theme-fg) 20%, transparent) 1px,

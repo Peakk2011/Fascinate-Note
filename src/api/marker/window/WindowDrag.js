@@ -6,7 +6,7 @@ export class WindowDrag {
         this.state = null;
     }
     
-    start(id, coords, element) {
+    start(id, coords, element, pointerEvent = null) {
         const data = this.windowManager.windows.find(w => w.id === id);
         if (!data) return;
         
@@ -17,6 +17,7 @@ export class WindowDrag {
         };
         
         element.classList.add('is-dragging');
+        pointerEvent?.pointerId != null && element.setPointerCapture?.(pointerEvent.pointerId);
         
         window.addEventListener('pointermove', this.handleMove);
         window.addEventListener('pointerup', this.handleEnd);

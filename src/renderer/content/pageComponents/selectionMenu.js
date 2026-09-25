@@ -160,9 +160,16 @@ const calculateMenuPosition = (selectionRect, selectionMenu) => {
  * @param {HTMLElement} selectionMenu
  *        Menu element containing command buttons.
  */
-const updateButtonStates = (selectionMenu) => {
+const JUSTIFY_COMMANDS = ['justifyLeft', 'justifyCenter', 'justifyRight'];
+
+const updateButtonStates = (selectionMenu, activeJustifyCommand = null) => {
     const buttons =
         selectionMenu.querySelectorAll('button[data-command]');
+
+    const detectedJustifyCommand = JUSTIFY_COMMANDS.find((command) =>
+        document.queryCommandState(command)
+    );
+    const selectedJustifyCommand = activeJustifyCommand || detectedJustifyCommand;
 
     buttons.forEach((button) => {
         const { command, value } = button.dataset;
@@ -187,11 +194,8 @@ const updateButtonStates = (selectionMenu) => {
         /**
          * Inline formatting commands
          */
-        if (command === 'justifyLeft' || command === 'justifyCenter' || command === 'justifyRight') {
-            button.classList.toggle(
-                'active',
-                document.queryCommandState(command)
-            );
+        if (JUSTIFY_COMMANDS.includes(command)) {
+            button.classList.toggle('active', command === selectedJustifyCommand);
         } else {
             button.classList.toggle(
                 'active',
@@ -277,8 +281,15 @@ export const initSelectionMenu = (editor) => {
         return { cleanup: () => { } };
     }
 
+    const isTouchDevice = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches;
+
+    if (isTouchDevice) {
+        selectionMenu.classList.add('show');
+    }
+
     let selectionTimer = null;
     let lastPositionUpdate = 0;
+    let activeJustifyCommand = null;
 
     const isLargeDocument = () => {
         const length = Number(editor.dataset?.docLength || 0);
@@ -331,7 +342,9 @@ export const initSelectionMenu = (editor) => {
             const selection = window.getSelection();
 
             if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
-                selectionMenu.classList.remove('show');
+                if (!isTouchDevice || !selectionMenu.classList.contains('show')) {
+                    selectionMenu.classList.remove('show');
+                }
                 return;
             }
 
@@ -372,7 +385,7 @@ export const initSelectionMenu = (editor) => {
             selectionMenu.classList.add('show');
 
             if (!largeDoc) {
-                updateButtonStates(selectionMenu);
+                updateButtonStates(selectionMenu, activeJustifyCommand);
             }
         } catch (error) {
             console.error('Error showing selection menu:', error);
@@ -409,6 +422,15 @@ export const initSelectionMenu = (editor) => {
 
         const command = button.dataset.command;
         const value = button.dataset.value || null;
+
+        if (JUSTIFY_COMMANDS.includes(command)) {
+            activeJustifyCommand = command;
+            selectionMenu
+                .querySelectorAll('button[data-command="justifyLeft"], button[data-command="justifyCenter"], button[data-command="justifyRight"]')
+                .forEach((justifyButton) => {
+                    justifyButton.classList.toggle('active', justifyButton === button);
+                });
+        }
 
         if (command === 'insertImage') {
             imageInput.click();
@@ -491,6 +513,7 @@ export const initSelectionMenu = (editor) => {
      * Handles editor blur event to hide the menu after a small delay.
      */
     const handleEditorBlur = () => {
+        if (isTouchDevice) return;
         setTimeout(() => {
             if (!selectionMenu.matches(':hover')) {
                 selectionMenu.classList.remove('show');
@@ -502,7 +525,7 @@ export const initSelectionMenu = (editor) => {
     const handleSelectionChange = () => {
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-            if (selectionMenu.classList.contains('show')) {
+            if (!isTouchDevice && selectionMenu.classList.contains('show')) {
                 selectionMenu.classList.remove('show');
             }
             return;

@@ -135,26 +135,26 @@ export const initializeEventListeners = (params) => {
 
     if (!textarea || !contextMenu || stateManager.isDestroyed()) return;
 
+    const supportsTouch =
+        'ontouchstart' in window ||
+        (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
     addEventListener(eventListeners, textarea, 'contextmenu', (e) => {
         e.preventDefault();
+        hideMenu();
+        if (supportsTouch) return;
         updateMenuState();
         showMenu(e);
     });
 
-    const isElectron =
-        typeof window !== 'undefined' &&
-        typeof window.electronAPI !== 'undefined';
-
-    const supportsTouch =
-        'ontouchstart' in window ||
-        (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+    const enableTouchLongPressContextMenu = false;
 
     const {
         longPressDelayMs,
         cancelMoveThresholdPx
     } = config.contextMenu?.longPress ?? DEFAULT_TOUCH_CONTEXT_MENU_CONFIG;
 
-    if (!isElectron && supportsTouch) {
+    if (enableTouchLongPressContextMenu && supportsTouch) {
         let longPressTimer = null;
         let initialTouch = null;
         let menuActive = false;

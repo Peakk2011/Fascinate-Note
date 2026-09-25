@@ -37,6 +37,14 @@ export const createWorkspaceMenuMarkup = (config) => {
                 </span>
             </button>
 
+            <button id="workspace-load-note" class="workspace-menu-action" type="button" role="menuitem">
+                <span>Load Notes</span>
+            </button>
+
+            <button id="workspace-save-note" class="workspace-menu-action" type="button" role="menuitem">
+                <span>Save Notes</span>
+            </button>
+
             <div class="workspace-menu-controls">
                 <div class="${config.zoomControlsClass}">
                     ${createZoomControlsMarkup(config)}

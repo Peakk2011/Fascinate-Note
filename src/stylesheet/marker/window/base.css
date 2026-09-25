@@ -1,5 +1,6 @@
 .marker-window {
     position: absolute;
+    touch-action: none;
     border-radius: 10px;
     background-color: var(--theme-model);
     backdrop-filter: blur(12px) saturate(150%);
@@ -31,6 +32,7 @@
     width: 18px;
     height: 18px;
     cursor: se-resize;
+    touch-action: none;
     border-bottom-right-radius: 10px;
     opacity: 1;
     transform: scale(1);

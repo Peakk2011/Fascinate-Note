@@ -43,6 +43,12 @@ export const createSetStatus = (els) => {
         statusType,
         customText = null
     ) => {
+        if (window.__collabTypingLabel && statusType !== 'error') {
+            els.statusText.textContent = window.__collabTypingLabel;
+            els.saveIndicator.className = 'dot typing';
+            return;
+        }
+
         const hasConfig = statusType in noteFeaturesConfig.status;
         const statusConfig = noteFeaturesConfig.status[statusType];
 

@@ -71,6 +71,7 @@ export const createCursorRenderer = ({
     
     let renderRaf = null;
     let tickRaf = null;
+    const isTouchDevice = window.matchMedia?.('(hover: none), (pointer: coarse)')?.matches;
 
     /**
      * Updates caret positions, pointer dots, and labels
@@ -115,7 +116,9 @@ export const createCursorRenderer = ({
                 if (!rect || !Number.isFinite(rect.left) || !Number.isFinite(rect.top)) {
                     elements.caret.style.display = 'none';
                 } else {
-                    const left = rect.left - containerRect.left;
+                    const left = isTouchDevice
+                        ? Math.max(0, container.clientWidth - 4)
+                        : rect.left - containerRect.left;
                     const top = rect.top - containerRect.top;
                     const height = Math.max(14, rect.height || 14);
 

@@ -205,6 +205,10 @@ export const noteFeatures = async (
          * @type {StatusSetter}
          */
         const setStatus = createSetStatus(els);
+        const setCollabTyping = (text = '') => {
+            window.__collabTypingLabel = text || '';
+            setStatus(text ? 'typing' : 'idle', text || null);
+        };
         
         if (els.statusText.textContent) {
             setStatus('saved', els.statusText.textContent);
@@ -347,6 +351,8 @@ export const noteFeatures = async (
             loadData,
             loadFile,
             saveData,
+            setStatus,
+            setCollabTyping,
             zoomIn,
             zoomOut,
             resetZoom,

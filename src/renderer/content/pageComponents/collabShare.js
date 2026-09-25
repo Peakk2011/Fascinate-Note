@@ -1497,6 +1497,11 @@ export const initCollabShare = ({ config, editorElement, noteAPI } = {}) => {
             seedLocalOnEmpty: isCreator,
             connectionTimeoutMs: config?.collab?.connectionTimeoutMs,
             autoDisableOnFail: false,
+            onTypingChange: (names) => {
+                if (!noteAPI?.setCollabTyping) return;
+                const text = names.length ? `${names.join(', ')} Typing...` : '';
+                noteAPI.setCollabTyping(text);
+            },
             userName: name,
             userColor: state.userColor,
             sessionId: state.sessionId,

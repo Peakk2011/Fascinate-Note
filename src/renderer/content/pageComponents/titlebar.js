@@ -44,6 +44,8 @@ export const initTitlebar = (threshold = 60) => {
     const workspaceToggleBtn = document.getElementById('workspace-toggle-btn');
     const workspaceMenu = document.getElementById('workspace-menu');
     const workspaceMarkerBtn = document.getElementById('workspace-open-marker');
+    const loadNoteBtn = document.getElementById('workspace-load-note');
+    const saveNoteBtn = document.getElementById('workspace-save-note');
     const workspaceContainer = document.getElementById('workspace-container');
 
     if (!el) {
@@ -395,8 +397,18 @@ export const initTitlebar = (threshold = 60) => {
         await toggleWorkspace();
     };
 
+    const handleLoadNote = async () => {
+        await window.noteAPI?.loadFile?.();
+    };
+
+    const handleSaveNote = async () => {
+        await window.noteAPI?.saveData?.();
+    };
+
     workspaceToggleBtn?.addEventListener('click', toggleMenu);
     workspaceMarkerBtn?.addEventListener('click', handleMarkerClick);
+    loadNoteBtn?.addEventListener('click', handleLoadNote);
+    saveNoteBtn?.addEventListener('click', handleSaveNote);
     document.addEventListener('mousedown', handleMenuClick);
     document.addEventListener('keydown', handleMenuEscape);
     document.addEventListener('keydown', handleWorkspaceToggleShortcut);
@@ -434,6 +446,8 @@ export const initTitlebar = (threshold = 60) => {
             window.removeEventListener('scroll', onScroll);
             workspaceToggleBtn?.removeEventListener('click', toggleMenu);
             workspaceMarkerBtn?.removeEventListener('click', handleMarkerClick);
+            loadNoteBtn?.removeEventListener('click', handleLoadNote);
+            saveNoteBtn?.removeEventListener('click', handleSaveNote);
             document.removeEventListener('mousedown', handleMenuClick);
             document.removeEventListener('keydown', handleMenuEscape);
             document.removeEventListener('keydown', handleWorkspaceToggleShortcut);

@@ -51,6 +51,7 @@ export const initRealtimeCollab = (editor, options = {}) => {
     let destroyed = false;
     let hasConnected = false;
     let disableTimer = null;
+    let typingTimer = null;
 
     const overlayState = createOverlay(editor);
 
@@ -99,6 +100,24 @@ export const initRealtimeCollab = (editor, options = {}) => {
 
     const { schedulePush, handleTextUpdate, handleSync } = sync;
 
+    const updateTyping = () => {
+        const names = [];
+        awareness.getStates().forEach((state) => {
+            if (!state?.typing) return;
+            names.push(state.user?.name || 'Someone');
+        });
+        options.onTypingChange?.(names);
+    };
+
+    const handleEditorInput = () => {
+        awareness.setLocalStateField('typing', true);
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            awareness.setLocalStateField('typing', false);
+        }, 1200);
+        schedulePush();
+    };
+
     ytext.observe(handleTextUpdate);
 
     const disableCollab = (reason) => {
@@ -126,11 +145,12 @@ export const initRealtimeCollab = (editor, options = {}) => {
 
     if (typeof awareness.on === 'function') {
         awareness.on('change', () => {
+            updateTyping();
             scheduleRender();
         });
     }
 
-    editor.addEventListener('input', schedulePush);
+    editor.addEventListener('input', handleEditorInput);
     editor.addEventListener('paste', schedulePush);
     editor.addEventListener('cut', schedulePush);
     editor.addEventListener('blur', schedulePush);
@@ -161,13 +181,16 @@ export const initRealtimeCollab = (editor, options = {}) => {
             sync.destroy();
             awarenessScheduler.destroy();
             cursorRenderer.destroy();
+            clearTimeout(typingTimer);
+            awareness.setLocalStateField('typing', false);
+            options.onTypingChange?.([]);
 
             if (disableTimer) {
                 clearTimeout(disableTimer);
                 disableTimer = null;
             }
 
-            editor.removeEventListener('input', schedulePush);
+            editor.removeEventListener('input', handleEditorInput);
             editor.removeEventListener('paste', schedulePush);
             editor.removeEventListener('cut', schedulePush);
             editor.removeEventListener('blur', schedulePush);

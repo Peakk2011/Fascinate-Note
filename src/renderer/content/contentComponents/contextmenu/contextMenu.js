@@ -35,9 +35,18 @@ export const createContextMenu = async () => {
     // Find IDs for undo/redo from config for direct element access
     const undoItemId = config.items.find(i => i.command === 'undo')?.id;
     const redoItemId = config.items.find(i => i.command === 'redo')?.id;
+    const isBrowserMode = typeof window.electronAPI === 'undefined';
+    const browserItems = config.items.filter(item => item.command !== 'openAboutFN');
+    while (browserItems.at(-1)?.type === 'separator') {
+        browserItems.pop();
+    }
+
+    const menuConfig = isBrowserMode
+        ? { ...config, items: browserItems }
+        : config;
 
     return {
-        markups: renderMenu(config),
+        markups: renderMenu(menuConfig),
 
         init({ pageConfig, noteAPI }) {
             // Validation

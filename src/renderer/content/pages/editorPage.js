@@ -99,6 +99,11 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
             seedLocalOnEmpty: true,
             connectionTimeoutMs: config.collab.connectionTimeoutMs,
             autoDisableOnFail: config.collab.autoDisableOnFail,
+            onTypingChange: (names) => {
+                if (!noteAPI?.setCollabTyping) return;
+                const text = names.length ? `${names.join(', ')} Typing...` : '';
+                noteAPI.setCollabTyping(text);
+            },
             userName: config.collab.userName,
             userColor: config.collab.userColor
         });
