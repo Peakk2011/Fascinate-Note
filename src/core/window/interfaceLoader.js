@@ -5,7 +5,7 @@ import { app } from 'electron';
 import wait from '../../api/wait.js';
 
 const isDev = !app.isPackaged;
-const VITE_DEV_SERVER_URL = "http://localhost:5173";
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL || "http://localhost:5173";
 const sleep = wait;
 
 /**

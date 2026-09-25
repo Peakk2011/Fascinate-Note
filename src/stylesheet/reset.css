@@ -554,7 +554,7 @@
     --dot-saving-color: hsl(29, 44%, 56%);
 
     /* Editor Variables */
-    --editor-padding: 1.6rem 1.4rem;
+    --editor-padding: 1.6rem 1.4rem 5rem;
     --editor-font-size: 16px;
     --editor-line-height: 1.4;
     --editor-letter-spacing: -0.2px;
@@ -787,7 +787,7 @@
 body.win32,
 body.linux,
 body.darwin {
-    --editor-padding: 1.2rem 1.2rem;
+    --editor-padding: 1.2rem 1.2rem 4.5rem;
 }
 
 /**
@@ -834,21 +834,22 @@ body.darwin {
         --hover-color: #dfdfdf;
         --theme-border: hsl(0, 0%, 88%);
         --image-border-color: #b0c6cb;
-        --theme-accent: hsl(210, 50%, 94%);
+        /* --theme-accent: hsl(210, 50%, 94%); */
+        --theme-accent: hsl(192, 8%, 90%);
         --theme-accent-text: #000000;
         --PrimaryButtonsColors: hsl(0, 0%, 95%);
         color-scheme: light;
         background: var(--theme-bg);
         color: var(--theme-fg);
 
-        --ctx-menu-bg: hsl(0, 0%, 97%);
+        --ctx-menu-bg: hsl(0, 0%, 97.5%);
         --ctx-menu-hover: hsl(40, 15%, 90%);
         --ctx-menu-active: hsl(0, 0%, 91%);
         --ctx-menu-text: hsl(0, 0%, 0%);
         --ctx-menu-text-hover: hsl(0, 0%, 0%);
         --ctx-menu-shadow:
             0 12px 24px rgba(0, 0, 0, 0.05),
-            0 24px 48px rgba(0, 0, 0, 0.06);
+            0 48px 80px rgba(0, 0, 0, 0.055);
 
         --theme-accent-selection: hsl(200, 40%, 90%);
         --theme-accent-selection-texts: hsl(200, 80%, 8%);

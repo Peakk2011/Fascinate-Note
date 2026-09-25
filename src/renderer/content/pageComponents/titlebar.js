@@ -40,6 +40,7 @@ export const createTitlebarMarkup = () => {
  */
 export const initTitlebar = (threshold = 60) => {
     const el = document.getElementById('title-bar') || document.querySelector('.application-titlebar');
+    const operationsBar = document.querySelector('.bottom-bar-operations');
     const workspaceToggleBtn = document.getElementById('workspace-toggle-btn');
     const workspaceMenu = document.getElementById('workspace-menu');
     const workspaceMarkerBtn = document.getElementById('workspace-open-marker');
@@ -58,6 +59,97 @@ export const initTitlebar = (threshold = 60) => {
     let menuOpen = false;
     let isViewTransitioning = false;
     let isCollabActive = false;
+
+    const operationStorageKey = 'fascinate-notes:bottom-bar-anchor';
+    const operationAnchors = ['left', 'right', 'top-right'];
+    let operationDrag = null;
+    let suppressOperationClick = false;
+
+    const setOperationAnchor = (anchor) => {
+        if (!operationsBar || !operationAnchors.includes(anchor)) return;
+        operationsBar.dataset.operationAnchor = anchor;
+        operationsBar.classList.remove('is-floating');
+        workspaceMenu?.setAttribute('data-operation-anchor', anchor);
+        localStorage.setItem(operationStorageKey, anchor);
+    };
+
+    const getDragAnchor = (deltaX, deltaY) => {
+        if (Math.abs(deltaY) > Math.abs(deltaX) && deltaY < 0) {
+            return 'top-right';
+        }
+
+        return deltaX < 0 ? 'left' : 'right';
+    };
+
+    const handleOperationPointerDown = (event) => {
+        if (!operationsBar || event.button !== 0) return;
+
+        const rect = operationsBar.getBoundingClientRect();
+        operationDrag = {
+            pointerId: event.pointerId,
+            startX: event.clientX,
+            startY: event.clientY,
+            initialLeft: rect.left,
+            initialTop: rect.top,
+            offsetX: event.clientX - rect.left,
+            offsetY: event.clientY - rect.top,
+            startAnchor: operationsBar.dataset.operationAnchor || 'top-right',
+            moved: false,
+            dragging: false
+        };
+    };
+
+    const handleOperationPointerMove = (event) => {
+        if (!operationsBar || !operationDrag || event.pointerId !== operationDrag.pointerId) return;
+        const movedX = event.clientX - operationDrag.startX;
+        const movedY = event.clientY - operationDrag.startY;
+        if (Math.hypot(movedX, movedY) < 6) return;
+
+        if (!operationDrag.dragging) {
+            operationDrag.dragging = true;
+            suppressOperationClick = true;
+            operationsBar.style.left = `${operationDrag.initialLeft}px`;
+            operationsBar.style.top = `${operationDrag.initialTop}px`;
+            operationsBar.setPointerCapture?.(event.pointerId);
+            operationsBar.classList.add('is-dragging', 'is-floating');
+            operationsBar.removeAttribute('data-operation-anchor');
+        }
+
+        operationDrag.moved = true;
+        operationsBar.style.left = `${Math.max(0, Math.min(window.innerWidth - operationsBar.offsetWidth, event.clientX - operationDrag.offsetX))}px`;
+        operationsBar.style.top = `${Math.max(0, Math.min(window.innerHeight - operationsBar.offsetHeight, event.clientY - operationDrag.offsetY))}px`;
+    };
+
+    const handleOperationPointerUp = (event) => {
+        if (!operationsBar || !operationDrag || event.pointerId !== operationDrag.pointerId) return;
+
+        const wasDragging = operationDrag.dragging;
+        const wasMoved = operationDrag.moved;
+        const movedX = event.clientX - operationDrag.startX;
+        const movedY = event.clientY - operationDrag.startY;
+        const targetAnchor = wasMoved ? getDragAnchor(movedX, movedY) : operationDrag.startAnchor;
+        operationDrag = null;
+        operationsBar.releasePointerCapture?.(event.pointerId);
+        operationsBar.classList.remove('is-dragging');
+
+        if (wasDragging) {
+            setOperationAnchor(targetAnchor);
+            operationsBar.style.left = '';
+            operationsBar.style.top = '';
+        }
+    };
+
+    const handleOperationClick = (event) => {
+        if (!suppressOperationClick) return;
+        event.preventDefault();
+        event.stopPropagation();
+        suppressOperationClick = false;
+    };
+
+    const restoreOperationAnchor = () => {
+        const savedAnchor = localStorage.getItem(operationStorageKey);
+        setOperationAnchor(operationAnchors.includes(savedAnchor) ? savedAnchor : 'top-right');
+    };
 
     const setMarkerAccess = (enabled) => {
         isCollabActive = !enabled;
@@ -310,6 +402,13 @@ export const initTitlebar = (threshold = 60) => {
     document.addEventListener('keydown', handleWorkspaceToggleShortcut);
     document.addEventListener('collab:session-changed', handleCollabSessionChange);
 
+    operationsBar?.addEventListener('pointerdown', handleOperationPointerDown);
+    operationsBar?.addEventListener('pointermove', handleOperationPointerMove);
+    operationsBar?.addEventListener('pointerup', handleOperationPointerUp);
+    operationsBar?.addEventListener('pointercancel', handleOperationPointerUp);
+    operationsBar?.addEventListener('click', handleOperationClick, true);
+    restoreOperationAnchor();
+
     if (window.__collabShareAPI?.isSessionActive?.()) {
         setMarkerAccess(false);
     }
@@ -339,6 +438,11 @@ export const initTitlebar = (threshold = 60) => {
             document.removeEventListener('keydown', handleMenuEscape);
             document.removeEventListener('keydown', handleWorkspaceToggleShortcut);
             document.removeEventListener('collab:session-changed', handleCollabSessionChange);
+            operationsBar?.removeEventListener('pointerdown', handleOperationPointerDown);
+            operationsBar?.removeEventListener('pointermove', handleOperationPointerMove);
+            operationsBar?.removeEventListener('pointerup', handleOperationPointerUp);
+            operationsBar?.removeEventListener('pointercancel', handleOperationPointerUp);
+            operationsBar?.removeEventListener('click', handleOperationClick, true);
             el.classList.remove('scrolled');
             if (workspaceApi) {
                 workspaceApi.destroy();

@@ -188,7 +188,6 @@ body.darwin .editor-placeholder {
 .editable-div h4 mark {
     font-family: var(--font-display-heading);
     font-size-adjust: from-font;
-    letter-spacing: calc(var(--editor-heading-letter-spacing) - 0.6px);
     font-weight: var(--editor-heading-weight);
 }
 

@@ -161,7 +161,7 @@ const registerIpcHandlers = () => {
 
 	app.on('web-contents-created', (event, contents) => {
 		contents.on('will-navigate', (event, url) => {
-			if (isDev && url.startsWith('http://localhost:5173')) {
+			if (isDev && /^http:\/\/localhost:\d+(?:\/|$)/.test(url)) {
 				return;
 			}
 
@@ -171,7 +171,7 @@ const registerIpcHandlers = () => {
 
 		contents.setWindowOpenHandler(({ url }) => {
 			// Allow opening Vite dev server URLs in development mode
-			if (isDev && url.startsWith('http://localhost:5173')) {
+			if (isDev && /^http:\/\/localhost:\d+(?:\/|$)/.test(url)) {
 				return { action: 'allow' };
 			}
 

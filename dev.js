@@ -30,6 +30,27 @@ const isPortOpen = (port, host = "localhost") => new Promise((resolve) => {
     });
 });
 
+const findAvailablePort = async (startPort) => {
+    let port = startPort;
+
+    while (await isPortOpen(port)) {
+        port += 1;
+    }
+
+    return port;
+};
+
+const waitForPort = async (port, timeout = 10000) => {
+    const deadline = Date.now() + timeout;
+
+    while (Date.now() < deadline) {
+        if (await isPortOpen(port)) return;
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    throw new Error(`Renderer server did not start on port ${port}`);
+};
+
 const electronArgs = process.argv.slice(2);
 const hasOzonePlatform = electronArgs.some(arg =>
     arg === "--ozone-platform" || arg.startsWith("--ozone-platform=")
@@ -38,16 +59,22 @@ if (process.platform === "linux" && !hasOzonePlatform) {
     electronArgs.push("--ozone-platform=x11");
 }
 
-const electronProcess = spawnProcess({
-    label: "electron",
-    command: "npm",
-    args: ["run", "dev:electron", "--", ...electronArgs],
-});
+const rendererPort = await findAvailablePort(5173);
+process.env.VITE_PORT = String(rendererPort);
+process.env.VITE_DEV_SERVER_URL = `http://localhost:${rendererPort}`;
 
 const rendererProcess = spawnProcess({
     label: "renderer",
     command: "npm",
     args: ["run", "dev:renderer"],
+});
+
+await waitForPort(rendererPort);
+
+const electronProcess = spawnProcess({
+    label: "electron",
+    command: "npm",
+    args: ["run", "dev:electron", "--", ...electronArgs],
 });
 
 const collabPort = Number(process.env.COLLAB_PORT || 8787);

@@ -31,7 +31,9 @@ export default defineConfig({
     base: './',
 
     server: {
-        open: false
+        open: false,
+        port: Number(process.env.VITE_PORT || 5173),
+        strictPort: true
     },
 
     optimizeDeps: {

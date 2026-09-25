@@ -25,10 +25,12 @@ body.darwin .context-menu {
     0% {
         transform: translateY(-10px) scale(1);
         box-shadow: 0px 24px 38px rgba(0, 0, 0, 0);
+        filter: blur(4px);
     }
 
     50% {
         transform: translateY(0px) scale(1);
+        filter: blur(0px);
     }
 
     100% {
@@ -69,7 +71,7 @@ body.darwin .context-menu {
 .context-menu.visible {
     display: block;
     opacity: 1;
-    animation: menuAppear 600ms cubic-bezier(0.2, 0.0, 0, 1.0) forwards;
+    animation: menuAppear 600ms cubic-bezier(0.25, 0.0, 0.05, 1.0) forwards;
     max-height: 500px;
 }
 

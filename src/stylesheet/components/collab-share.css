@@ -30,7 +30,8 @@
 .collab-share-overlay {
     position: fixed;
     inset: 0;
-    background: var(--theme-overlay);
+    /* background: var(--theme-overlay); */
+    background: var(--theme-bg);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     opacity: 0;
@@ -1470,7 +1471,7 @@ body:not(.win32):not(.darwin):not(.linux) .collab-share-overlay::after {
     display: grid;
     place-items: center;
     font-size: 40px;
-    box-shadow: var(--theme-shadow);
+    /* box-shadow: var(--theme-shadow); */
     overflow: hidden;
 }
 

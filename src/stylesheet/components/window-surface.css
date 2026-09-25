@@ -14,11 +14,6 @@ body:is(.win32, .darwin) {
     background: transparent;
 }
 
-body:is(.win32, .darwin) .application-titlebar,
-body:is(.win32, .darwin) .status {
-    background: transparent;
-}
-
 html:has(> body:is(.linux)) {
     --window-surface-opacity: 100%;
 }
@@ -29,7 +24,7 @@ html:has(> body:is(.linux)) {
     }
 
     html:has(> body.win32) {
-        --window-surface-opacity: 40%;
+        --window-surface-opacity: 75%;
     }
 }
 

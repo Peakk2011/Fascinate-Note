@@ -43,7 +43,7 @@ export const getWindowConfig = () => {
             visualEffectState: 'active',
             hasShadow: true,
         }),
-        ...(OS === 'win32' && { backgroundMaterial: 'mica' }),
+        ...(OS === 'win32' && { backgroundMaterial: 'acrylic' }),
         ...((OS === 'win32' || OS === 'linux') && {
             titleBarStyle: 'hidden',
             frame: false,

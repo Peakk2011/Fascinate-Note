@@ -30,7 +30,8 @@
 .workspace-menu-view-overlay {
     position: fixed;
     inset: 0;
-    background: var(--theme-overlay);
+    /* background: var(--theme-overlay); */
+    background: var(--theme-bg);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     opacity: 0;
