@@ -3,6 +3,8 @@
     All .html files will using this script here 
 */
 
+import wait from '@wait';
+
 /**
  * Initialize OS detection
  */

@@ -18,7 +18,10 @@
     "dev:mobile": "npm --workspace apps/mobile run dev",
     "collab:server": "wrangler dev --local --show-interactive-dev-session=false --config workers/collab/wrangler.jsonc",
     "build:renderer": "vite build",
+    "build:web": "cross-env NODE_ENV=production VITE_WEB_BUILD=true vite build",
+    "preview:web": "vite preview --outDir ../dist/web",
     "build": "cross-env NODE_ENV=production npm run build:renderer && electron-builder",
+    "build:portable": "cross-env NODE_ENV=production npm run build:renderer && electron-builder --win portable",
     "build:dir": "cross-env NODE_ENV=production npm run build:renderer && electron-builder --dir",
     "collab-server": "npm run collab:server",
     "lint": "echo \"No linting configured\"",
@@ -42,39 +45,41 @@
       "output": "dist"
     },
     "files": [
-      "src/**/*",
-      "assets/**/*",
+      "src/main.js",
+      "src/initFascinateNotes.js",
+      "src/preload.js",
+      "src/core/**/*",
+      "src/config/**/*",
+      "src/utils/paths.js",
+      "src/utils/safeLogger.js",
+      "src/api/wait.js",
+      "assets/icons/**/*",
       "package.json",
       "dist/renderer/**/*"
     ],
     "asar": true,
+    "compression": "store",
     "win": {
-      "target": "nsis",
+      "target": "portable",
       "icon": "assets/icons/icon.ico"
     },
-    "nsis": {
-      "oneClick": false,
-      "perMachine": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "runAfterFinish": true
+    "portable": {
+      "artifactName": "Fascinate Note ${version}.${ext}"
     }
-  },
-  "dependencies": {
-    "dom-to-image": "^2.6.0",
-    "dompurify": "^3.4.12",
-    "electron-store": "^11.0.2",
-    "hammerjs": "^2.0.8",
-    "partyserver": "^0.5.10",
-    "y-partyserver": "^2.2.0",
-    "yjs": "^13.6.27"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
+    "dom-to-image": "^2.6.0",
+    "dompurify": "^3.4.12",
     "electron": "^43.2.0",
     "electron-builder": "^25.1.8",
+    "electron-store": "^11.0.2",
+    "hammerjs": "^2.0.8",
+    "partyserver": "^0.5.10",
     "vite": "^7.3.0",
     "wrangler": "4.83.0",
-    "ws": "8.20.0"
+    "ws": "8.20.0",
+    "y-partyserver": "^2.2.0",
+    "yjs": "^13.6.27"
   }
 }

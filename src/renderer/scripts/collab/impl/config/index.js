@@ -1,5 +1,5 @@
 export const DEFAULTS = {
-    serverUrl: 'http://127.0.0.1:8787',
+    serverUrl: '',
     room: 'fascinate-notes',
     mapName: 'note',
     debounceMs: 120,
@@ -13,7 +13,12 @@ export const ensureConfig = (options = {}) => {
         ...(options || {})
     };
 
-    if (!config.serverUrl) config.serverUrl = DEFAULTS.serverUrl;
+    if (!config.serverUrl) {
+        const isLocalHost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+        config.serverUrl = isLocalHost
+            ? 'http://127.0.0.1:8787'
+            : window.location.origin;
+    }
     if (!config.room) config.room = DEFAULTS.room;
     if (!config.mapName) config.mapName = DEFAULTS.mapName;
 

@@ -1494,6 +1494,7 @@ export const initCollabShare = ({ config, editorElement, noteAPI } = {}) => {
             room: roomCode,
             mapName: config?.collab?.mapName,
             debounceMs: config?.collab?.debounceMs,
+            seedLocalOnEmpty: isCreator,
             connectionTimeoutMs: config?.collab?.connectionTimeoutMs,
             autoDisableOnFail: false,
             userName: name,

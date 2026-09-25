@@ -6,7 +6,6 @@
 import { app, BrowserWindow, ipcMain, dialog, shell } from 'electron';
 import fs from 'fs/promises';
 import { createWindow } from './core/createWindow.js';
-import { preloadAssets } from './core/preloadAssets.js';
 import { OS } from './config/osConfig.js';
 import { bindTitleBarTheme, getTitleBarOverlay } from './core/window/titleBarTheme.js';
 
@@ -237,9 +236,6 @@ const initFascinateNotes = async () => {
 
 	// Register IPC handlers (new window, etc.)
 	registerIpcHandlers();
-
-	// Preload application assets
-	await preloadAssets();
 
 	// Create the main application window
 	await createWindow();

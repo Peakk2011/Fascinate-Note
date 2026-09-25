@@ -6,6 +6,7 @@ export const createHtmlSync = ({
     ytext,
     doc,
     debounceMs = 120,
+    seedLocalOnEmpty = false,
     isDestroyed,
     onRemoteApplied
 } = {}) => {
@@ -18,21 +19,31 @@ export const createHtmlSync = ({
     // Strips those while keeping normal formatting
     const applyRemoteHtml = (nextHtml) => {
         if (isDestroyed?.()) return;
-        if (nextHtml === lastHtml) return;
 
         const cleanHtml = DOMPurify.sanitize(nextHtml);
+        if (cleanHtml === lastHtml) return;
+
+        if (localTimer) {
+            clearTimeout(localTimer);
+            localTimer = null;
+        }
+
         const selection = getSelectionOffsets(editor);
 
         applyingRemote = true;
-        editor.innerHTML = cleanHtml;
-        lastHtml = cleanHtml;
-        applyingRemote = false;
+        try {
+            editor.innerHTML = cleanHtml;
+            lastHtml = cleanHtml;
 
-        if (selection) {
-            restoreSelection(editor, selection);
+            if (selection) {
+                restoreSelection(editor, selection);
+            }
+
+            editor.dispatchEvent(new Event('input', { bubbles: true }));
+        } finally {
+            applyingRemote = false;
         }
 
-        editor.dispatchEvent(new Event('input', { bubbles: true }));
         if (onRemoteApplied) {
             onRemoteApplied();
         }
@@ -79,8 +90,10 @@ export const createHtmlSync = ({
         const remoteHtml = ytext.toString();
         if (remoteHtml && remoteHtml.length > 0) {
             applyRemoteHtml(remoteHtml);
-        } else {
+        } else if (seedLocalOnEmpty) {
             pushLocal();
+        } else {
+            applyRemoteHtml('');
         }
     };
 

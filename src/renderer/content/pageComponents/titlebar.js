@@ -93,7 +93,7 @@ export const initTitlebar = (threshold = 60) => {
             initialTop: rect.top,
             offsetX: event.clientX - rect.left,
             offsetY: event.clientY - rect.top,
-            startAnchor: operationsBar.dataset.operationAnchor || 'top-right',
+            startAnchor: operationsBar.dataset.operationAnchor || 'right',
             moved: false,
             dragging: false
         };
@@ -148,7 +148,7 @@ export const initTitlebar = (threshold = 60) => {
 
     const restoreOperationAnchor = () => {
         const savedAnchor = localStorage.getItem(operationStorageKey);
-        setOperationAnchor(operationAnchors.includes(savedAnchor) ? savedAnchor : 'top-right');
+        setOperationAnchor(operationAnchors.includes(savedAnchor) ? savedAnchor : 'right');
     };
 
     const setMarkerAccess = (enabled) => {

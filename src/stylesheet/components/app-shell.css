@@ -242,7 +242,7 @@ body.darwin .status {
 }
 
 .workspace-menu[data-operation-anchor='top-right'] {
-    top: calc(var(--titlebar-height) + 62px);
+    top: calc(var(--titlebar-height) + 54px);
     right: var(--status-right);
     bottom: auto;
     transform-origin: top right;

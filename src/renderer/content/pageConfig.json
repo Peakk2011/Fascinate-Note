@@ -20,7 +20,7 @@
     "exportMenuImageText": "Download as image",
     "collab": {
         "enabled": false,
-        "serverUrl": "http://127.0.0.1:8787",
+        "serverUrl": "https://fascinate-collab.peakk3984.workers.dev",
         "room": "fascinate-notes",
         "mapName": "note",
         "debounceMs": 120,

@@ -96,6 +96,7 @@ export const initEditorPage = async (config, noteAPI, modelFind, contextMenu, co
             room: config.collab.room,
             mapName: config.collab.mapName,
             debounceMs: config.collab.debounceMs,
+            seedLocalOnEmpty: true,
             connectionTimeoutMs: config.collab.connectionTimeoutMs,
             autoDisableOnFail: config.collab.autoDisableOnFail,
             userName: config.collab.userName,

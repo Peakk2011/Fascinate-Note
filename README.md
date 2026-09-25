@@ -67,13 +67,28 @@ npm run start
 npm run build
 ```
 
+Portable version are in `dist/Fascinate Note Portable 1.3.0.exe`
+This version no installation required
+
+Compile For Web-App:
+
+```bash
+npm run build:web
+```
+
+You can see from `dist/web`
+Use `npm run preview:web` to preview it loclly
+
 ## Scripts
 
 - `npm run start` - Run development mode (`dev.js`)
 - `npm run dev:renderer` - Start Vite renderer dev server
 - `npm run dev:electron` - Start Electron (electron .)
 - `npm run build:renderer` - Build renderer assets with Vite
-- `npm run build` - Build renderer assets and package with electron-builder
+- `npm run build:web` - Build browser-ready static assets into `dist/web`
+- `npm run preview:web` - Preview the web build locally
+- `npm run build` - Build renderer assets and package the portable Windows app
+- `npm run build:portable` - Explicitly build the portable Windows app
 
 ## Project Structure
 

@@ -269,7 +269,6 @@ body.darwin .editor-placeholder {
     position: relative;
     padding-left: var(--editor-list-padding);
     list-style: none;
-    background-color: var(--theme-bg);
     font-family: var(--font-editor);
     font-weight: 430;
 }
@@ -304,7 +303,6 @@ body.darwin .editor-placeholder {
     padding-left: var(--editor-list-padding);
     list-style: none;
     counter-increment: item;
-    background-color: var(--theme-bg);
     font-family: var(--font-editor);
     font-weight: 430;
 }

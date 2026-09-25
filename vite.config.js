@@ -120,7 +120,7 @@ export default defineConfig({
     },
 
     build: {
-        outDir: resolve(__dirname, 'dist/renderer'),
+        outDir: resolve(__dirname, process.env.VITE_WEB_BUILD === 'true' ? 'dist/web' : 'dist/renderer'),
         emptyOutDir: true,
         rollupOptions: {
             input: resolve(__dirname, 'src/index.html'),
@@ -131,9 +131,14 @@ export default defineConfig({
         {
             name: 'copy-renderer-structure',
             closeBundle() {
+                const outputDir = resolve(
+                    __dirname,
+                    process.env.VITE_WEB_BUILD === 'true' ? 'dist/web' : 'dist/renderer'
+                );
+
                 // Copy renderer folder
                 const srcRenderer = resolve(__dirname, 'src/renderer');
-                const distRenderer = resolve(__dirname, 'dist/renderer/renderer');
+                const distRenderer = resolve(outputDir, 'renderer');
 
                 if (existsSync(srcRenderer)) {
                     copyFolder(srcRenderer, distRenderer);
@@ -141,7 +146,7 @@ export default defineConfig({
 
                 // Copy stylesheet folder
                 const srcStylesheet = resolve(__dirname, 'src/stylesheet');
-                const distStylesheet = resolve(__dirname, 'dist/renderer/stylesheet');
+                const distStylesheet = resolve(outputDir, 'stylesheet');
 
                 if (existsSync(srcStylesheet)) {
                     copyFolder(srcStylesheet, distStylesheet);
@@ -149,14 +154,14 @@ export default defineConfig({
 
                 // Copy api folder
                 const srcApi = resolve(__dirname, 'src/api');
-                const distApi = resolve(__dirname, 'dist/renderer/api');
+                const distApi = resolve(outputDir, 'api');
                 if (existsSync(srcApi)) {
                     copyFolder(srcApi, distApi);
                 }
 
                 // Copy entire assets folder
                 const srcAssets = resolve(__dirname, 'assets');
-                const distAssets = resolve(__dirname, 'dist/renderer/assets');
+                const distAssets = resolve(outputDir, 'assets');
                 if (existsSync(srcAssets)) {
                     copyFolder(srcAssets, distAssets);
                 }

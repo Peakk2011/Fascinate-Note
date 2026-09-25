@@ -18,6 +18,7 @@ import { createHtmlSync } from '@collab-impl/sync';
  *      room?: string,
  *      mapName?: string,
  *      debounceMs?: number,
+ *      seedLocalOnEmpty?: boolean,
  *      connectionTimeoutMs?: number,
  *      autoDisableOnFail?: boolean,
  *      userName?: string,
@@ -91,6 +92,7 @@ export const initRealtimeCollab = (editor, options = {}) => {
         ytext,
         doc,
         debounceMs: config.debounceMs,
+        seedLocalOnEmpty: options.seedLocalOnEmpty === true,
         isDestroyed: () => destroyed,
         onRemoteApplied: scheduleAwarenessUpdate
     });
