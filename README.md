@@ -12,6 +12,17 @@
 ![Platforms](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-4BCFFA?style=for-the-badge)
 ![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=for-the-badge)
 
+## Availability Notice!!
+
+Fascinate Notes version 1.3.0 is Open Source (AGPL-3.0)
+and will remain publicly available and usable under this license
+
+And after version 1.3.0. Will be developed using a closed-source approach
+
+Those who wish to use or modify open source code can use the latest version which is still open source here
+
+[Fascinate Notes](https://github.com/peakk2011/fascinate-note)
+
 A full-screen thinking space focused on speed, clarity, and flow.
 
 ## What is Fascinate Note?
