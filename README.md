@@ -23,8 +23,6 @@ Those who wish to use or modify open source code can use the latest version whic
 
 [Fascinate Notes](https://github.com/peakk2011/fascinate-note)
 
-A full-screen thinking space focused on speed, clarity, and flow.
-
 ## What is Fascinate Note?
 
 Fascinate Note is a desktop-first writing and thinking workspace built with Electron.
@@ -53,14 +51,20 @@ Fascinate Note is designed to stay in the middle:
 - Local-first enough for privacy and control
 - Extendable enough for future collaboration features
 
+# What's available?
+
+You can create your own identity, your own personality,
+and create things that you can freely express
+in terms of work, content, and text.
+
 ## Features
 
-- Rich text editor with markdown shortcuts
-- Inline cleanup and paste sanitization
-- URL preview cards
-- Export options: HTML, TXT, and image
-- Command palette and custom context menu
-- Cross-platform desktop app with Electron
+- Editor - rich text, auto-pairing, command palette, Thai/English x-height typography tuning
+- Collaboration - real-time rooms sharing, broadcast live cursors, presence, Yjs/WebSocket sync
+- Profile - upload, crop, avatars, emoji, bio, pronouns
+- Cross-platform - Linux (AppImage, .deb), mint-teams.web.app/notes (PWA), Windows, macOS
+- Sharing - room codes (6-Digit), multi-step share modal, one-click copy
+- UI/UX - theming tokens, dark/light collab colors, animated modals
 
 ## Quick Start
 

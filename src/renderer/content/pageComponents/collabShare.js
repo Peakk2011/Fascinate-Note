@@ -1502,6 +1502,8 @@ export const initCollabShare = ({ config, editorElement, noteAPI } = {}) => {
                 const text = names.length ? `${names.join(', ')} Typing...` : '';
                 noteAPI.setCollabTyping(text);
             },
+            onUserJoined: (name) => showToast(`${name} joined the room`),
+            onUserLeft: (name) => showToast(`${name} left the room`),
             userName: name,
             userColor: state.userColor,
             sessionId: state.sessionId,

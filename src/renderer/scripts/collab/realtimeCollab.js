@@ -50,6 +50,8 @@ export const initRealtimeCollab = (editor, options = {}) => {
 
     let destroyed = false;
     let hasConnected = false;
+    let hasSynced = false;
+    const knownUsers = new Map();
     let disableTimer = null;
     let typingTimer = null;
 
@@ -132,6 +134,10 @@ export const initRealtimeCollab = (editor, options = {}) => {
     if (typeof provider.on === 'function') {
         provider.on('sync', handleSync);
 
+            provider.on('sync', (isSynced) => {
+                if (isSynced) hasSynced = true;
+            });
+
         provider.on('status', ({ status }) => {
             if (status === 'connected') {
                 hasConnected = true;
@@ -144,8 +150,29 @@ export const initRealtimeCollab = (editor, options = {}) => {
     }
 
     if (typeof awareness.on === 'function') {
-        awareness.on('change', () => {
+        awareness.on('change', ({ added = [], removed = [] } = {}) => {
             updateTyping();
+            const states = awareness.getStates();
+
+            removed.forEach((clientId) => {
+                const name = knownUsers.get(clientId);
+                knownUsers.delete(clientId);
+                if (hasSynced && clientId !== doc.clientID && name) {
+                    options.onUserLeft?.(name);
+                }
+            });
+
+            states.forEach((state, clientId) => {
+                if (state?.user?.name) knownUsers.set(clientId, state.user.name);
+            });
+
+            if (hasSynced) {
+                added.forEach((clientId) => {
+                    if (clientId === doc.clientID) return;
+                    const name = states.get(clientId)?.user?.name || 'Someone';
+                    options.onUserJoined?.(name);
+                });
+            }
             scheduleRender();
         });
     }
