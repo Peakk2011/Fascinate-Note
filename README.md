@@ -1,33 +1,28 @@
 <p align='center'>
-  <img src="./assets/icons/preview/fascinate-notes-icons.png" width="80" alt='Fascinate Notes'>
-  <h1 align='center'>Fascinate Notes</h1>
-  <img src="https://mint-teams.web.app/Assets/Fascinate%20Notes%20Preview/Fascinate%20Notes%20Preview.png" alt='Fascinate Notes App Preview'>
+  <img src="https://mint-teams.web.app/Assets/Icon/Mousse.png" width="80" alt='Mousse'>
+  <h1 align='center'>Mousse</h1>
+  <!-- <img src="https://mint-teams.web.app/Assets/Fascinate%20Notes%20Preview/Fascinate%20Notes%20Preview.png" alt='Mousse App Preview'> -->
+  <img src='https://mint-teams.web.app/Assets/1.3%20Banner.png'>
 </p>
 
 <br>
 
 <br>
 
-[![Electron](https://img.shields.io/badge/Electron-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://www.electronjs.org/)
-![Platforms](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-4BCFFA?style=for-the-badge)
-![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=for-the-badge)
-
 ## Availability Notice!!
 
-Fascinate Notes version 1.3.0 is Open Source (AGPL-3.0)
+Mousse version 1.3.0 is Open Source (AGPL-3.0)
 and will remain publicly available and usable under this license
 
 And after version 1.3.0. Will be developed using a closed-source approach
 
 Those who wish to use or modify open source code can use the latest version which is still open source here
 
-[Fascinate Notes](https://github.com/peakk2011/fascinate-note)
+[Mousse](https://github.com/Peakk2011/Mousse)
 
-## What is Fascinate Note?
+## What is Mousse?
 
-Fascinate Note is a desktop-first writing and thinking workspace built with Electron.
-It combines a rich editor, markdown-like shortcuts, and lightweight productivity tools in one interface.
-The goal is to keep note-taking fast while still supporting structure, formatting, and export.
+Mousse (Old name/Code name: Fascinate Note) is a progress web application cross-platform writing and thinking workspace combines with a rich editor, markdown-like-syntax command palette, and lightweight tools in one interface. The goal is to keep note-taking fast while still supporting structure, formatting, and export.
 
 ## How
 
@@ -41,17 +36,17 @@ The app runs as an Electron application with a clear separation between processe
 In development, the renderer runs from the Vite dev server.
 In packaged mode, the app loads local built assets from inside the app bundle.
 
-## Why Fascinate Note?
+## Why Mousse?
 
 Many note apps are either too minimal for structured writing or too heavy for fast idea capture.
-Fascinate Note is designed to stay in the middle:
+Mousse is designed to stay in the middle:
 
 - Fast enough for rough thinking
 - Structured enough for long-form notes
 - Local-first enough for privacy and control
-- Extendable enough for future collaboration features
+- Collaboration features
 
-# What's available?
+## What's available?
 
 You can create your own identity, your own personality,
 and create things that you can freely express
@@ -69,7 +64,7 @@ in terms of work, content, and text.
 ## Quick Start
 
 ```bash
-git clone https://github.com/Peakk2011/Fascinate-Note.git
+git clone https://github.com/Peakk2011/Mousse.git
 cd Fascinate-Note
 npm install
 npm run start
